@@ -8,12 +8,12 @@ export const moveUnit = (actionState: ActionState): ActionState => {
   console.log('move', selectedHex);
   targetHex = {
     ...mapState[targetHex.key],
-    contains: [...selectedHex.contains],
+    contains: { ...selectedHex.contains },
     isSelected: shouldKeepSelection,
   };
   const updatedSelectedHex: HexItem = {
     ...mapState[selectedHex.key],
-    contains: [],
+    contains: {},
     isSelected: false,
   };
 

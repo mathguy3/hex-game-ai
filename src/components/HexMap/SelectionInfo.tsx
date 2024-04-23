@@ -5,10 +5,7 @@ import { getKey } from '../../utils/coordinates/getKey';
 export const SelectionInfo = ({ item }: { item: HexItem }) => {
   return (
     <Box>
-      {item &&
-        `${item.contains.map((x) => x.kind).join(', ')} ${getKey(
-          item.coordinates
-        )}`}
+      {item && `${item.contains.unit?.kind} ${getKey(item.coordinates)}`}
     </Box>
   );
 };

@@ -1,12 +1,12 @@
-import { Aspect } from '../aspect';
-import { EntityState } from '../entities';
-import { Interactions } from '../interactions';
-import { BuildingKind } from '../types/buildings';
+import { Interaction } from '../../actions/interactions';
+import { Aspect } from '../../aspect';
+import { EntityState } from '../../entities/entities';
+import { BuildingKind } from '../../kinds/buildings';
 
 export interface BuildingDefinition {
   type: string;
   kind: string;
-  interactions: Interactions;
+  interactions: Interaction[];
   aspects: Record<string, Aspect>;
 }
 

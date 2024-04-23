@@ -1,12 +1,12 @@
-import { Aspect } from '../aspect';
-import { EntityState } from '../entities';
-import { Interactions } from '../interactions';
-import { UnitKind } from '../types/units';
+import { Interaction } from '../../actions/interactions';
+import { Aspect } from '../../aspect';
+import { EntityState } from '../../entities/entities';
+import { UnitKind } from '../../kinds/units';
 
 export interface UnitDefinition {
   type: string;
   kind: string;
-  interactions: Interactions;
+  interactions: Interaction[];
   aspects: Record<string, Aspect>;
 }
 

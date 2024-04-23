@@ -1,17 +1,25 @@
-import { Coordinates, Tile } from '../../../types';
-import { OffsetTileSelect } from '../../../types/interactions';
+import { OffsetTileSelect } from '../../../types/actions/tiles';
 import { getKey } from '../../../utils/coordinates/getKey';
+import { TileGenerator } from './types';
+import { addVector } from './utils/vectorAdd';
 
-//should use coordinates
-export function offset(
-  tileSet: OffsetTileSelect,
-  coordinates: Coordinates
-): Record<string, Tile> {
+export const offset: TileGenerator<OffsetTileSelect> = (
+  tileSelect,
+  target,
+  actionState,
+  isValidTile,
+  initialSearch
+) => {
+  const coordinates = addVector(target, tileSelect.offset);
+  const key = getKey(coordinates);
+  if (!isValidTile({ key, coordinates })) {
+    return {};
+  }
   return {
-    [getKey(coordinates)]: {
+    [key]: {
       type: 'tile',
       coordinates,
-      key: getKey(coordinates),
+      key,
     },
   };
-}
+};

@@ -1,9 +1,10 @@
-import { colors } from '../../../../configuration/constants';
+import { colors } from '../../../../configuration/colors';
 import { gameDefinition } from '../../../../configuration/gameDefinition';
 import { Coordinates, Tile } from '../../../../types';
+import { InteractionType } from '../../../../types/actions/interactions';
+import { Preview } from '../../../../types/actions/preview';
 import { ActionState } from '../../../../types/game';
-import { Preview, PreviewType } from '../../../../types/preview';
-import { mapApplyRecord } from '../../../../utils/record/mapApplyRecord';
+import { mapApplyIndex } from '../../../../utils/record/mapApplyIndex';
 import { generateTileSet } from '../hex/generateTileSet';
 
 type PreviewTile = { tile: Tile; preview: Record<string, Preview> };
@@ -18,28 +19,11 @@ export const generateUnitPreview = (
   if (!unitDefinition) {
     return {};
   }
-  const movementTiles = generateTileSet(
-    coordinates,
-    unitDefinition.interactions.movement.tiles,
-    actionState
-  );
-
-  applyPreviewTiles(previewTiles, movementTiles, 'movement');
-
-  for (const interaction of unitDefinition.interactions.fromMovement) {
-    const movementTileList = Object.values(movementTiles);
-    for (const coordinate of movementTileList) {
-      applyPreviewTiles(
-        previewTiles,
-        generateTileSet(coordinate.coordinates, interaction.tiles, actionState),
-        interaction.type
-      );
-    }
-  }
-  for (const interaction of unitDefinition.interactions.other) {
+  for (const interaction of unitDefinition.interactions) {
+    console.log('Preview for', interaction.type);
     applyPreviewTiles(
       previewTiles,
-      generateTileSet(coordinates, interaction.tiles, actionState),
+      generateTileSet(interaction.tiles, coordinates, actionState),
       interaction.type
     );
   }
@@ -49,16 +33,24 @@ export const generateUnitPreview = (
 const applyPreviewTiles = (
   previewTiles: Record<string, PreviewTile>,
   interactionTiles: Record<string, Tile>,
-  interactionName: PreviewType
+  interactionName: InteractionType
 ) => {
-  mapApplyRecord(previewTiles, interactionTiles, (prev, item) => ({
+  mapApplyIndex(previewTiles, interactionTiles, (prev, item) => ({
     tile: item,
     preview: {
-      ...prev.preview,
-      [interactionName]: {
-        type: interactionName,
-        color: colors.hex[interactionName],
-      },
+      ...(prev?.preview ?? {}),
+      [interactionName]: getPreview(interactionName, item),
     },
   }));
 };
+
+function getPreview<T extends InteractionType>(
+  tileType: T,
+  tile: Tile
+): Preview {
+  return {
+    type: tileType,
+    color: colors.hex[tileType],
+    tile,
+  } as Preview;
+}

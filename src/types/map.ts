@@ -1,19 +1,23 @@
+import { Preview } from './actions/preview';
 import { Aspect } from './aspect';
-import { BuildingState } from './building/building';
-import { Coordinates } from './coordinates';
-import { Preview } from './preview';
-import { UnitState } from './unit/unit';
+import { CoordinateKey, Coordinates } from './coordinates';
+import { BuildingState } from './entities/building/building';
+import { UnitState } from './entities/unit/unit';
 
-type ContainState = UnitState | BuildingState;
+type ContainState = {
+  unit?: UnitState;
+  building?: BuildingState;
+};
 
 export type MapState = Record<string, HexItem>;
 
 export type HexItem = {
-  key: string;
+  type: 'hex';
+  key: CoordinateKey;
   coordinates: Coordinates;
   kind: string;
   aspects: Record<string, Aspect>;
   isSelected: boolean;
-  contains: ContainState[];
+  contains: ContainState;
   preview: Record<string, Preview>;
 };

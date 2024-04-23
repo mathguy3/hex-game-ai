@@ -1,20 +1,21 @@
-import { SwordsmanDefinition } from '../../types/unit/swordsman';
+import { SwordsmanDefinition } from '../../types/entities/unit/swordsman';
 
 export const swordsman: SwordsmanDefinition = {
   type: 'unit',
   kind: 'swordsman',
   aspects: { fighter: { type: 'fighter' } },
-  interactions: {
+  interactions: [] /*{
     movement: {
       type: 'movement',
       tiles: {
         add: [
           {
-            type: 'pathrange',
-            range: 3,
+            type: 'offset',
+            offset: { q: 0, r: -1, s: 1 },
           },
         ],
       },
+      actions: [],
     },
     fromMovement: [
       {
@@ -27,15 +28,16 @@ export const swordsman: SwordsmanDefinition = {
             },
           ],
           limit: [
-            {
+            /*{
               type: 'aspect',
               target: 'unit',
               aspect: { type: 'team', teamId: 'team2' },
             },
           ],
         },
+        actions: [],
       },
     ],
-    other: [],
-  },
+  other: [],
+  },*/,
 };

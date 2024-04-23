@@ -1,8 +1,12 @@
 export type Aspect =
   | {
-      type: string;
-    }
-  | {
       type: 'team';
       teamId: string;
-    };
+    }
+  | {
+      type: 'fighter';
+    }
+  | {
+      type: 'ground';
+    }
+  | Record<string, any>;

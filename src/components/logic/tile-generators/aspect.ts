@@ -1,30 +1,38 @@
-import { gameDefinition } from '../../../configuration/gameDefinition';
-import { Tile } from '../../../types';
-import { ActionState } from '../../../types/game';
-import { AspectTileSelect } from '../../../types/interactions';
+import { HexItem } from '../../../types';
+import { AspectTileSelect } from '../../../types/actions/tiles';
+import { mapToRecord } from '../../../utils/record/mapToRecord';
+import { TileGenerator } from './types';
+import { areEqualShallow } from './utils/areEqualShallow';
 
-function areEqualShallow(a, b) {
-  for (var key in a) {
-    if (a[key] !== b[key]) {
-      return false;
-    }
+export const aspect: TileGenerator<AspectTileSelect> = (
+  tileSelect,
+  target,
+  actionState,
+  isValidTile,
+  initialSearch
+) => {
+  const initialRange = initialSearch ?? actionState.mapState;
+  const hexList = Object.values(initialRange);
+
+  let targets: HexItem[] = hexList;
+  let matchingTargets: HexItem[];
+  if (tileSelect.target === 'hex') {
+    matchingTargets = targets.filter((x) =>
+      areEqualShallow(tileSelect.aspect, x.aspects)
+    );
+  } else {
+    targets = hexList.filter((x) => x.contains.length);
+    matchingTargets = targets.filter((x) =>
+      areEqualShallow(tileSelect.aspect, x.contains[0].aspects)
+    );
   }
-  return true;
-}
 
-export function aspect(
-  tileSelect: AspectTileSelect,
-  actionState: ActionState,
-  tile: Tile
-) {
-  const hex = actionState.mapState[tile.key];
-  const unit = hex?.contains[0];
-  const unitDefinition = gameDefinition.unit[unit?.kind];
-  const target = tileSelect.target === 'hex' ? hex : unitDefinition;
-  const targetAspect = target?.aspects[tileSelect.aspect.type];
-  const stateAspect = unit?.aspects[tileSelect.aspect.type];
-  return (
-    (stateAspect && areEqualShallow(stateAspect, tileSelect.aspect)) ||
-    (targetAspect && areEqualShallow(targetAspect, tileSelect.aspect))
-  );
-}
+  const validTargets = matchingTargets.filter(isValidTile);
+  return mapToRecord(validTargets, (item) => ({
+    [item.key]: {
+      type: 'tile' as const,
+      coordinates: item.coordinates,
+      key: item.key,
+    },
+  }));
+};

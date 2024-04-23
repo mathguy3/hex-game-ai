@@ -1,33 +1,40 @@
 import { ActionState } from '../../../../types/game';
-import { diffRecord } from '../../../../utils/record/diffRecord';
-import { mapApplyRecord } from '../../../../utils/record/mapApplyRecord';
+import { mapApplyIndex } from '../../../../utils/record/mapApplyIndex';
+import { mapApplyState } from '../../../../utils/record/mapApplyState';
+import { clearPreviews } from './clearMapPreview';
 import { generateUnitPreview } from './generateUnitPreview';
 
 export const showPreview = (actionState: ActionState): ActionState => {
-  let { mapState, selectionState, previewState, targetHex } = actionState;
-
+  console.log('Clearing old previews', actionState.previewState);
   // Clear old state
-  diffRecord(mapState, previewState);
+  clearPreviews(actionState);
+  let { mapState, selectionState, previewState, targetHex } = actionState;
+  const selectedHex = Object.values(selectionState)[0];
 
-  if (!targetHex.contains.length || !targetHex.isSelected) {
+  console.log('selected hex', previewState, selectionState, selectedHex);
+  if (!selectedHex || !selectedHex.contains.unit || !selectedHex.isSelected) {
+    console.log('Unit not selected, skipping preview');
     return { mapState, selectionState, previewState, targetHex };
   }
-  const targetUnit = targetHex.contains[0];
+  const targetUnit = selectedHex.contains.unit;
   const generatedTiles = generateUnitPreview(
     actionState,
     targetUnit.kind,
-    targetHex.coordinates
+    selectedHex.coordinates
   );
 
-  mapApplyRecord(mapState, generatedTiles, (hex, tile) => ({
+  console.log('Applying generated tiles', generatedTiles);
+  mapApplyState(mapState, generatedTiles, (hex, tile) => ({
     ...hex,
     preview: tile.preview,
   }));
 
-  mapApplyRecord(previewState, generatedTiles, (hex, tile) => ({
+  mapApplyIndex(previewState, generatedTiles, (hex, tile) => ({
     ...hex,
     preview: tile.preview,
   }));
+
+  console.log('updated preview state', selectionState, previewState);
 
   return { mapState, selectionState, previewState, targetHex };
 };

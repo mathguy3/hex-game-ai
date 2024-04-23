@@ -1,15 +1,15 @@
 import Box from '@mui/material/Box';
 import { useState } from 'react';
 import { isDev } from '../../configuration/constants';
-import { soldier } from '../../configuration/units/swordsman';
+import { gameDefinition } from '../../configuration/gameDefinition';
 import { ActionState } from '../../types/game';
 import { HexItem, MapState } from '../../types/map';
-import { isMatch } from '../../utils/coordinates/isMatch';
+import { getSelectedHex } from '../../utils/actionState/getSelectedHex';
 import { useKeys } from '../../utils/useKeys';
 import { useUpdatingRef } from '../../utils/useUpdatingRef';
-import { doAction } from '../logic/Interaction/doAction';
 import { showPreview } from '../logic/Map/preview/showPreview';
 import { selectHex } from '../logic/Map/selectHex';
+import { evalSet } from '../logic/if/getIf';
 import { range } from '../logic/tile-generators/range';
 import { Hex } from './Hex/Hex';
 import { MapFrame } from './MapFrame';
@@ -28,17 +28,13 @@ export const HexMap = () => {
           range(generatedRange, origin)
             .map((x) => {
               const item: HexItem = {
+                type: 'hex',
                 key: x.key,
                 kind: x.coordinates.q === -2 ? 'river' : 'hex',
-                aspects:
-                  x.coordinates.q === -1
-                    ? {
-                        hot: { type: 'hot' },
-                      }
-                    : {},
+                aspects: {},
                 coordinates: x.coordinates,
                 isSelected: false,
-                contains: isMatch(x.coordinates, origin) ? [soldier] : [],
+                contains: {},
                 preview: {},
               };
               return item;
@@ -64,11 +60,46 @@ export const HexMap = () => {
       targetHex: hex,
     };
     if (!isMultiSelect && isPreview) {
-      // Todo: have different zones for multiple possible actions?
-      actionState = doAction(actionState);
+      console.log('Doing action for', hex, getSelectedHex(actionState));
+      const previewKey = Object.keys(hex.preview)[0];
+      const selectedHex = Object.values(selectionState)[0];
+      const selectedUnit = selectedHex.contains?.unit;
+      if (!selectedUnit) {
+        console.log('Action no selected unit');
+        return;
+      }
+
+      const unitDefinition = gameDefinition.unit[selectedUnit.kind];
+      const interactionDefinition = unitDefinition.interactions.find(
+        (x) => x.type === previewKey
+      );
+
+      const selectedHexKey = selectedHex.key;
+
+      if (!interactionDefinition?.actions?.length) {
+        console.log(
+          'action no interactions defined',
+          unitDefinition.interactions,
+          previewKey
+        );
+        return;
+      }
+      for (const action of interactionDefinition.actions) {
+        for (const set of action.set) {
+          console.log('-----------------');
+          evalSet(set, {
+            subject: { parent: mapState, field: selectedHexKey },
+            target: { parent: mapState, field: hex.key },
+          });
+          console.log('POST SET', set, mapState[selectedHexKey]);
+        }
+      }
+      actionState = selectHex(actionState, mapState[hex.key], isMultiSelect);
       actionState = showPreview(actionState);
     } else {
-      actionState = selectHex(actionState, isMultiSelect);
+      console.log('Selecting hex ', hex, 'with unit', hex.contains[0]);
+      actionState = selectHex(actionState, null, isMultiSelect);
+      console.log('Hex selected creating preview', actionState);
       actionState = showPreview(actionState);
     }
     setSelectionState(actionState.selectionState);

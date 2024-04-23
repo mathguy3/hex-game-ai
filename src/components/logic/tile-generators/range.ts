@@ -1,5 +1,5 @@
 import { Coordinates, Tile } from '../../../types';
-import { RangeTileSelect } from '../../../types/interactions';
+import { RangeTileSelect } from '../../../types/actions/tiles';
 import { getKey } from '../../../utils/coordinates/getKey';
 import { getS } from '../../../utils/coordinates/getS';
 import { isMatch } from '../../../utils/coordinates/isMatch';

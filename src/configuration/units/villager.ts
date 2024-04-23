@@ -1,10 +1,10 @@
-import { VillagerDefinition } from '../../types/unit/villager';
+import { VillagerDefinition } from '../../types/entities/unit/villager';
 
 export const soldier: VillagerDefinition = {
   type: 'unit',
   kind: 'villager',
   aspects: { ground: { type: 'ground' } },
-  interactions: {
+  interactions: [] /*{
     movement: {
       type: 'movement',
       tiles: {
@@ -15,8 +15,9 @@ export const soldier: VillagerDefinition = {
           },
         ],
       },
+      actions: [],
     },
     fromMovement: [],
     other: [],
-  },
+  },*/,
 };

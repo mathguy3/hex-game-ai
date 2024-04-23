@@ -1,13 +1,35 @@
-import { Tile } from '../../../types';
-import { ActionState } from '../../../types/game';
-import { KindTileSelect } from '../../../types/interactions';
+import { HexItem } from '../../../types';
+import { KindTileSelect } from '../../../types/actions/tiles';
+import { mapToRecord } from '../../../utils/record/mapToRecord';
+import { TileGenerator } from './types';
 
-export function kind(
-  tileSelect: KindTileSelect,
-  actionState: ActionState,
-  tile: Tile
-) {
-  const hex = actionState.mapState[tile.key];
-  const target = tileSelect.target === 'hex' ? hex : hex?.contains[0];
-  return target && target.kind === tileSelect.kind;
-}
+export const kind: TileGenerator<KindTileSelect> = (
+  tileSelect,
+  target,
+  actionState,
+  isValidTile,
+  initialSearch
+) => {
+  const initialRange = initialSearch ?? actionState.mapState;
+  const hexList = Object.values(initialRange);
+
+  let targets: HexItem[] = hexList;
+  let matchingTargets: HexItem[];
+  if (tileSelect.target === 'hex') {
+    matchingTargets = targets.filter((x) => tileSelect.kind === x.kind);
+  } else {
+    targets = hexList.filter((x) => x.contains.length);
+    matchingTargets = targets.filter(
+      (x) => tileSelect.kind === x.contains[0].kind
+    );
+  }
+
+  const validTargets = matchingTargets.filter(isValidTile);
+  return mapToRecord(validTargets, (item) => ({
+    [item.key]: {
+      type: 'tile' as const,
+      coordinates: item.coordinates,
+      key: item.key,
+    },
+  }));
+};

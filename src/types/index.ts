@@ -1,3 +1,3 @@
 export * from './coordinates';
-export * from './entities';
+export * from './entities/entities';
 export * from './map';
