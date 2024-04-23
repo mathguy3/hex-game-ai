@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
 import { gridColumnWidth } from '../../configuration/constants';
-import { Unit } from '../../types';
+import { UnitState } from '../../types/entities/unit/unit';
 import { SoldierIcon } from './SoldierIcon';
 
-export const Soldier = ({ item }: { item: Unit }) => {
+export const Soldier = ({ item }: { item: UnitState }) => {
   return (
     <Box
       position="absolute"
@@ -12,6 +12,9 @@ export const Soldier = ({ item }: { item: Unit }) => {
       left={gridColumnWidth / 2 - 25}
     >
       <SoldierIcon width={50} />
+      <Box position="absolute" zIndex={3} top={50} left={5}>
+        {item.kind}
+      </Box>
     </Box>
   );
 };

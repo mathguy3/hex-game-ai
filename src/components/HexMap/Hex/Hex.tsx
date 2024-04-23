@@ -46,6 +46,9 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
 
   //console.log('rendering', coordinates, item.contains);
 
+  if (item.contains.unit) {
+    console.log('THIS SPACE HAS UNIT', item.key, item.contains.unit);
+  }
   return (
     <Box
       position="absolute"

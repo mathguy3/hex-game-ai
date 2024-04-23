@@ -91,7 +91,12 @@ export const HexMap = () => {
             subject: { parent: mapState, field: selectedHexKey },
             target: { parent: mapState, field: hex.key },
           });
-          console.log('POST SET', set, mapState[selectedHexKey]);
+          console.log(
+            'POST SET',
+            set,
+            mapState[selectedHexKey],
+            mapState[hex.key]
+          );
         }
       }
       actionState = selectHex(actionState, mapState[hex.key], isMultiSelect);

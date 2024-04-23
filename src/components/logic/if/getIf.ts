@@ -91,11 +91,6 @@ const evalIfTarget = (
   const [field, ifValue] = Object.entries(ifTarget)[0];
   const nextTarget = { parent: getValue(target), field };
 
-  if (!nextTarget.parent) {
-    target.parent[target.field] = {};
-    nextTarget.parent = {};
-  }
-
   console.log(
     'Our current target is the field -',
     field,
@@ -103,7 +98,18 @@ const evalIfTarget = (
     getValue(target)
   );
 
-  if (isTarget(ifValue)) {
+  const canTarget =
+    !(context.type == 'eval' || context.type == 'if') || !!nextTarget.parent;
+
+  if (context.type == 'set' && nextTarget.parent === undefined) {
+    console.log('target is undefined, auxiliary measures');
+    nextTarget.parent = {};
+    if (!target.parent[target.field]) {
+      target.parent[target.field] = nextTarget.parent;
+    }
+  }
+
+  if (isTarget(ifValue) && canTarget) {
     console.log(
       "We're not going to save that value, we're going to retarget to",
       ifValue,
@@ -111,6 +117,9 @@ const evalIfTarget = (
     );
     return evalIfTarget(ifValue, nextTarget, addPath(context, field));
   } else {
+    if (!canTarget) {
+      console.log('Cannot target undefined target, skipping to evaluation');
+    }
     console.log('Deciding', ifValue, 'is NOT a target', nextTarget);
     const valueResult = evalIfValue(
       ifValue,
@@ -191,7 +200,7 @@ const evalIfValue = (
   throw new Error('IFTarget passed to if value processor');
 };
 const setValue = (target: TargetContext, result: any) => {
-  console.log('setting', result, 'onto', getValue(target), target);
+  console.log('setting', result, 'onto', target, target);
   target.parent[target.field] = result;
 };
 
