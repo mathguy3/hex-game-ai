@@ -89,7 +89,12 @@ const evalIfTarget = (
   context: IFContext
 ) => {
   const [field, ifValue] = Object.entries(ifTarget)[0];
-  const nextTarget = { parent: getValue(target) ?? {}, field };
+  const nextTarget = { parent: getValue(target), field };
+
+  if (!nextTarget.parent) {
+    target.parent[target.field] = {};
+    nextTarget.parent = {};
+  }
 
   console.log(
     'Our current target is the field -',
@@ -191,15 +196,11 @@ const setValue = (target: TargetContext, result: any) => {
 };
 
 const ifMatch = (target: TargetContext, result: any) => {
-  console.log(
-    'comparing',
-    getValue(target),
-    '==',
-    result,
-    '===',
-    getValue(target) == result
-  );
-  return getValue(target) == result;
+  const targetValue = getValue(target);
+  const isMatch = (!targetValue && !result) || targetValue == result;
+  console.log('comparing', targetValue, '==', result, '===', isMatch);
+  console.log(target);
+  return isMatch;
 };
 
 const evalIfMath = (
