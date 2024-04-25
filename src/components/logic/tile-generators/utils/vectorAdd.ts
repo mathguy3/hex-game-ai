@@ -4,7 +4,7 @@ function isValidOffset(vec: Coordinates) {
   return vec.q + vec.r + vec.s === 0;
 }
 
-export function addVector(hex: Coordinates, vec: Coordinates) {
+export function vectorAdd(hex: Coordinates, vec: Coordinates) {
   if (!isValidOffset(vec)) {
     throw new Error(`Invalid vector ${JSON.stringify(vec)}`);
   }

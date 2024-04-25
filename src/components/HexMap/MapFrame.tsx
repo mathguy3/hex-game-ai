@@ -7,7 +7,7 @@ export const MapFrame = ({ children }: React.PropsWithChildren) => {
   const [scale, setScale] = useState(1);
   const offset = useRef({
     left: (generatedRange + 0.5) * gridColumnWidth,
-    top: (generatedRange + 0.5) * gridRowHeight,
+    top: -(generatedRange + 0.5) * gridRowHeight,
   });
   const mapRef = useRef<HTMLElement>();
   const innerRef = useRef<HTMLElement>();

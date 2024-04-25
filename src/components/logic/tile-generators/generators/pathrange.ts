@@ -1,8 +1,8 @@
-import { Tile } from '../../../types';
-import { RangeTileSelect } from '../../../types/actions/tiles';
-import { getKey } from '../../../utils/coordinates/getKey';
-import { TileGenerator } from './types';
-import { getNeighbor } from './utils/getNeighbor';
+import { Tile } from '../../../../types';
+import { RangeTileSelect } from '../../../../types/actions/tiles';
+import { getKey } from '../../../../utils/coordinates/getKey';
+import { TileGenerator } from '../types';
+import { getNeighbor } from '../utils/getNeighbor';
 
 export const pathrange: TileGenerator<RangeTileSelect> = (
   tileSet,

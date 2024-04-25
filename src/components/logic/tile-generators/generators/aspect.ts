@@ -1,8 +1,8 @@
-import { HexItem } from '../../../types';
-import { AspectTileSelect } from '../../../types/actions/tiles';
-import { mapToRecord } from '../../../utils/record/mapToRecord';
-import { TileGenerator } from './types';
-import { areEqualShallow } from './utils/areEqualShallow';
+import { HexItem } from '../../../../types';
+import { AspectTileSelect } from '../../../../types/actions/tiles';
+import { mapToRecord } from '../../../../utils/record/mapToRecord';
+import { TileGenerator } from '../types';
+import { areEqualShallow } from '../utils/areEqualShallow';
 
 export const aspect: TileGenerator<AspectTileSelect> = (
   tileSelect,

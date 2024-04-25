@@ -1,5 +1,5 @@
 import { Coordinates } from '../../../../types';
-import { addVector } from './vectorAdd';
+import { vectorAdd } from './vectorAdd';
 
 var vectors: Coordinates[] = [
   { q: 1, r: 0, s: -1 },
@@ -10,10 +10,10 @@ var vectors: Coordinates[] = [
   { q: 0, r: 1, s: -1 },
 ];
 
-function getDirection(direction: string | number) {
+export function getDirection(direction: string | number) {
   return vectors[direction];
 }
 
 export function getNeighbor(cube: Coordinates, direction: string | number) {
-  return addVector(cube, getDirection(direction));
+  return vectorAdd(cube, getDirection(direction));
 }

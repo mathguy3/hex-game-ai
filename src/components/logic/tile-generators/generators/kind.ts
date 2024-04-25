@@ -1,7 +1,7 @@
-import { HexItem } from '../../../types';
-import { KindTileSelect } from '../../../types/actions/tiles';
-import { mapToRecord } from '../../../utils/record/mapToRecord';
-import { TileGenerator } from './types';
+import { HexItem } from '../../../../types';
+import { KindTileSelect } from '../../../../types/actions/tiles';
+import { mapToRecord } from '../../../../utils/record/mapToRecord';
+import { TileGenerator } from '../types';
 
 export const kind: TileGenerator<KindTileSelect> = (
   tileSelect,

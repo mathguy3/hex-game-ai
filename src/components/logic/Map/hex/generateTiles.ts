@@ -1,6 +1,7 @@
 import { CoordinateKey, Coordinates, Tile } from '../../../../types';
 import { TileSelect } from '../../../../types/actions/tiles';
 import { ActionState } from '../../../../types/game';
+import { getKey } from '../../../../utils/coordinates/getKey';
 import { evalIf } from '../../if/getIf';
 import * as tileGenerators from '../../tile-generators';
 import { TileGenerator } from '../../tile-generators/types';
@@ -8,7 +9,7 @@ import { defaultIsValidTile } from './defaultIsValidTile';
 
 export const generateTiles = (
   tileSelect: TileSelect,
-  target: Coordinates,
+  subject: Coordinates,
   actionState: ActionState,
   isValidTile?: (tile: {
     key: CoordinateKey;
@@ -25,19 +26,20 @@ export const generateTiles = (
     return {};
   }
 
-  console.log('running generator for', tileSelect, target);
+  console.log('running generator for', tileSelect, subject);
   return generator(
     tileSelect,
-    target,
+    subject,
     actionState,
     (tile) => {
-      const isUniversallyValid = defaultIsValidTile(tile, target, actionState);
+      const isUniversallyValid = defaultIsValidTile(tile, subject, actionState);
       const isValid = !isValidTile || isValidTile?.(tile);
       //console.log('-----------------------------');
       const passesCheck =
         !tileSelect.tileIf ||
         evalIf(tileSelect.tileIf, {
           target: { parent: actionState.mapState, field: tile.key },
+          subject: { parent: actionState.mapState, field: getKey(subject) },
         });
       /*console.log(
         tileSelect,

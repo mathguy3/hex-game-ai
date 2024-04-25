@@ -16,6 +16,8 @@ type HexProps = {
   onSelectedRef: React.MutableRefObject<(hex: HexItem) => void>;
 };
 
+const flipYRender = false;
+
 export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
   const { coordinates, isSelected } = item;
   if (!coordinates) {
@@ -25,8 +27,9 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
   console.assert(coordinates.q + coordinates.r + s === 0, 'Invalid coordinate');
 
   const leftOffset = coordinates.q * 0.75 * gridColumnWidth;
-  const topOffset =
-    coordinates.r * gridRowHeight + coordinates.q * (gridRowHeight / 2);
+  const topOffset = flipYRender
+    ? -coordinates.r * gridRowHeight - coordinates.q * (gridRowHeight / 2)
+    : coordinates.r * gridRowHeight + coordinates.q * (gridRowHeight / 2);
 
   const handlSelection = useCallback(() => {
     onSelectedRef.current?.(item);
@@ -47,15 +50,22 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
   //console.log('rendering', coordinates, item.contains);
 
   if (item.contains.unit) {
-    console.log('THIS SPACE HAS UNIT', item.key, item.contains.unit);
+    //console.log('THIS SPACE HAS UNIT', item.key, item.contains.unit);
   }
+  const teamColor = { team1: '#0000ff', team2: '#ff0000' }[
+    item.contains.unit?.aspects.team?.value
+  ];
+  if (item.contains.unit) {
+    //console.log('team color', teamColor);
+  }
+  const isPreview = preview.type !== 'none';
   return (
     <Box
       position="absolute"
       left={leftOffset}
       top={topOffset}
       onClick={handlSelection}
-      zIndex={isSelected ? 1 : 0}
+      zIndex={isSelected || isPreview ? 1 : 0}
     >
       {isDev && (
         <div style={{ userSelect: 'none', fontSize: '12px' }}>
@@ -80,12 +90,22 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
       )}
       <HexImg
         width={gridColumnWidth}
-        strokeWidth={isSelected ? 4 : 2}
+        strokeWidth={isSelected || isPreview ? 4 : 2}
         color={preview.color}
       />
       {item.contains.unit && (
         <Soldier key={item.contains.unit.id} item={item.contains.unit} />
       )}
+
+      <Box
+        position="absolute"
+        top={gridRowHeight * 0.7}
+        left={gridColumnWidth * 0.24}
+        width="50px"
+        height="5px"
+        bgcolor={teamColor}
+      />
+
       {preview.tile.type === 'pathrange' ? (
         <Box
           position="absolute"

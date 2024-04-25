@@ -10,24 +10,24 @@ import { generateTiles } from './generateTiles';
 
 export function generateTileSet(
   tileGen: TileSet,
-  target: Coordinates,
+  subject: Coordinates,
   actionState: ActionState
 ): Record<string, Tile> {
   const tileAddsToUse = tileGen.add.filter(
     (x) =>
       !x.if ||
       evalIf(x.if, {
-        subject: { parent: actionState.mapState, field: getKey(target) },
+        subject: { parent: actionState.mapState, field: getKey(subject) },
       })
   );
   const initial = mapToRecord(tileAddsToUse, (select) =>
-    generateTiles(select, target, actionState)
+    generateTiles(select, subject, actionState)
   );
 
   //console.log('initial generation', initial);
   const limitTo = tileGen.limit?.length
     ? mapToRecord(tileGen.limit, (select) =>
-        generateTiles(select, target, actionState)
+        generateTiles(select, subject, actionState)
       )
     : undefined;
 
@@ -36,7 +36,7 @@ export function generateTileSet(
 
   const toRemove = tileGen.not?.length
     ? mapToRecord(tileGen.not, (select) =>
-        generateTiles(select, target, actionState)
+        generateTiles(select, subject, actionState)
       )
     : undefined;
 

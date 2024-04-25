@@ -5,12 +5,13 @@ import { gameDefinition } from '../../configuration/gameDefinition';
 import { ActionState } from '../../types/game';
 import { HexItem, MapState } from '../../types/map';
 import { getSelectedHex } from '../../utils/actionState/getSelectedHex';
+import { mapRecord } from '../../utils/record/mapRecord';
 import { useKeys } from '../../utils/useKeys';
 import { useUpdatingRef } from '../../utils/useUpdatingRef';
 import { showPreview } from '../logic/Map/preview/showPreview';
 import { selectHex } from '../logic/Map/selectHex';
 import { evalSet } from '../logic/if/getIf';
-import { range } from '../logic/tile-generators/range';
+import { rangeSimple } from '../logic/tile-generators';
 import { Hex } from './Hex/Hex';
 import { MapFrame } from './MapFrame';
 import { SelectionInfo } from './SelectionInfo';
@@ -24,23 +25,16 @@ export const HexMap = () => {
   const pressedKeys = useKeys();
   const [mapState, setMapState] = useState<MapState>(
     generateMap
-      ? Object.fromEntries(
-          range(generatedRange, origin)
-            .map((x) => {
-              const item: HexItem = {
-                type: 'hex',
-                key: x.key,
-                kind: x.coordinates.q === -2 ? 'river' : 'hex',
-                aspects: {},
-                coordinates: x.coordinates,
-                isSelected: false,
-                contains: {},
-                preview: {},
-              };
-              return item;
-            })
-            .map((x) => [x.key, x])
-        )
+      ? mapRecord(rangeSimple(generatedRange, origin), (x) => ({
+          type: 'hex',
+          key: x.key,
+          kind: x.coordinates.q === -2 ? 'river' : 'hex',
+          aspects: {},
+          coordinates: x.coordinates,
+          isSelected: false,
+          contains: {},
+          preview: {},
+        }))
       : (initialMap as MapState)
   );
 
@@ -102,14 +96,16 @@ export const HexMap = () => {
       actionState = selectHex(actionState, mapState[hex.key], isMultiSelect);
       actionState = showPreview(actionState);
     } else {
-      console.log('Selecting hex ', hex, 'with unit', hex.contains[0]);
+      console.log(hex, hex.contains);
+      console.log('Selecting hex ', hex, 'with unit', hex.contains);
       actionState = selectHex(actionState, null, isMultiSelect);
       console.log('Hex selected creating preview', actionState);
       actionState = showPreview(actionState);
     }
     setSelectionState(actionState.selectionState);
     setPreviewState(actionState.previewState);
-    setMapState(actionState.mapState);
+    console.log(actionState.mapState['-3.6.-3']);
+    setMapState({ ...actionState.mapState });
   });
 
   return (

@@ -1,4 +1,4 @@
-export type UnitKind = 'villager' | 'swordsman';
+export type UnitKind = 'villager' | 'swordsman' | 'pawn' | 'knight';
 /*| 'archer'
   | 'spearman'
   | 'scout'

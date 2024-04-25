@@ -1,35 +1,6 @@
-import { IFObjectValue } from '../../../types/actions/if';
 import { UnitDefinition } from '../../../types/entities/unit/unit';
-
-const movementSetList = [
-  {
-    target: {
-      contains: {
-        subject: {
-          contains: IFObjectValue,
-        },
-      },
-    },
-  },
-  {
-    subject: {
-      contains: {},
-    },
-  },
-  {
-    target: {
-      contains: {
-        unit: {
-          aspects: {
-            hasMoved: {
-              value: true,
-            },
-          },
-        },
-      },
-    },
-  },
-];
+import { moveToHex } from './helpers/moveToHex';
+import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
 
 export const pawn: UnitDefinition = {
   type: 'unit',
@@ -66,7 +37,7 @@ export const pawn: UnitDefinition = {
       actions: [
         {
           type: 'movement',
-          set: movementSetList,
+          set: moveToHex,
         },
       ],
     },
@@ -77,35 +48,19 @@ export const pawn: UnitDefinition = {
           {
             type: 'offset',
             offset: { q: -1, r: 0, s: 1 },
-            tileIf: {
-              target: {
-                contains: {
-                  unit: {
-                    type: 'unit',
-                  },
-                },
-              },
-            },
+            tileIf: targetIsEnemyUnit,
           },
           {
             type: 'offset',
             offset: { q: 1, r: -1, s: 0 },
-            tileIf: {
-              target: {
-                contains: {
-                  unit: {
-                    type: 'unit',
-                  },
-                },
-              },
-            },
+            tileIf: targetIsEnemyUnit,
           },
         ],
       },
       actions: [
         {
           type: 'attack',
-          set: movementSetList,
+          set: moveToHex,
         },
       ],
     },

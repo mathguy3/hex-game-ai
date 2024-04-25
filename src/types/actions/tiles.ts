@@ -2,39 +2,52 @@ import { Aspect } from '../aspect';
 import { Coordinates } from '../coordinates';
 import { IF } from './if';
 
-export type RangeTileSelect = {
+interface TileSelectBase {
+  if?: IF;
+  tileIf?: IF;
+}
+
+export interface DiagonalTileSelect extends TileSelectBase {
+  type: 'diagonal';
+  range: number;
+}
+
+export interface OrthogonalTileSelect extends TileSelectBase {
+  type: 'orthogonal';
+  range: number;
+}
+
+export interface DistanceTileSelect extends TileSelectBase {
+  type: 'distance';
+  range: number;
+}
+
+export interface RangeTileSelect extends TileSelectBase {
   type: 'range';
   range: number;
-  if?: IF;
-  tileIf?: IF;
-};
-export type PathRangeTileSelect = {
+}
+export interface PathRangeTileSelect extends TileSelectBase {
   type: 'pathrange';
   range: number;
-  if?: IF;
-  tileIf?: IF;
-};
-export type OffsetTileSelect = {
+}
+export interface OffsetTileSelect extends TileSelectBase {
   type: 'offset';
   offset: Coordinates;
-  if?: IF;
-  tileIf?: IF;
-};
-export type KindTileSelect = {
+}
+export interface KindTileSelect extends TileSelectBase {
   type: 'kind';
   target: 'unit' | 'hex';
   kind: string;
-  if?: IF;
-  tileIf?: IF;
-};
-export type AspectTileSelect = {
+}
+export interface AspectTileSelect extends TileSelectBase {
   type: 'aspect';
   target: 'unit' | 'hex' | 'building';
   aspect: Aspect;
-  if?: IF;
-  tileIf?: IF;
-};
+}
 export type TileSelect =
+  | DiagonalTileSelect
+  | OrthogonalTileSelect
+  | DistanceTileSelect
   | PathRangeTileSelect
   | RangeTileSelect
   | OffsetTileSelect

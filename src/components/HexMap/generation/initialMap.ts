@@ -1,4 +1,13 @@
-import { makeSwordsman } from './swordsman';
+export const makeUnit = (team: string, kind?: string) => ({
+  type: 'unit',
+  kind: kind,
+  id: team,
+  aspects: {
+    team: { type: 'team', value: team },
+    health: { type: 'health', value: 100 },
+    fallbackHealth: { type: 'fallbackHealth', value: 50 },
+  },
+});
 
 export default {
   '-7.0.7': {
@@ -828,7 +837,9 @@ export default {
     aspects: {},
     coordinates: { q: 0, r: 1, s: -1 },
     isSelected: false,
-    contains: {},
+    contains: {
+      unit: makeUnit('team1', 'king'),
+    },
     preview: {},
   },
   '0.2.-2': {
@@ -838,7 +849,9 @@ export default {
     aspects: {},
     coordinates: { q: 0, r: 2, s: -2 },
     isSelected: false,
-    contains: {},
+    contains: {
+      unit: makeUnit('team1', 'queen'),
+    },
     preview: {},
   },
   '0.3.-3': {
@@ -848,7 +861,9 @@ export default {
     aspects: {},
     coordinates: { q: 0, r: 3, s: -3 },
     isSelected: false,
-    contains: {},
+    contains: {
+      unit: makeUnit('team1', 'knight'),
+    },
     preview: {},
   },
   '0.4.-4': {
@@ -858,7 +873,9 @@ export default {
     aspects: {},
     coordinates: { q: 0, r: 4, s: -4 },
     isSelected: false,
-    contains: {},
+    contains: {
+      unit: makeUnit('team1', 'rook'),
+    },
     preview: {},
   },
   '0.5.-5': {
@@ -868,7 +885,9 @@ export default {
     aspects: {},
     coordinates: { q: 0, r: 5, s: -5 },
     isSelected: false,
-    contains: {},
+    contains: {
+      unit: makeUnit('team1', 'bishop'),
+    },
     preview: {},
   },
   '0.6.-6': {
@@ -1008,7 +1027,7 @@ export default {
     aspects: {},
     coordinates: { q: 1, r: 4, s: -5 },
     isSelected: false,
-    contains: { unit: makeSwordsman('team2') },
+    contains: { unit: makeUnit('team2', 'pawn') },
     preview: {},
   },
   '1.5.-6': {
@@ -1148,7 +1167,7 @@ export default {
     aspects: {},
     coordinates: { q: 2, r: 4, s: -6 },
     isSelected: false,
-    contains: { unit: makeSwordsman('team1') },
+    contains: { unit: makeUnit('team1', 'pawn') },
     preview: {},
   },
   '2.5.-7': {
@@ -1268,7 +1287,9 @@ export default {
     aspects: {},
     coordinates: { q: 3, r: 3, s: -6 },
     isSelected: false,
-    contains: {},
+    contains: {
+      unit: makeUnit('team1', 'pawn'),
+    },
     preview: {},
   },
   '3.4.-7': {

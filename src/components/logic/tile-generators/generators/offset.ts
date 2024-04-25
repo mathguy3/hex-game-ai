@@ -1,7 +1,7 @@
-import { OffsetTileSelect } from '../../../types/actions/tiles';
-import { getKey } from '../../../utils/coordinates/getKey';
-import { TileGenerator } from './types';
-import { addVector } from './utils/vectorAdd';
+import { OffsetTileSelect } from '../../../../types/actions/tiles';
+import { getKey } from '../../../../utils/coordinates/getKey';
+import { TileGenerator } from '../types';
+import { vectorAdd } from '../utils/vectorAdd';
 
 export const offset: TileGenerator<OffsetTileSelect> = (
   tileSelect,
@@ -10,7 +10,7 @@ export const offset: TileGenerator<OffsetTileSelect> = (
   isValidTile,
   initialSearch
 ) => {
-  const coordinates = addVector(target, tileSelect.offset);
+  const coordinates = vectorAdd(target, tileSelect.offset);
   const key = getKey(coordinates);
   if (!isValidTile({ key, coordinates })) {
     return {};

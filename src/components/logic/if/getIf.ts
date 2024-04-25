@@ -73,7 +73,9 @@ const evalSingleIf = (
   const targetKey = getTargetKey(ifTargetSelector);
   if (!context[targetKey]) {
     throw new Error(
-      `Incorrect definition. Expected "${targetKey}" on ${context} based on ${ifTargetSelector}`
+      `Incorrect definition. Expected "${targetKey}" on context based on ${JSON.stringify(
+        ifTargetSelector
+      )}`
     );
   }
   return evalIfTarget(
@@ -88,8 +90,8 @@ const evalIfTarget = (
   target: TargetContext,
   context: IFContext
 ) => {
-  const [field, ifValue] = Object.entries(ifTarget)[0];
-  const nextTarget = { parent: getValue(target), field };
+  let [field, ifValue] = Object.entries(ifTarget)[0];
+  let nextTarget = { parent: getValue(target), field };
 
   console.log(
     'Our current target is the field -',
@@ -121,20 +123,45 @@ const evalIfTarget = (
       console.log('Cannot target undefined target, skipping to evaluation');
     }
     console.log('Deciding', ifValue, 'is NOT a target', nextTarget);
-    const valueResult = evalIfValue(
-      ifValue,
-      nextTarget,
-      addPath(setEval(context), field)
-    );
+    let valueResult;
+    let operation = 'default';
+    if (isOperation(ifValue)) {
+      console.log('is operation!', ifValue, context.type, nextTarget);
+      // Skip the current target in this case, since this is just an operation selector
+      const [nextField, nextValue] = Object.entries(ifValue)[0];
+      operation = nextField;
+      const nextNextTarget = { parent: getValue(nextTarget), field: nextField };
+
+      console.log(
+        'operation active!',
+        nextField,
+        nextValue,
+        context.type,
+        nextNextTarget
+      );
+      valueResult = evalIfValue(
+        nextValue,
+        nextNextTarget,
+        addPath(setEval(context), nextField)
+      );
+      console.log('operation value result!', valueResult);
+    } else {
+      valueResult = evalIfValue(
+        ifValue,
+        nextTarget,
+        addPath(setEval(context), field)
+      );
+    }
+
     console.log('Value of', ifValue, nextTarget, 'is', valueResult);
     console.log('returning value', valueResult, 'result of', context.type);
     switch (context.type) {
       case 'eval':
         return valueResult;
       case 'if':
-        return ifMatch(nextTarget, valueResult);
+        return ifMatch(nextTarget, valueResult, operation);
       case 'set':
-        setValue(nextTarget, valueResult);
+        setValue(nextTarget, valueResult, operation);
         return;
     }
   }
@@ -199,13 +226,20 @@ const evalIfValue = (
 
   throw new Error('IFTarget passed to if value processor');
 };
-const setValue = (target: TargetContext, result: any) => {
+const setValue = (target: TargetContext, result: any, operation: string) => {
   console.log('setting', result, 'onto', target, target);
   target.parent[target.field] = result;
 };
 
-const ifMatch = (target: TargetContext, result: any) => {
+const ifMatch = (target: TargetContext, result: any, operation: string) => {
   const targetValue = getValue(target);
+  const isEqual = (!targetValue && !result) || targetValue == result;
+  switch (operation) {
+    case 'default':
+      return isEqual;
+    case 'not':
+      return !isEqual;
+  }
   const isMatch = (!targetValue && !result) || targetValue == result;
   console.log('comparing', targetValue, '==', result, '===', isMatch);
   console.log(target);
@@ -277,6 +311,11 @@ const isTarget = (ifValue: IFValue): ifValue is IFTarget => {
     !!Object.keys(ifValue).length;
 
   return isTarget;
+};
+
+const isOperation = (ifValue: IFValue) => {
+  const isObject = typeof ifValue === 'object';
+  return isObject && (isIfCompare(ifValue) || isIfMath(ifValue));
 };
 
 const addPath = (context: IFContext, path: string) => {
