@@ -26,34 +26,29 @@ export const generateTiles = (
     return {};
   }
 
-  console.log('running generator for', tileSelect, subject);
-  return generator(
-    tileSelect,
-    subject,
-    actionState,
-    (tile) => {
-      const isUniversallyValid = defaultIsValidTile(tile, subject, actionState);
-      const isValid = !isValidTile || isValidTile?.(tile);
-      //console.log('-----------------------------');
-      const passesCheck =
-        !tileSelect.tileIf ||
+  //////// NEED TO RUN THE TILE CHECK EVEN IF THE GENERATOR DOESN"T
+  function checkTile(tile: Tile) {
+    const isUniversallyValid = defaultIsValidTile(tile, subject, actionState);
+    const isValid = isUniversallyValid && (!isValidTile || isValidTile?.(tile));
+
+    const passesCheck =
+      isValid &&
+      (!tileSelect.tileIf ||
         evalIf(tileSelect.tileIf, {
           target: { parent: actionState.mapState, field: tile.key },
           subject: { parent: actionState.mapState, field: getKey(subject) },
-        });
-      /*console.log(
-        tileSelect,
-        'tile',
-        actionState.mapState[tile.key],
-        'at',
-        tile.key,
-        'is',
-        isUniversallyValid,
-        isValid,
-        passesCheck
-      );*/
-      return isUniversallyValid && isValid && passesCheck;
-    },
+        }));
+
+    return isUniversallyValid && isValid && passesCheck;
+  }
+  const results = generator(
+    tileSelect,
+    subject,
+    actionState,
+    checkTile,
     initialSearch
+  );
+  return Object.fromEntries(
+    Object.entries(results).filter((x) => checkTile(x[1]))
   );
 };

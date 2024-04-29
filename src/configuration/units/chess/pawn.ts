@@ -1,6 +1,9 @@
 import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
+import { subjectHasMoved } from './helpers/subjectHasMoved';
+import { subjectHasNotMoved } from './helpers/subjectHasNotMoved';
 import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
+import { targetIsUnit } from './helpers/targetIsUnit';
 
 export const pawn: UnitDefinition = {
   type: 'unit',
@@ -12,25 +15,18 @@ export const pawn: UnitDefinition = {
       tiles: {
         add: [
           {
-            type: 'offset',
-            offset: { q: 0, r: -1, s: 1 },
+            type: 'direction',
+            direction: 2,
+            range: 2,
+            isBlocking: targetIsUnit,
+            if: subjectHasNotMoved,
           },
           {
-            type: 'offset',
-            offset: { q: 0, r: -2, s: 2 },
-            if: {
-              subject: {
-                contains: {
-                  unit: {
-                    aspects: {
-                      hasMoved: {
-                        value: false,
-                      },
-                    },
-                  },
-                },
-              },
-            },
+            type: 'direction',
+            direction: 2,
+            range: 1,
+            isBlocking: targetIsUnit,
+            if: subjectHasMoved,
           },
         ],
       },

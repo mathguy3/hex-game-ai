@@ -1,9 +1,19 @@
 import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
+import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
+import { targetIsNotUnit } from './helpers/targetIsNotUnit';
+import { targetIsUnit } from './helpers/targetIsUnit';
 
-const rookAttackMove = {
-  add: [{ type: 'orthogonal' as const, range: 10 }],
-};
+const getRookAttackMove = (attack?: boolean) => ({
+  add: [
+    {
+      type: 'orthogonal' as const,
+      range: 10,
+      tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
+      isBlocking: attack ? undefined : targetIsUnit,
+    },
+  ],
+});
 
 export const rook: UnitDefinition = {
   type: 'unit',
@@ -12,7 +22,7 @@ export const rook: UnitDefinition = {
   interactions: [
     {
       type: 'movement',
-      tiles: rookAttackMove,
+      tiles: getRookAttackMove(),
       actions: [
         {
           type: 'movement',
@@ -22,7 +32,7 @@ export const rook: UnitDefinition = {
     },
     {
       type: 'attack',
-      tiles: rookAttackMove,
+      tiles: getRookAttackMove(true),
       actions: [
         {
           type: 'attack',

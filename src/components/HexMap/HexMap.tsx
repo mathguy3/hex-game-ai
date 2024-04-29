@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import { useState } from 'react';
 import { isDev } from '../../configuration/constants';
 import { gameDefinition } from '../../configuration/gameDefinition';
+import { Tile } from '../../types';
 import { ActionState } from '../../types/game';
 import { HexItem, MapState } from '../../types/map';
 import { getSelectedHex } from '../../utils/actionState/getSelectedHex';
@@ -17,15 +18,15 @@ import { MapFrame } from './MapFrame';
 import { SelectionInfo } from './SelectionInfo';
 import initialMap from './generation/initialMap';
 
-const generatedRange = { type: 'range' as const, range: 7 };
+const generatedRange = { type: 'range' as const, range: 5 };
 const allowMultiSelect = false;
 const origin = { q: 0, r: 0, s: 0 };
-const generateMap = false;
+const generateMap = true;
 export const HexMap = () => {
   const pressedKeys = useKeys();
   const [mapState, setMapState] = useState<MapState>(
     generateMap
-      ? mapRecord(rangeSimple(generatedRange, origin), (x) => ({
+      ? mapRecord(rangeSimple(generatedRange, origin, true), (x: Tile) => ({
           type: 'hex',
           key: x.key,
           kind: x.coordinates.q === -2 ? 'river' : 'hex',

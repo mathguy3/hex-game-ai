@@ -1,9 +1,19 @@
 import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
+import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
+import { targetIsNotUnit } from './helpers/targetIsNotUnit';
+import { targetIsUnit } from './helpers/targetIsUnit';
 
-const bishopAttackMove = {
-  add: [{ type: 'diagonal' as const, range: 10 }],
-};
+const getBishopAttackMove = (attack?: boolean) => ({
+  add: [
+    {
+      type: 'diagonal' as const,
+      range: 10,
+      tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
+      isBlocking: attack ? undefined : targetIsUnit,
+    },
+  ],
+});
 
 export const bishop: UnitDefinition = {
   type: 'unit',
@@ -12,7 +22,7 @@ export const bishop: UnitDefinition = {
   interactions: [
     {
       type: 'movement',
-      tiles: bishopAttackMove,
+      tiles: getBishopAttackMove(),
       actions: [
         {
           type: 'movement',
@@ -22,7 +32,7 @@ export const bishop: UnitDefinition = {
     },
     {
       type: 'attack',
-      tiles: bishopAttackMove,
+      tiles: getBishopAttackMove(true),
       actions: [
         {
           type: 'attack',

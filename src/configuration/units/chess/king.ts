@@ -1,9 +1,22 @@
 import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
+import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
+import { targetIsNotUnit } from './helpers/targetIsNotUnit';
 
-const kingAttackMove = {
-  add: [{ type: 'orthogonal' as const, range: 1 }],
-};
+const getKingAttackMove = (attack?: boolean) => ({
+  add: [
+    {
+      type: 'orthogonal' as const,
+      range: 1,
+      tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
+    },
+    {
+      type: 'diagonal' as const,
+      range: 1,
+      tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
+    },
+  ],
+});
 
 export const king: UnitDefinition = {
   type: 'unit',
@@ -12,7 +25,7 @@ export const king: UnitDefinition = {
   interactions: [
     {
       type: 'movement',
-      tiles: kingAttackMove,
+      tiles: getKingAttackMove(),
       actions: [
         {
           type: 'movement',
@@ -22,7 +35,7 @@ export const king: UnitDefinition = {
     },
     {
       type: 'attack',
-      tiles: kingAttackMove,
+      tiles: getKingAttackMove(true),
       actions: [
         {
           type: 'attack',

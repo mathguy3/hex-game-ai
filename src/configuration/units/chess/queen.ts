@@ -1,12 +1,25 @@
 import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
+import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
+import { targetIsNotUnit } from './helpers/targetIsNotUnit';
+import { targetIsUnit } from './helpers/targetIsUnit';
 
-const queenAttackMove = {
+const getQueenAttackMove = (attack?: boolean) => ({
   add: [
-    { type: 'orthogonal' as const, range: 10 },
-    { type: 'diagonal' as const, range: 10 },
+    {
+      type: 'orthogonal' as const,
+      range: 10,
+      tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
+      isBlocking: attack ? undefined : targetIsUnit,
+    },
+    {
+      type: 'diagonal' as const,
+      range: 10,
+      tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
+      isBlocking: attack ? undefined : targetIsUnit,
+    },
   ],
-};
+});
 
 export const queen: UnitDefinition = {
   type: 'unit',
@@ -15,7 +28,7 @@ export const queen: UnitDefinition = {
   interactions: [
     {
       type: 'movement',
-      tiles: queenAttackMove,
+      tiles: getQueenAttackMove(),
       actions: [
         {
           type: 'movement',
@@ -25,7 +38,7 @@ export const queen: UnitDefinition = {
     },
     {
       type: 'attack',
-      tiles: queenAttackMove,
+      tiles: getQueenAttackMove(true),
       actions: [
         {
           type: 'attack',

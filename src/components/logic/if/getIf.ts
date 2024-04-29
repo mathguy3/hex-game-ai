@@ -27,6 +27,8 @@ type IFContext = {
   state: any;
 };
 
+const log = (...args: any[]) => console.log(...args);
+
 const defaultIf = { type: 'if' as const, path: '', state: {} };
 const defaultSet = { type: 'set' as const, path: '', state: {} };
 
@@ -37,7 +39,7 @@ export const evalSet = (ifDef: IF, context?: Partial<IFContext>) => {
 export const evalIf = (ifDef: IF, context?: Partial<IFContext>) => {
   const result = getIf(ifDef, { ...defaultIf, ...context });
   if (context.type === 'if') {
-    console.log('result of ', ifDef, context, result);
+    log('result of ', ifDef, context, result);
   }
   return result;
 };
@@ -93,7 +95,7 @@ const evalIfTarget = (
   let [field, ifValue] = Object.entries(ifTarget)[0];
   let nextTarget = { parent: getValue(target), field };
 
-  console.log(
+  log(
     'Our current target is the field -',
     field,
     '- and for data, we get that from',
@@ -104,7 +106,7 @@ const evalIfTarget = (
     !(context.type == 'eval' || context.type == 'if') || !!nextTarget.parent;
 
   if (context.type == 'set' && nextTarget.parent === undefined) {
-    console.log('target is undefined, auxiliary measures');
+    log('target is undefined, auxiliary measures');
     nextTarget.parent = {};
     if (!target.parent[target.field]) {
       target.parent[target.field] = nextTarget.parent;
@@ -112,7 +114,7 @@ const evalIfTarget = (
   }
 
   if (isTarget(ifValue) && canTarget) {
-    console.log(
+    log(
       "We're not going to save that value, we're going to retarget to",
       ifValue,
       getValue(nextTarget)
@@ -120,19 +122,19 @@ const evalIfTarget = (
     return evalIfTarget(ifValue, nextTarget, addPath(context, field));
   } else {
     if (!canTarget) {
-      console.log('Cannot target undefined target, skipping to evaluation');
+      log('Cannot target undefined target, skipping to evaluation');
     }
-    console.log('Deciding', ifValue, 'is NOT a target', nextTarget);
+    log('Deciding', ifValue, 'is NOT a target', nextTarget);
     let valueResult;
     let operation = 'default';
     if (isOperation(ifValue)) {
-      console.log('is operation!', ifValue, context.type, nextTarget);
+      log('is operation!', ifValue, context.type, nextTarget);
       // Skip the current target in this case, since this is just an operation selector
       const [nextField, nextValue] = Object.entries(ifValue)[0];
       operation = nextField;
       const nextNextTarget = { parent: getValue(nextTarget), field: nextField };
 
-      console.log(
+      log(
         'operation active!',
         nextField,
         nextValue,
@@ -144,7 +146,7 @@ const evalIfTarget = (
         nextNextTarget,
         addPath(setEval(context), nextField)
       );
-      console.log('operation value result!', valueResult);
+      log('operation value result!', valueResult);
     } else {
       valueResult = evalIfValue(
         ifValue,
@@ -153,8 +155,8 @@ const evalIfTarget = (
       );
     }
 
-    console.log('Value of', ifValue, nextTarget, 'is', valueResult);
-    console.log('returning value', valueResult, 'result of', context.type);
+    log('Value of', ifValue, nextTarget, 'is', valueResult);
+    log('returning value', valueResult, 'result of', context.type);
     switch (context.type) {
       case 'eval':
         return valueResult;
@@ -224,10 +226,11 @@ const evalIfValue = (
     return ifValue;
   }
 
+  log(ifValue);
   throw new Error('IFTarget passed to if value processor');
 };
 const setValue = (target: TargetContext, result: any, operation: string) => {
-  console.log('setting', result, 'onto', target, target);
+  log('setting', result, 'onto', target, target);
   target.parent[target.field] = result;
 };
 
@@ -241,8 +244,8 @@ const ifMatch = (target: TargetContext, result: any, operation: string) => {
       return !isEqual;
   }
   const isMatch = (!targetValue && !result) || targetValue == result;
-  console.log('comparing', targetValue, '==', result, '===', isMatch);
-  console.log(target);
+  log('comparing', targetValue, '==', result, '===', isMatch);
+  log(target);
   return isMatch;
 };
 
@@ -320,7 +323,7 @@ const isOperation = (ifValue: IFValue) => {
 
 const addPath = (context: IFContext, path: string) => {
   const nextPath = context.path + (context.path.length ? '.' : '') + path;
-  console.log('path:', nextPath);
+  log('path:', nextPath);
   return {
     ...context,
     path: nextPath,

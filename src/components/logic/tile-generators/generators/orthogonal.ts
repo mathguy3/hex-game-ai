@@ -1,21 +1,24 @@
 import { Coordinates } from '../../../../types';
 import { OrthogonalTileSelect } from '../../../../types/actions/tiles';
+import { applyRecord } from '../../../../utils/record/applyRecord';
 import { TileGenerator } from '../types';
-import { coordsToTiles } from '../utils/coordsToTiles';
-import { getDirection } from '../utils/getNeighbor';
-import { vectorAdd } from '../utils/vectorAdd';
-import { vectorScale } from '../utils/vectorScale';
+import { direction } from './direction';
 
 export const orthogonal: TileGenerator<OrthogonalTileSelect> = (
   tileSet: OrthogonalTileSelect,
-  coords: Coordinates
+  coords: Coordinates,
+  ...args
 ) => {
-  const { range } = tileSet;
-  let finalSet = [];
-  for (let direction = 0; direction < 6; direction++) {
-    for (let r = 1; r <= range; r++) {
-      finalSet.push(vectorAdd(coords, vectorScale(getDirection(direction), r)));
-    }
+  const finalSet = {};
+  for (let dir = 0; dir < 6; dir++) {
+    applyRecord(
+      finalSet,
+      direction(
+        { ...tileSet, type: 'direction', direction: dir },
+        coords,
+        ...args
+      )
+    );
   }
-  return coordsToTiles(finalSet);
+  return finalSet;
 };

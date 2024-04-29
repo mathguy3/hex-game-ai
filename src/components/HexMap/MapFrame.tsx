@@ -4,10 +4,10 @@ import { gridColumnWidth, gridRowHeight } from '../../configuration/constants';
 
 const generatedRange = 3;
 export const MapFrame = ({ children }: React.PropsWithChildren) => {
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(0.4);
   const offset = useRef({
-    left: (generatedRange + 0.5) * gridColumnWidth,
-    top: -(generatedRange + 0.5) * gridRowHeight,
+    left: (generatedRange + 0.5) * gridColumnWidth + 100,
+    top: (generatedRange + 0.5) * gridRowHeight - 105,
   });
   const mapRef = useRef<HTMLElement>();
   const innerRef = useRef<HTMLElement>();
@@ -93,6 +93,7 @@ export const MapFrame = ({ children }: React.PropsWithChildren) => {
         alignItems="center"
         position="absolute"
         ref={innerRef}
+        style={{ transform: `scale(${scale})` }}
       >
         {children}
       </Box>

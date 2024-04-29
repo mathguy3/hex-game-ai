@@ -24,7 +24,10 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
     console.log(item);
   }
   const s = coordinates.s ?? -(coordinates.q + coordinates.r);
-  console.assert(coordinates.q + coordinates.r + s === 0, 'Invalid coordinate');
+  console.assert(
+    coordinates.q + coordinates.r + s === 0,
+    `Invalid coordinate ${JSON.stringify(coordinates)}`
+  );
 
   const leftOffset = coordinates.q * 0.75 * gridColumnWidth;
   const topOffset = flipYRender
@@ -36,7 +39,8 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
   }, [item, onSelectedRef]);
 
   const preview =
-    Object.values(item.preview)[0] ??
+    item.preview['attack'] ??
+    item.preview['movement'] ??
     ({
       type: 'none',
       color: isSelected ? colors.hex.selection : '#000',
@@ -44,7 +48,7 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
     } as Preview);
 
   if (Object.keys(item.preview).length) {
-    console.log('preview!', item.key, item.preview);
+    //console.log('preview!', item.key, item.preview);
   }
 
   //console.log('rendering', coordinates, item.contains);

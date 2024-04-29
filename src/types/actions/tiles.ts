@@ -5,6 +5,12 @@ import { IF } from './if';
 interface TileSelectBase {
   if?: IF;
   tileIf?: IF;
+  isBlocking?: IF;
+}
+export interface DirectionTileSelect extends TileSelectBase {
+  type: 'direction';
+  direction: number;
+  range: number;
 }
 
 export interface DiagonalTileSelect extends TileSelectBase {
@@ -45,6 +51,7 @@ export interface AspectTileSelect extends TileSelectBase {
   aspect: Aspect;
 }
 export type TileSelect =
+  | DirectionTileSelect
   | DiagonalTileSelect
   | OrthogonalTileSelect
   | DistanceTileSelect

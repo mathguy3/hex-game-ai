@@ -1,5 +1,6 @@
 export * from './generators/aspect';
 export * from './generators/diagonal';
+export * from './generators/direction';
 export * from './generators/distance';
 export * from './generators/kind';
 export * from './generators/neighbors';

@@ -9,12 +9,12 @@ export function defaultIsValidTile(
 ) {
   const isStartingHex = isMatch(tile.coordinates, target);
   const isPartOfMap = !!actionState.mapState[tile.key];
-  console.log(
+  /*console.log(
     'is valid?',
     tile.key,
     isStartingHex,
     isPartOfMap,
     !isStartingHex && isPartOfMap
-  );
+  );*/
   return !isStartingHex && isPartOfMap;
 }

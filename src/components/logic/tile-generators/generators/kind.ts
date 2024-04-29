@@ -5,7 +5,7 @@ import { TileGenerator } from '../types';
 
 export const kind: TileGenerator<KindTileSelect> = (
   tileSelect,
-  target,
+  subject,
   actionState,
   isValidTile,
   initialSearch

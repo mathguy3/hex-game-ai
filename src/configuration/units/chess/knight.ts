@@ -1,15 +1,18 @@
 import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
+import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
+import { targetIsNotUnit } from './helpers/targetIsNotUnit';
 
-const knightAttackMove = {
+const getKnightAttackMove = (attack?: boolean) => ({
   add: [
     {
       type: 'distance' as const,
       range: 3,
+      tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
     },
   ],
   not: [{ type: 'orthogonal' as const, range: 10 }],
-};
+});
 
 export const knight: UnitDefinition = {
   type: 'unit',
@@ -18,7 +21,7 @@ export const knight: UnitDefinition = {
   interactions: [
     {
       type: 'movement',
-      tiles: knightAttackMove,
+      tiles: getKnightAttackMove(),
       actions: [
         {
           type: 'movement',
@@ -28,7 +31,7 @@ export const knight: UnitDefinition = {
     },
     {
       type: 'attack',
-      tiles: knightAttackMove,
+      tiles: getKnightAttackMove(true),
       actions: [
         {
           type: 'attack',
