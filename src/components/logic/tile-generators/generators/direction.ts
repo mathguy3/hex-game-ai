@@ -24,6 +24,8 @@ export const direction: TileGenerator<DirectionTileSelect> = (
       key: nextKey,
     };
 
+    finalSet[nextKey] = nextTile;
+
     if (
       isBlocking &&
       (!defaultIsValidTile(nextTile, subject, actionState) ||
@@ -34,7 +36,6 @@ export const direction: TileGenerator<DirectionTileSelect> = (
     ) {
       break;
     }
-    finalSet[nextKey] = nextTile;
   }
   return finalSet;
 };

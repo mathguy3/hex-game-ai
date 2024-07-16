@@ -1,15 +1,20 @@
 export type IFCompare = {
+  equal?: IFValue;
   not?: IFValue;
   greaterThan?: IFValue; // numbers only
   lessThan?: IFValue; // numbers only
-  greaterEqualThan?: IFValue; // numbers only
-  lessEqualThan?: IFValue; // numbers only
+  greaterThanEqual?: IFValue; // numbers only
+  lessThanEqual?: IFValue; // numbers only
 };
 export type IFMath = {
   add?: IFValue; // numbers only
   subtract?: IFValue; // numbers only
-  multiplyBy?: IFValue; // numbers only
-  divideBy?: IFValue; // numbers only
+  multiply?: IFValue; // numbers only
+  divide?: IFValue; // numbers only
+};
+export type IFKeyValue = {
+  key: IFValue;
+  value: IFValue;
 };
 
 export type IFNumber = number;
@@ -45,31 +50,32 @@ export type IFValue =
   | IFBoolean
   | IFVector
   | IFObject
+  | IFTargetSelector
+  | IFKeyValue
   | IFArray
   | IFCompare
   | IFConstValue
   | IFMath
   | IF;
-export type IFTarget = IFObject;
 
 export type IFTargetSelector =
   | {
-      target: IFTarget;
+      target: IFValue;
     }
   | {
-      subject: IFTarget;
+      subject: IFValue;
     }
   | {
-      context: IFTarget;
+      context: IFValue;
     };
 
 export type IF =
   | IFTargetSelector
   | {
-      or: IF[]; // inclusive or
+      or: IFValue[]; // inclusive or
     }
   | {
-      and: IF[]; // exclusive and
+      and: IFValue[]; // exclusive and
     };
 
 export const test2: IF = {

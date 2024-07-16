@@ -8,13 +8,14 @@ export const showPreview = (actionState: ActionState): ActionState => {
   console.log('Clearing old previews', actionState.previewState);
   // Clear old state
   clearPreviews(actionState);
-  let { mapState, selectionState, previewState, targetHex } = actionState;
+  let { mapState, selectionState, previewState, targetHex, gameState } =
+    actionState;
   const selectedHex = Object.values(selectionState)[0];
 
   console.log('selected hex', previewState, selectionState, selectedHex);
   if (!selectedHex || !selectedHex.contains.unit || !selectedHex.isSelected) {
     console.log('Unit not selected, skipping preview');
-    return { mapState, selectionState, previewState, targetHex };
+    return { mapState, selectionState, previewState, targetHex, gameState };
   }
   const targetUnit = selectedHex.contains.unit;
   const generatedTiles = generateUnitPreview(
@@ -36,5 +37,5 @@ export const showPreview = (actionState: ActionState): ActionState => {
 
   console.log('updated preview state', selectionState, previewState);
 
-  return { mapState, selectionState, previewState, targetHex };
+  return { mapState, selectionState, previewState, targetHex, gameState };
 };

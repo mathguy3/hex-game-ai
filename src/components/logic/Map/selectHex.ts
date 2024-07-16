@@ -8,7 +8,8 @@ export const selectHex = (
   selectHex?: HexItem,
   isMultiSelect?: boolean
 ): ActionState => {
-  let { mapState, selectionState, previewState, targetHex } = actionState;
+  let { mapState, selectionState, previewState, targetHex, gameState } =
+    actionState;
   let hexToSelect = selectHex ?? targetHex;
   const shouldMultiSelect = isMultiSelect && allowMultiSelect;
   const isSelecting = !selectionState[targetHex.key];
@@ -34,5 +35,5 @@ export const selectHex = (
   // Select item in mapState
   mapState[hexToSelect.key] = hexToSelect;
 
-  return { mapState, selectionState, previewState, targetHex };
+  return { mapState, selectionState, previewState, targetHex, gameState };
 };

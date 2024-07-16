@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { isDev } from '../../configuration/constants';
 import { gameDefinition } from '../../configuration/gameDefinition';
 import { Tile } from '../../types';
-import { ActionState } from '../../types/game';
+import { Action } from '../../types/actions/interactions';
+import { ActionState, GameState } from '../../types/game';
 import { HexItem, MapState } from '../../types/map';
 import { getSelectedHex } from '../../utils/actionState/getSelectedHex';
 import { mapRecord } from '../../utils/record/mapRecord';
@@ -17,6 +18,7 @@ import { Hex } from './Hex/Hex';
 import { MapFrame } from './MapFrame';
 import { SelectionInfo } from './SelectionInfo';
 import initialMap from './generation/initialMap';
+import { initialUnits } from './generation/initialPlacement';
 
 const generatedRange = { type: 'range' as const, range: 5 };
 const allowMultiSelect = false;
@@ -24,6 +26,9 @@ const origin = { q: 0, r: 0, s: 0 };
 const generateMap = true;
 export const HexMap = () => {
   const pressedKeys = useKeys();
+  const [gameState, setGameState] = useState<GameState>({
+    player: { team1: { properties: {} }, team2: { properties: {} } },
+  });
   const [mapState, setMapState] = useState<MapState>(
     generateMap
       ? mapRecord(rangeSimple(generatedRange, origin, true), (x: Tile) => ({
@@ -33,7 +38,7 @@ export const HexMap = () => {
           aspects: {},
           coordinates: x.coordinates,
           isSelected: false,
-          contains: {},
+          contains: { unit: initialUnits[x.key] },
           preview: {},
         }))
       : (initialMap as MapState)
@@ -53,6 +58,7 @@ export const HexMap = () => {
       selectionState,
       previewState,
       targetHex: hex,
+      gameState,
     };
     if (!isMultiSelect && isPreview) {
       console.log('Doing action for', hex, getSelectedHex(actionState));
@@ -85,6 +91,7 @@ export const HexMap = () => {
           evalSet(set, {
             subject: { parent: mapState, field: selectedHexKey },
             target: { parent: mapState, field: hex.key },
+            context: { parent: actionState, field: 'gameState' },
           });
           console.log(
             'POST SET',
@@ -92,6 +99,21 @@ export const HexMap = () => {
             mapState[selectedHexKey],
             mapState[hex.key]
           );
+        }
+      }
+      const playerPostInteractions =
+        gameDefinition.player['team1']?.postInteraction.filter(
+          (x): x is Action => 'set' in x
+        ) ?? [];
+      for (const action of playerPostInteractions) {
+        for (const set of action.set) {
+          console.log('doing post interaction', action, set);
+          evalSet(set, {
+            subject: { parent: mapState, field: selectedHexKey },
+            target: { parent: mapState, field: hex.key },
+            context: { parent: actionState, field: 'gameState' },
+          });
+          console.log(actionState.gameState);
         }
       }
       actionState = selectHex(actionState, mapState[hex.key], isMultiSelect);
@@ -105,14 +127,14 @@ export const HexMap = () => {
     }
     setSelectionState(actionState.selectionState);
     setPreviewState(actionState.previewState);
-    console.log(actionState.mapState['-3.6.-3']);
+    setGameState(actionState.gameState);
     setMapState({ ...actionState.mapState });
   });
 
   return (
     <>
       {isDev && (
-        <Box position="absolute" top="10px" right="10px">
+        <Box position="absolute" top="10px" right="10px" zIndex={1000}>
           {Object.values(selectionState).map((x) => (
             <SelectionInfo key={x.key} item={x} />
           ))}

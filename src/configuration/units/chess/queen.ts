@@ -10,13 +10,13 @@ const getQueenAttackMove = (attack?: boolean) => ({
       type: 'orthogonal' as const,
       range: 10,
       tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
-      isBlocking: attack ? undefined : targetIsUnit,
+      isBlocking: targetIsUnit,
     },
     {
       type: 'diagonal' as const,
       range: 10,
       tileIf: attack ? targetIsEnemyUnit : targetIsNotUnit,
-      isBlocking: attack ? undefined : targetIsUnit,
+      isBlocking: targetIsUnit,
     },
   ],
 });

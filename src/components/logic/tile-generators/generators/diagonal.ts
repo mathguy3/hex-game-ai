@@ -24,6 +24,8 @@ export const diagonal: TileGenerator<DiagonalTileSelect> = (
         key: nextKey,
       };
 
+      finalSet[nextKey] = nextTile;
+
       if (
         isBlocking &&
         (!defaultIsValidTile(nextTile, subject, actionState) ||
@@ -34,7 +36,6 @@ export const diagonal: TileGenerator<DiagonalTileSelect> = (
       ) {
         break;
       }
-      finalSet[nextKey] = nextTile;
     }
   }
   return finalSet;

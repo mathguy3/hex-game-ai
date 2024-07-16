@@ -1,14 +1,15 @@
-import {
+/*import {
   IF,
   IFArrayValue,
   IFBooleanValue,
   IFCompare,
   IFFloatValue,
   IFIntValue,
+  IFKeyValue,
   IFMath,
+  IFObject,
   IFObjectValue,
   IFStringValue,
-  IFTarget,
   IFTargetSelector,
   IFValue,
   IFVector,
@@ -16,13 +17,15 @@ import {
 
 type TargetContext = {
   parent: any;
-  field: any;
+  field: string;
 };
-type IFContext = {
+export type IFContext = {
   type: 'if' | 'set' | 'eval';
+  ifValue?: IFValue;
   subject?: TargetContext;
   target?: TargetContext;
   context?: TargetContext;
+  selected?: TargetContext;
   path: string;
   state: any;
 };
@@ -32,63 +35,147 @@ const log = (...args: any[]) => console.log(...args);
 const defaultIf = { type: 'if' as const, path: '', state: {} };
 const defaultSet = { type: 'set' as const, path: '', state: {} };
 
-export const evalSet = (ifDef: IF, context?: Partial<IFContext>) => {
-  return getIf(ifDef, { ...defaultSet, ...context });
+export const evalSet = (ifValue: IF, context?: Partial<IFContext>) => {
+  return getIf({ ...defaultSet, ...context, ifValue });
 };
 
-export const evalIf = (ifDef: IF, context?: Partial<IFContext>) => {
-  const result = getIf(ifDef, { ...defaultIf, ...context });
+export const evalIf = (ifValue: IF, context?: Partial<IFContext>) => {
+  console.log('eval start', ifValue, context);
+  const result = getIf({ ...defaultIf, ...context, ifValue });
   if (context.type === 'if') {
-    log('result of ', ifDef, context, result);
+    log('result of ', context, result);
   }
   return result;
 };
 
-const getIf = (ifDef: IF, context: IFContext) => {
-  return 'and' in ifDef
-    ? getAndIf(ifDef, context)
-    : 'or' in ifDef
-    ? getOrIf(ifDef, context)
-    : evalSingleIf(ifDef, context);
+const getIf = (context: IFContext) => {
+  const ifDef = context.ifValue;
+  if (!isIF(ifDef)) {
+    throw new Error(`Not an if ${JSON.stringify(ifDef)}`);
+  }
+  const { field } = getFields(ifDef);
+
+  const contextMap: Record<string, (c: IFContext) => any> = {
+    and: (c) =>
+      'and' in ifDef &&
+      ifDef.and.every((ifValue) => getIfValue({ ...c, ifValue })),
+    or: (c) =>
+      'or' in ifDef &&
+      ifDef.or.some((ifValue) => getIfValue({ ...c, ifValue })),
+    target: (c) => getIfValue(selectField(c, 'target')),
+    subject: (c) => getIfValue(selectField(c, 'subject')),
+    context: (c) => getIfValue(selectField(c, 'context')),
+  };
+  return contextMap[field](context);
 };
 
-const getAndIf = (ifAnd: IF, context: IFContext) => {
-  if (!('and' in ifAnd)) {
-    throw new Error('No and in def');
+const getIfValue = (context: IFContext) => {
+  const { ifValue, target } = context;
+  if (isSimpleValue(ifValue)) {
+    return evalSimpleValue(ifValue, context);
+  }
+  if (!Object.keys(ifValue).length) {
+    return ifValue;
+  }
+  const { field } = getFields(ifValue);
+
+  const ifMap: Record<string, (c: IFContext) => any> = {
+    or: (c) => getIf(c),
+    and: (c) => getIf(c),
+    target: (c) => getIf(c),
+    subject: (c) => getIf(c),
+    context: (c) => getIf(c),
+  };
+
+  let ifResult = ifMap[field]?.(context);
+  let isOperation = false;
+  if (ifResult === undefined) {
+    if (isKeyValue(ifValue)) {
+      ifResult = getKeyValue(context);
+    } else if (isIfCompare(ifValue)) {
+      ifResult = evalIfCompare(ifValue, target, context); // operation
+      isOperation = true;
+    } else if (isIfMath(ifValue)) {
+      ifResult = evalIfMath(ifValue, target, context); // operation
+      isOperation = true;
+    } else if (isIF(ifValue)) {
+      ifResult = getIf(context);
+    } else if (isIfVector(ifValue) || Array.isArray(ifValue)) {
+      ifResult = ifValue;
+    }
   }
 
-  return ifAnd.and.every((x) => getIf(x, context));
-};
-
-const getOrIf = (ifAnd: IF, context: IFContext) => {
-  if (!('or' in ifAnd)) {
-    throw new Error('No or in def');
+  if (context.type === 'set') {
   }
 
-  return ifAnd.or.some((x) => getIf(x, context));
+  // TODO handle differences with if/set here
+
+  return ifResult;
 };
 
-const evalSingleIf = (
-  ifTargetSelector: IFTargetSelector,
+const getKeyValue = (context: IFContext) => {
+  const { ifValue } = context;
+  if (!isKeyValue(ifValue)) {
+    throw new Error('how dare you');
+  }
+  const { key, value } = ifValue;
+  const keyResult = getIfValue(selectField(context, 'key'));
+  // Use the referenced key to select the apropriate value from the model
+  const keyedContext = { ...context, ifValue: { key, [keyResult]: value } };
+  return getIfValue(selectField(keyedContext, keyResult));
+};
+
+const getObjectValue = (ifValue: IFValue, context: IFContext) => {
+  if (!isTarget(ifValue)) {
+    throw new Error(`Not a valid target ${JSON.stringify(ifValue)}`);
+  }
+  const field = Object.keys(ifValue)[0];
+  const nextTarget = getNextTarget(context, field);
+  if (context.type === 'if') {
+    const { compared, operation } = context.state;
+    const nextValue = evalIfValue2(selectField(context, field));
+    if (context.state.compared) {
+      return nextValue;
+    }
+    return compareOperation();
+  }
+  //switch operation
+  // If
+  // get future value
+  // if !state.compared
+  // use state.operation to compare
+  // else return result
+  // set
+  // get future value
+  // set to this item and return updated item
+};
+
+const evalSimpleValue = (
+  ifValue: string | number | boolean,
   context: IFContext
 ) => {
-  const targetKey = getTargetKey(ifTargetSelector);
-  if (!context[targetKey]) {
-    throw new Error(
-      `Incorrect definition. Expected "${targetKey}" on context based on ${JSON.stringify(
-        ifTargetSelector
-      )}`
-    );
+  if (typeof ifValue === 'number' || typeof ifValue === 'boolean') {
+    return ifValue;
   }
-  return evalIfTarget(
-    ifTargetSelector[targetKey],
-    context[targetKey],
-    addPath(context, targetKey)
-  );
+  if (typeof ifValue === 'string') {
+    const fieldValue = getValue(context.selected);
+    const valueMap = {
+      [IFFloatValue]: (v) => parseFloat(v),
+      [IFIntValue]: (v) => parseInt(v),
+      [IFBooleanValue]: (v) => Boolean(v),
+      [IFStringValue]: (v) => v,
+      [IFObjectValue]: (v) => v,
+      [IFArrayValue]: (v) => v,
+    };
+
+    return valueMap[ifValue]?.(fieldValue) ?? ifValue;
+  }
+
+  throw new Error(`Invalid ifValue ${JSON.stringify(ifValue)}`);
 };
 
 const evalIfTarget = (
-  ifTarget: IFTarget,
+  ifTarget: IFObject,
   target: TargetContext,
   context: IFContext
 ) => {
@@ -113,6 +200,27 @@ const evalIfTarget = (
     }
   }
 
+  if (isKeyValue(ifValue)) {
+    // const field = 'player'
+    // const ifValue = { key: {etc..}, value: {etc..}}
+    const [keyField, keyValue] = Object.entries(ifValue.key)[0];
+    const keyNextTarget = { parent: getValue(nextTarget), field: keyField };
+
+    const keyIf = ifValue.key;
+    const keyEvalValue = evalIfValue(
+      keyValue,
+      keyNextTarget,
+      addPath(setEval(context), keyField)
+    );
+    console.log('Got key value', keyValue);
+    const [valueField, valueValue] = Object.entries(ifValue.value)[0];
+    const valueNextTarget = { parent: getValue(nextTarget), field: valueField };
+    return evalIfValue(
+      valueValue,
+      valueNextTarget,
+      addPath(setEval(context), field)
+    );
+  }
   if (isTarget(ifValue) && canTarget) {
     log(
       "We're not going to save that value, we're going to retarget to",
@@ -249,11 +357,17 @@ const ifMatch = (target: TargetContext, result: any, operation: string) => {
   return isMatch;
 };
 
+const getFields = (ifValue: IFValue) => {
+  const fields = Object.keys(ifValue);
+  const field = fields[0];
+  return { fields, field };
+};
+
 const evalIfMath = (
   ifMath: IFMath,
   target: TargetContext,
   context: IFContext
-) => {
+): number => {
   if (ifMath.add || ifMath.subtract) {
     let result = getValue(target);
     result = ifMath.add
@@ -282,10 +396,10 @@ const evalIfCompare = (
   ifCompare: IFCompare,
   target: TargetContext,
   context: IFContext
-) => {
+): boolean => {
   const fieldValue = getValue(target);
   const not =
-    !ifCompare.greaterThan ||
+    !ifCompare.not ||
     fieldValue !== evalIfValue(ifCompare.not, target, context);
   const greaterThan =
     !ifCompare.greaterThan ||
@@ -302,7 +416,22 @@ const evalIfCompare = (
   return not && greaterThan && lessThan && greaterEqualThan && lessEqualThan;
 };
 
-const isTarget = (ifValue: IFValue): ifValue is IFTarget => {
+const isSimpleValue = (
+  ifValue: IFValue
+): ifValue is string | number | boolean => {
+  return (
+    typeof ifValue === 'string' ||
+    typeof ifValue === 'boolean' ||
+    typeof ifValue === 'number'
+  );
+};
+
+const isKeyValue = (ifValue: IFValue): ifValue is IFKeyValue => {
+  const isObject = typeof ifValue === 'object';
+  return isObject && 'key' in ifValue && 'value' in ifValue;
+};
+
+const isTarget = (ifValue: IFValue): ifValue is IFObject => {
   const isObject = typeof ifValue === 'object';
   const isTarget =
     isObject &&
@@ -321,11 +450,22 @@ const isOperation = (ifValue: IFValue) => {
   return isObject && (isIfCompare(ifValue) || isIfMath(ifValue));
 };
 
-const addPath = (context: IFContext, path: string) => {
+const getNextTarget = (context: IFContext, path: string) => {
+  return context[path]
+    ? { parent: context, field: path }
+    : context.selected?.[path]
+    ? { parent: context.selected, field: path }
+    : undefined;
+};
+
+const selectField = (context: IFContext, path: string): IFContext => {
   const nextPath = context.path + (context.path.length ? '.' : '') + path;
   log('path:', nextPath);
+  const nextTarget = getNextTarget(context, path);
   return {
     ...context,
+    ifValue: context.ifValue[path],
+    selected: nextTarget,
     path: nextPath,
   };
 };
@@ -385,3 +525,4 @@ function isIF(ifValue: IFValue): ifValue is IF {
       'context' in ifValue)
   );
 }
+*/

@@ -4,7 +4,9 @@ import { Coordinates, Tile } from '../../../../types';
 import { InteractionType } from '../../../../types/actions/interactions';
 import { Preview } from '../../../../types/actions/preview';
 import { ActionState } from '../../../../types/game';
+import { getKey } from '../../../../utils/coordinates/getKey';
 import { mapApplyIndex } from '../../../../utils/record/mapApplyIndex';
+import { evalIf } from '../../if/getIf';
 import { generateTileSet } from '../hex/generateTileSet';
 
 type PreviewTile = { tile: Tile; preview: Record<string, Preview> };
@@ -21,6 +23,14 @@ export const generateUnitPreview = (
   }
   for (const interaction of unitDefinition.interactions) {
     console.log('Preview for', interaction.type);
+    if (
+      interaction.if &&
+      !evalIf(interaction.if, {
+        subject: { parent: actionState.mapState, field: getKey(coordinates) },
+      })
+    ) {
+      continue;
+    }
     applyPreviewTiles(
       previewTiles,
       generateTileSet(interaction.tiles, coordinates, actionState),

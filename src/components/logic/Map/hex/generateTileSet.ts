@@ -5,7 +5,7 @@ import { getKey } from '../../../../utils/coordinates/getKey';
 import { diffRecord } from '../../../../utils/record/diffRecord';
 import { intersectRecords } from '../../../../utils/record/intersectRecords';
 import { mapToRecord } from '../../../../utils/record/mapToRecord';
-import { evalIf } from '../../if/getIf';
+import { getIf } from '../../if/if-engine/modules/getIf';
 import { generateTiles } from './generateTiles';
 
 export function generateTileSet(
@@ -16,7 +16,8 @@ export function generateTileSet(
   const tileAddsToUse = tileGen.add.filter(
     (x) =>
       !x.if ||
-      evalIf(x.if, {
+      getIf({
+        ifValue: x.if,
         subject: { parent: actionState.mapState, field: getKey(subject) },
       })
   );
