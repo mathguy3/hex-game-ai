@@ -2,7 +2,7 @@ import { CoordinateKey, Coordinates, Tile } from '../../../../types';
 import { TileSelect } from '../../../../types/actions/tiles';
 import { ActionState } from '../../../../types/game';
 import { getKey } from '../../../../utils/coordinates/getKey';
-import { evalIf } from '../../if/getIf';
+import { evalIf } from '../../if/if-engine/eval-if';
 import * as tileGenerators from '../../tile-generators';
 import { TileGenerator } from '../../tile-generators/types';
 import { defaultIsValidTile } from './defaultIsValidTile';
@@ -35,8 +35,10 @@ export const generateTiles = (
       isValid &&
       (!tileSelect.tileIf ||
         evalIf(tileSelect.tileIf, {
-          target: { parent: actionState.mapState, field: tile.key },
-          subject: { parent: actionState.mapState, field: getKey(subject) },
+          model: {
+            target: { parent: actionState.mapState, field: tile.key },
+            subject: { parent: actionState.mapState, field: getKey(subject) },
+          },
         }));
 
     return isUniversallyValid && isValid && passesCheck;

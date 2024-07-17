@@ -1,7 +1,7 @@
 import { DiagonalTileSelect } from '../../../../types/actions/tiles';
 import { getKey } from '../../../../utils/coordinates/getKey';
-import { defaultIsValidTile } from '../../Map/hex/defaultIsValidTile';
-import { evalIf } from '../../if/getIf';
+import { evalIf } from '../../if/if-engine/eval-if';
+import { defaultIsValidTile } from '../../map/hex/defaultIsValidTile';
 import { TileGenerator } from '../types';
 import { getDiagonal } from '../utils/getDiagonal';
 import { vectorAdd } from '../utils/vectorAdd';
@@ -30,8 +30,10 @@ export const diagonal: TileGenerator<DiagonalTileSelect> = (
         isBlocking &&
         (!defaultIsValidTile(nextTile, subject, actionState) ||
           evalIf(isBlocking, {
-            subject: { parent: actionState.mapState, field: getKey(subject) },
-            target: { parent: actionState.mapState, field: nextKey },
+            model: {
+              subject: { parent: actionState.mapState, field: getKey(subject) },
+              target: { parent: actionState.mapState, field: nextKey },
+            },
           }))
       ) {
         break;

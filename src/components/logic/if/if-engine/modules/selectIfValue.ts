@@ -59,14 +59,12 @@ export const selectIfValue = (context: IFContext) => {
       ifResult = evalIfCompare(context); // operation
     } else if (isIfMath(ifValue)) {
       ifResult = evalIfMath(context); // operation
-      console.log('result of math', ifResult, context.path);
     } else if (isIF(ifValue)) {
       ifResult = getIf(context);
     } else if (isIfVector(ifValue) || Array.isArray(ifValue)) {
       ifResult = ifValue;
     } else if (isTarget(ifValue)) {
       ifResult = selectIfValue(selectField(context, field));
-      console.log('target result', ifResult, context.path);
     }
 
     if (isIfMath(ifValue)) {

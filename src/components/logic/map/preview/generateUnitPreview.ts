@@ -6,7 +6,7 @@ import { Preview } from '../../../../types/actions/preview';
 import { ActionState } from '../../../../types/game';
 import { getKey } from '../../../../utils/coordinates/getKey';
 import { mapApplyIndex } from '../../../../utils/record/mapApplyIndex';
-import { evalIf } from '../../if/getIf';
+import { evalIf } from '../../if/if-engine/eval-if';
 import { generateTileSet } from '../hex/generateTileSet';
 
 type PreviewTile = { tile: Tile; preview: Record<string, Preview> };
@@ -26,7 +26,9 @@ export const generateUnitPreview = (
     if (
       interaction.if &&
       !evalIf(interaction.if, {
-        subject: { parent: actionState.mapState, field: getKey(coordinates) },
+        model: {
+          subject: { parent: actionState.mapState, field: getKey(coordinates) },
+        },
       })
     ) {
       continue;

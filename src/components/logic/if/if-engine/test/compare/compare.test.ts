@@ -33,25 +33,21 @@ const hasMoreHealth: IF = {
 const unitModel: Partial<IFContext> = {
   model: {
     subject: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team1',
-              health: 20,
-            },
+      contains: {
+        unit: {
+          aspects: {
+            team: 'team1',
+            health: 20,
           },
         },
       },
     },
     target: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team2',
-              health: 20,
-            },
+      contains: {
+        unit: {
+          aspects: {
+            team: 'team2',
+            health: 20,
           },
         },
       },

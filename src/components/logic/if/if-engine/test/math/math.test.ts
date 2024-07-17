@@ -1,7 +1,7 @@
 import { IF, IFIntValue } from '../../../../../../types/actions/if';
 import { evalIf } from '../../eval-if';
 import { evalSet } from '../../eval-set';
-import { evalValue } from '../../evalValue';
+import { evalValue } from '../../eval-value';
 import { IFContext } from '../../types';
 
 const attackMock: IF = {

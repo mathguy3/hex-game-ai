@@ -1,11 +1,9 @@
 export const isFirstTeam = {
   subject: {
-    hex: {
-      contains: {
-        unit: {
-          aspects: {
-            team: 'team1',
-          },
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team1',
         },
       },
     },

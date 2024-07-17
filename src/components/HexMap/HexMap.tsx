@@ -10,9 +10,9 @@ import { getSelectedHex } from '../../utils/actionState/getSelectedHex';
 import { mapRecord } from '../../utils/record/mapRecord';
 import { useKeys } from '../../utils/useKeys';
 import { useUpdatingRef } from '../../utils/useUpdatingRef';
-import { showPreview } from '../logic/Map/preview/showPreview';
-import { selectHex } from '../logic/Map/selectHex';
-import { evalSet } from '../logic/if/getIf';
+import { evalSet } from '../logic/if/if-engine/eval-set';
+import { showPreview } from '../logic/map/preview/showPreview';
+import { selectHex } from '../logic/map/selectHex';
 import { rangeSimple } from '../logic/tile-generators';
 import { Hex } from './Hex/Hex';
 import { MapFrame } from './MapFrame';
@@ -89,9 +89,11 @@ export const HexMap = () => {
         for (const set of action.set) {
           console.log('-----------------');
           evalSet(set, {
-            subject: { parent: mapState, field: selectedHexKey },
-            target: { parent: mapState, field: hex.key },
-            context: { parent: actionState, field: 'gameState' },
+            model: {
+              subject: { parent: mapState, field: selectedHexKey },
+              target: { parent: mapState, field: hex.key },
+              context: { parent: actionState, field: 'gameState' },
+            },
           });
           console.log(
             'POST SET',
@@ -109,9 +111,11 @@ export const HexMap = () => {
         for (const set of action.set) {
           console.log('doing post interaction', action, set);
           evalSet(set, {
-            subject: { parent: mapState, field: selectedHexKey },
-            target: { parent: mapState, field: hex.key },
-            context: { parent: actionState, field: 'gameState' },
+            model: {
+              subject: { parent: mapState, field: selectedHexKey },
+              target: { parent: mapState, field: hex.key },
+              context: { parent: actionState, field: 'gameState' },
+            },
           });
           console.log(actionState.gameState);
         }

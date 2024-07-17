@@ -1,5 +1,5 @@
 import { IF, IFStringValue } from '../../../../../../types/actions/if';
-import { evalValue } from '../../evalValue';
+import { evalValue } from '../../eval-value';
 import { IFContext } from '../../types';
 
 const getTeam: IF = {
