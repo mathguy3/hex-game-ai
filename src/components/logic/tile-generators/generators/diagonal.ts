@@ -7,11 +7,7 @@ import { getDiagonal } from '../utils/getDiagonal';
 import { vectorAdd } from '../utils/vectorAdd';
 import { vectorScale } from '../utils/vectorScale';
 
-export const diagonal: TileGenerator<DiagonalTileSelect> = (
-  tileSet,
-  subject,
-  actionState
-) => {
+export const diagonal: TileGenerator<DiagonalTileSelect> = (tileSet, subject, actionState) => {
   const { range, isBlocking } = tileSet;
   const finalSet = {};
   for (let direction = 0; direction < 6; direction++) {
@@ -30,10 +26,8 @@ export const diagonal: TileGenerator<DiagonalTileSelect> = (
         isBlocking &&
         (!defaultIsValidTile(nextTile, subject, actionState) ||
           evalIf(isBlocking, {
-            model: {
-              subject: { parent: actionState.mapState, field: getKey(subject) },
-              target: { parent: actionState.mapState, field: nextKey },
-            },
+            subject: { parent: actionState.mapState, field: getKey(subject) },
+            target: { parent: actionState.mapState, field: nextKey },
           }))
       ) {
         break;

@@ -1,15 +1,14 @@
 import { IF } from '../../../../types/actions/if';
 import { getIf } from './modules/getIf';
-import { IFContext } from './types';
-import { log } from './util/log';
+import { GameModel } from './types';
 
-const defaultIf = { type: 'if' as const, path: '', state: {}, model: {} };
+const defaultIf = {
+  type: 'if' as const,
+  path: '',
+  state: {},
+};
 
-export const evalIf = (ifValue: IF, context?: Partial<IFContext>) => {
-  log('eval start', ifValue, context);
-  const result = getIf({ ...defaultIf, ...context, ifValue });
-  if (context.type === 'if') {
-    log('result of ', context, result);
-  }
-  return result;
+export const evalIf = (ifValue: IF, model: GameModel) => {
+  //console.log('evalif', ifValue, model);
+  return getIf({ ...defaultIf, model, ifValue });
 };

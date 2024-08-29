@@ -1,15 +1,14 @@
 import { IF } from '../../../../types/actions/if';
 import { getIf } from './modules/getIf';
-import { GameModel, IFContext } from './types';
+import { GameModel } from './types';
 
 const defaultSet = {
   type: 'eval' as const,
   path: '',
   state: {},
-  model: {} as GameModel,
 };
 
-export const evalValue = (ifValue: IF, context?: Partial<IFContext>) => {
-  const initialContext = { ...defaultSet, ...context, ifValue };
+export const evalValue = (ifValue: IF, model: GameModel) => {
+  const initialContext = { ...defaultSet, model, ifValue };
   return getIf(initialContext);
 };

@@ -2,9 +2,9 @@ import { ActionState } from '../../../../types/game';
 import { mapApplyState } from '../../../../utils/record/mapApplyState';
 
 export const clearPreviews = (actionState: ActionState) => {
-  mapApplyState(actionState.mapState, actionState.previewState, (hex) => ({
+  const mapState = mapApplyState(actionState.mapState, actionState.previewState, (hex) => ({
     ...hex,
     preview: {},
   }));
-  actionState.previewState = {};
+  return { ...actionState, mapState, previewState: {} as (typeof actionState)['previewState'] };
 };

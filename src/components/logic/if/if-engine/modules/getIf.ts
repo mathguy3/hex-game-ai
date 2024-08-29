@@ -11,14 +11,10 @@ export const getIf = (context: IFContext) => {
   }
   const { field } = getFields(ifDef);
 
-  console.log('getIf', field);
+  //console.log('getIf', field);
   const contextMap: Record<string, (c: IFContext) => any> = {
-    and: (c) =>
-      'and' in ifDef &&
-      ifDef.and.every((ifValue) => selectIfValue({ ...c, ifValue })),
-    or: (c) =>
-      'or' in ifDef &&
-      ifDef.or.some((ifValue) => selectIfValue({ ...c, ifValue })),
+    and: (c) => 'and' in ifDef && ifDef.and.every((ifValue) => selectIfValue({ ...c, ifValue })),
+    or: (c) => 'or' in ifDef && ifDef.or.some((ifValue) => selectIfValue({ ...c, ifValue })),
     target: (c) => selectIfValue(selectField(c, 'target')),
     subject: (c) => selectIfValue(selectField(c, 'subject')),
     context: (c) => selectIfValue(selectField(c, 'context')),

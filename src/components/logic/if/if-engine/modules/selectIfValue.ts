@@ -7,6 +7,7 @@ import { isSimpleValue } from '../is/isSimpleValue';
 import { isTarget } from '../is/isTarget';
 import { IFContext } from '../types';
 import { getFields } from '../util/getFields';
+import { getNextTarget } from '../util/getNextTarget';
 import { getTargetValue } from '../util/getTargetValue';
 import { selectField } from '../util/selectField';
 import { evalIfCompare } from './evalIfCompare';
@@ -32,10 +33,15 @@ export const selectIfValue = (context: IFContext) => {
     return evalByType[context.type](context, value);
   }
   if (!Object.keys(ifValue).length) {
-    console.log('selected empty object');
-    return ifValue;
+    //console.log('selected empty object');
+    return evalByType[context.type](context, ifValue);
   }
   const { field } = getFields(ifValue);
+  if (!getNextTarget(context, field) && context.type === 'set') {
+    //console.log('YOURE TELLING ME WHAT', context);
+    // TODO: Maybe check if the rest of the chain is assignable
+    return evalByType[context.type](context, ifValue);
+  }
 
   const ifMap: Record<string, (c: IFContext) => any> = {
     or: getIf,

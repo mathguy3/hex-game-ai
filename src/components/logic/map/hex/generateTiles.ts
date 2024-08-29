@@ -11,15 +11,10 @@ export const generateTiles = (
   tileSelect: TileSelect,
   subject: Coordinates,
   actionState: ActionState,
-  isValidTile?: (tile: {
-    key: CoordinateKey;
-    coordinates: Coordinates;
-  }) => boolean,
+  isValidTile?: (tile: { key: CoordinateKey; coordinates: Coordinates }) => boolean,
   initialSearch?: Record<string, Tile>
 ): Record<string, Tile> => {
-  const generator = tileGenerators[
-    tileSelect.type
-  ] as TileGenerator<TileSelect>;
+  const generator = tileGenerators[tileSelect.type] as TileGenerator<TileSelect>;
 
   if (!generator) {
     console.error('no tile generator for', tileSelect.type);
@@ -35,22 +30,12 @@ export const generateTiles = (
       isValid &&
       (!tileSelect.tileIf ||
         evalIf(tileSelect.tileIf, {
-          model: {
-            target: { parent: actionState.mapState, field: tile.key },
-            subject: { parent: actionState.mapState, field: getKey(subject) },
-          },
+          target: { parent: actionState.mapState, field: tile.key },
+          subject: { parent: actionState.mapState, field: getKey(subject) },
         }));
 
     return isUniversallyValid && isValid && passesCheck;
   }
-  const results = generator(
-    tileSelect,
-    subject,
-    actionState,
-    checkTile,
-    initialSearch
-  );
-  return Object.fromEntries(
-    Object.entries(results).filter((x) => checkTile(x[1]))
-  );
+  const results = generator(tileSelect, subject, actionState, checkTile, initialSearch);
+  return Object.fromEntries(Object.entries(results).filter((x) => checkTile(x[1])));
 };

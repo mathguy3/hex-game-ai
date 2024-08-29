@@ -1,11 +1,7 @@
 import Box from '@mui/material/Box';
 import React, { useCallback } from 'react';
 import { colors } from '../../../configuration/colors';
-import {
-  gridColumnWidth,
-  gridRowHeight,
-  isDev,
-} from '../../../configuration/constants';
+import { gridColumnWidth, gridRowHeight, isDev } from '../../../configuration/constants';
 import { Preview } from '../../../types/actions/preview';
 import { HexItem } from '../../../types/map';
 import { Soldier } from '../../Soldier/Soldier';
@@ -17,6 +13,7 @@ type HexProps = {
 };
 
 const flipYRender = false;
+const renderqs = false;
 
 export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
   const { coordinates, isSelected } = item;
@@ -24,10 +21,7 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
     console.log(item);
   }
   const s = coordinates.s ?? -(coordinates.q + coordinates.r);
-  console.assert(
-    coordinates.q + coordinates.r + s === 0,
-    `Invalid coordinate ${JSON.stringify(coordinates)}`
-  );
+  console.assert(coordinates.q + coordinates.r + s === 0, `Invalid coordinate ${JSON.stringify(coordinates)}`);
 
   const leftOffset = coordinates.q * 0.75 * gridColumnWidth;
   const topOffset = flipYRender
@@ -56,9 +50,7 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
   if (item.contains.unit) {
     //console.log('THIS SPACE HAS UNIT', item.key, item.contains.unit);
   }
-  const teamColor = { team1: '#0000ff', team2: '#ff0000' }[
-    item.contains.unit?.aspects.team?.value
-  ];
+  const teamColor = { team1: '#0000ff', team2: '#ff0000' }[item.contains.unit?.aspects.team?.value];
   if (item.contains.unit) {
     //console.log('team color', teamColor);
   }
@@ -74,32 +66,18 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
       {isDev && (
         <div style={{ userSelect: 'none', fontSize: '12px' }}>
           <Box position="absolute" top="5px" left={gridColumnWidth / 2 - 5}>
-            {coordinates.q}
+            {renderqs ? 'q' : coordinates.q}
           </Box>
-          <Box
-            position="absolute"
-            top={gridRowHeight * 0.6}
-            left={gridColumnWidth * 0.75}
-          >
-            {coordinates.r}
+          <Box position="absolute" top={gridRowHeight * 0.6} left={gridColumnWidth * 0.75}>
+            {renderqs ? 'r' : coordinates.r}
           </Box>
-          <Box
-            position="absolute"
-            top={gridRowHeight * 0.6}
-            left={gridColumnWidth * 0.2}
-          >
-            {s}
+          <Box position="absolute" top={gridRowHeight * 0.6} left={gridColumnWidth * 0.2}>
+            {renderqs ? 's' : s}
           </Box>
         </div>
       )}
-      <HexImg
-        width={gridColumnWidth}
-        strokeWidth={isSelected || isPreview ? 4 : 2}
-        color={preview.color}
-      />
-      {item.contains.unit && (
-        <Soldier key={item.contains.unit.id} item={item.contains.unit} />
-      )}
+      <HexImg width={gridColumnWidth} strokeWidth={isSelected || isPreview ? 4 : 2} color={preview.color} />
+      {item.contains.unit && <Soldier key={item.contains.unit.id} item={item.contains.unit} />}
 
       <Box
         position="absolute"
@@ -111,12 +89,7 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
       />
 
       {preview.tile.type === 'pathrange' ? (
-        <Box
-          position="absolute"
-          top={gridRowHeight * 0.35}
-          left={gridColumnWidth * 0.45}
-          fontWeight={800}
-        >
+        <Box position="absolute" top={gridRowHeight * 0.35} left={gridColumnWidth * 0.45} fontWeight={800}>
           {preview.tile.pathRange}
         </Box>
       ) : undefined}

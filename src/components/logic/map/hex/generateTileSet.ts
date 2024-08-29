@@ -17,29 +17,21 @@ export function generateTileSet(
     (x) =>
       !x.if ||
       evalIf(x.if, {
-        model: {
-          subject: { parent: actionState.mapState, field: getKey(subject) },
-        },
+        subject: { parent: actionState.mapState, field: getKey(subject) },
       })
   );
-  const initial = mapToRecord(tileAddsToUse, (select) =>
-    generateTiles(select, subject, actionState)
-  );
+  const initial = mapToRecord(tileAddsToUse, (select) => generateTiles(select, subject, actionState));
 
   //console.log('initial generation', initial);
   const limitTo = tileGen.limit?.length
-    ? mapToRecord(tileGen.limit, (select) =>
-        generateTiles(select, subject, actionState)
-      )
+    ? mapToRecord(tileGen.limit, (select) => generateTiles(select, subject, actionState))
     : undefined;
 
   //console.log('limit generation', limitTo);
   const limited = limitTo ? intersectRecords(initial, limitTo) : initial;
 
   const toRemove = tileGen.not?.length
-    ? mapToRecord(tileGen.not, (select) =>
-        generateTiles(select, subject, actionState)
-      )
+    ? mapToRecord(tileGen.not, (select) => generateTiles(select, subject, actionState))
     : undefined;
 
   //console.log('remove generation', toRemove);
