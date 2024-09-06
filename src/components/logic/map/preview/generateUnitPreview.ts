@@ -28,6 +28,7 @@ export const generateUnitPreview = (
       interaction.if &&
       !evalIf(interaction.if, {
         subject: { parent: actionState.mapState, field: getKey(coordinates) },
+        context: { parent: actionState, field: 'gameState' },
       })
     ) {
       continue;

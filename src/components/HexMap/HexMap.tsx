@@ -8,7 +8,7 @@ import { MapFrame } from './MapFrame';
 import { SelectionInfo } from './SelectionInfo';
 
 export const HexMap = () => {
-  const { selectionState, mapState, gameState, pressHex, endTurn } = useGameController();
+  const { selectionState, mapState, gameState, pressHex, systemAction } = useGameController();
 
   return (
     <>
@@ -27,7 +27,11 @@ export const HexMap = () => {
         </Box>
       </MapFrame>
       <Box position="fixed" bottom={0} right={0}>
-        <Button variant="contained" disabled={!isPlayerTurn(gameState)} onClick={() => endTurn.current()}>
+        <Button
+          variant="contained"
+          disabled={!isPlayerTurn(gameState)}
+          onClick={() => systemAction.current('end-turn')}
+        >
           {'End turn'}
         </Button>
       </Box>

@@ -16,7 +16,7 @@ export const activateHex = (actionState: ActionState, gameDefinition: GameDefini
 
   const interactionDefinition = interactions.find((x) => x.type === previewKey);
 
-  actionState = activateInteraction(actionState, interactionDefinition);
+  actionState = activateInteraction(actionState, interactionDefinition, gameDefinition);
   actionState = selectHex(actionState);
   actionState = showPreview(actionState, gameDefinition);
   return actionState;

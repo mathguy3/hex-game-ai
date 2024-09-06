@@ -1,5 +1,6 @@
 import { isIF } from '../is/isIf';
 import { isIfCompare } from '../is/isIfCompare';
+import { isIfElse } from '../is/isIfElse';
 import { isIfMath } from '../is/isIfMath';
 import { isIfVector } from '../is/isIfVector';
 import { isKeyValue } from '../is/isKeyValue';
@@ -11,9 +12,10 @@ import { getNextTarget } from '../util/getNextTarget';
 import { getTargetValue } from '../util/getTargetValue';
 import { selectField } from '../util/selectField';
 import { evalIfCompare } from './evalIfCompare';
+import { evalIfElse } from './evalIfElse';
 import { evalIfMath } from './evalIfMath';
+import { evalKeyValue } from './evalKeyValue';
 import { getIf } from './getIf';
-import { getKeyValue } from './getKeyValue';
 import { getSimpleValue } from './getSimpleValue';
 
 const evalByType = {
@@ -30,7 +32,12 @@ export const selectIfValue = (context: IFContext) => {
 
   if (isSimpleValue(ifValue)) {
     const value = getSimpleValue(ifValue, context);
+    console.log('SELECTING SIMPLE VALUE', ifValue, value, context);
     return evalByType[context.type](context, value);
+  }
+  if (!ifValue) {
+    console.log('WHATS');
+    console.dir(context, { depth: null });
   }
   if (!Object.keys(ifValue).length) {
     //console.log('selected empty object');
@@ -59,12 +66,14 @@ export const selectIfValue = (context: IFContext) => {
       return evalByType[context.type](context, ifResult);
     }
   } else {
-    if (isKeyValue(ifValue)) {
-      ifResult = getKeyValue(selectField(context, field));
-    } else if (isIfCompare(ifValue)) {
+    if (isIfCompare(ifValue)) {
       ifResult = evalIfCompare(context); // operation
     } else if (isIfMath(ifValue)) {
       ifResult = evalIfMath(context); // operation
+    } else if (isIfElse(ifValue)) {
+      ifResult = evalIfElse(context);
+    } else if (isKeyValue(ifValue)) {
+      ifResult = evalKeyValue(context);
     } else if (isIF(ifValue)) {
       ifResult = getIf(context);
     } else if (isIfVector(ifValue) || Array.isArray(ifValue)) {

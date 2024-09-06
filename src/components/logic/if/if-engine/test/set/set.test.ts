@@ -1,6 +1,6 @@
 import { IF } from '../../../../../../types/actions/if';
 import { evalSet } from '../../eval-set';
-import { IFContext } from '../../types';
+import { GameModel } from '../../types';
 
 const changeTeam: IF = {
   subject: {
@@ -26,14 +26,12 @@ const mapModel = {
   },
 };
 
-const firstTeamModel: Partial<IFContext> = {
-  model: {
-    subject: { parent: mapModel, field: '0' },
-  },
+const firstTeamModel: Partial<GameModel> = {
+  subject: { parent: mapModel, field: '0' },
 };
 
 test('can change static value', () => {
   expect(mapModel['0'].contains.unit.aspects.team).toBe('team1');
   const updatedModel = evalSet(changeTeam, firstTeamModel);
-  expect(mapModel['0'].contains.unit.aspects.team).toBe('team2');
+  expect(updatedModel.subject.parent['0'].contains.unit.aspects.team).toBe('team2');
 });

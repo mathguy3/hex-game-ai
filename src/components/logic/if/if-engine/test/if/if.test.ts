@@ -1,34 +1,26 @@
 import { isFirstTeam } from '../../../../../../configuration/units/chess/helpers/isFirstTeam';
 import { IFStringValue } from '../../../../../../types/actions/if';
 import { evalIf } from '../../eval-if';
-import { IFContext } from '../../types';
+import { GameModel } from '../../types';
 
-const firstTeam: Partial<IFContext> = {
-  model: {
-    subject: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team1',
-            },
-          },
+const firstTeam: Partial<GameModel> = {
+  subject: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team1',
         },
       },
     },
   },
 };
 
-const secondTeam: Partial<IFContext> = {
-  model: {
-    subject: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team2',
-            },
-          },
+const secondTeam: Partial<GameModel> = {
+  subject: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team2',
         },
       },
     },
@@ -37,16 +29,12 @@ const secondTeam: Partial<IFContext> = {
 
 const sameTeam = {
   subject: {
-    hex: {
-      contains: {
-        unit: {
-          aspects: {
-            team: {
-              target: {
-                hex: {
-                  contains: { unit: { aspects: { team: IFStringValue } } },
-                },
-              },
+    contains: {
+      unit: {
+        aspects: {
+          team: {
+            target: {
+              contains: { unit: { aspects: { team: IFStringValue } } },
             },
           },
         },
@@ -55,27 +43,21 @@ const sameTeam = {
   },
 };
 
-const bothTeams: Partial<IFContext> = {
-  model: {
-    subject: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team1',
-            },
-          },
+const bothTeams: Partial<GameModel> = {
+  subject: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team1',
         },
       },
     },
-    target: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team2',
-            },
-          },
+  },
+  target: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team2',
         },
       },
     },
@@ -96,10 +78,7 @@ const cases = [
   { ifValue: sameTeam, context: bothTeams, expectedResult: false },
 ];
 
-test.each(cases)(
-  'can change static value',
-  ({ ifValue, context, expectedResult }) => {
-    const result = evalIf(ifValue, context);
-    expect(result).toBe(expectedResult);
-  }
-);
+test.each(cases)('can change static value', ({ ifValue, context, expectedResult }) => {
+  const result = evalIf(ifValue, context);
+  expect(result).toBe(expectedResult);
+});

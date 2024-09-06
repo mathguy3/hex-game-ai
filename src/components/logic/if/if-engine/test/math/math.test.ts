@@ -2,30 +2,24 @@ import { IF, IFIntValue } from '../../../../../../types/actions/if';
 import { evalIf } from '../../eval-if';
 import { evalSet } from '../../eval-set';
 import { evalValue } from '../../eval-value';
-import { IFContext } from '../../types';
+import { GameModel } from '../../types';
 
 const attackMock: IF = {
   target: {
-    hex: {
-      contains: {
-        unit: {
-          aspects: {
-            health: {
-              subtract: {
-                subject: {
-                  hex: {
-                    contains: {
-                      unit: {
-                        aspects: {
-                          attack: {
-                            multiply: {
-                              subject: {
-                                hex: {
-                                  contains: {
-                                    unit: { aspects: { magic: IFIntValue } },
-                                  },
-                                },
-                              },
+    contains: {
+      unit: {
+        aspects: {
+          health: {
+            subtract: {
+              subject: {
+                contains: {
+                  unit: {
+                    aspects: {
+                      attack: {
+                        multiply: {
+                          subject: {
+                            contains: {
+                              unit: { aspects: { magic: IFIntValue } },
                             },
                           },
                         },
@@ -44,25 +38,19 @@ const attackMock: IF = {
 
 const willAttackMock: IF = {
   target: {
-    hex: {
-      contains: {
-        unit: {
-          aspects: {
-            health: {
-              subject: {
-                hex: {
-                  contains: {
-                    unit: {
-                      aspects: {
-                        attack: {
-                          multiply: {
-                            subject: {
-                              hex: {
-                                contains: {
-                                  unit: { aspects: { magic: IFIntValue } },
-                                },
-                              },
-                            },
+    contains: {
+      unit: {
+        aspects: {
+          health: {
+            subject: {
+              contains: {
+                unit: {
+                  aspects: {
+                    attack: {
+                      multiply: {
+                        subject: {
+                          contains: {
+                            unit: { aspects: { magic: IFIntValue } },
                           },
                         },
                       },
@@ -78,30 +66,24 @@ const willAttackMock: IF = {
   },
 };
 
-const unitModel: Partial<IFContext> = {
-  model: {
-    subject: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team1',
-              attack: 10,
-              magic: 2,
-            },
-          },
+const unitModel: Partial<GameModel> = {
+  subject: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team1',
+          attack: 10,
+          magic: 2,
         },
       },
     },
-    target: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team1',
-              health: 20,
-            },
-          },
+  },
+  target: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team1',
+          health: 20,
         },
       },
     },
@@ -122,6 +104,6 @@ describe('Math module', () => {
     const resultModel = evalSet(attackMock, unitModel);
 
     console.dir(resultModel, { depth: null });
-    expect(resultModel.target.hex.contains.unit.aspects.health).toBe(0);
+    expect(resultModel.target.contains.unit.aspects.health).toBe(0);
   });
 });

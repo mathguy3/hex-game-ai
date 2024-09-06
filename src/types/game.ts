@@ -15,6 +15,11 @@ type PlayerDefinition = {
   canBeNone?: boolean;
 };
 
+type ResponseEvent = {
+  type: string;
+  actions: Action[] | Action;
+};
+
 export type GameDefinition = {
   name: string;
   units: Record<string, UnitDefinition>;
@@ -22,6 +27,7 @@ export type GameDefinition = {
     map: Record<string, HexItem>;
     sequencing?: Sequence;
     playerInteractions?: UIInteraction[];
+    events?: Record<string, ResponseEvent>;
   };
   players?: Record<string, PlayerDefinition>;
 };
@@ -36,7 +42,7 @@ export type PlayerState = {
 };
 
 export type GameState = {
-  player: Record<string, PlayerState>;
+  players: Record<string, PlayerState>;
   activePlayerId: string;
   meId: string;
 };

@@ -1,23 +1,19 @@
 import { IF, IFFloatValue } from '../../../../../../types/actions/if';
 import { evalIf } from '../../eval-if';
-import { IFContext } from '../../types';
+import { GameModel } from '../../types';
 
 const hasMoreHealth: IF = {
   target: {
-    hex: {
-      contains: {
-        unit: {
-          aspects: {
-            health: {
-              equal: {
-                subject: {
-                  hex: {
-                    contains: {
-                      unit: {
-                        aspects: {
-                          health: IFFloatValue,
-                        },
-                      },
+    contains: {
+      unit: {
+        aspects: {
+          health: {
+            equal: {
+              subject: {
+                contains: {
+                  unit: {
+                    aspects: {
+                      health: IFFloatValue,
                     },
                   },
                 },
@@ -30,25 +26,23 @@ const hasMoreHealth: IF = {
   },
 };
 
-const unitModel: Partial<IFContext> = {
-  model: {
-    subject: {
-      contains: {
-        unit: {
-          aspects: {
-            team: 'team1',
-            health: 20,
-          },
+const unitModel: Partial<GameModel> = {
+  subject: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team1',
+          health: 20,
         },
       },
     },
-    target: {
-      contains: {
-        unit: {
-          aspects: {
-            team: 'team2',
-            health: 20,
-          },
+  },
+  target: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team2',
+          health: 20,
         },
       },
     },

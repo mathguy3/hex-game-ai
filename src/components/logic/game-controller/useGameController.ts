@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { origin } from '../../../configuration/constants';
 import { HexItem, MapState, Tile } from '../../../types';
+import { SystemAction } from '../../../types/actions/interactions';
 import { ActionState, GameState } from '../../../types/game';
 import { mapRecord } from '../../../utils/record/mapRecord';
 import { useUpdatingRef } from '../../../utils/useUpdatingRef';
 import { initialUnits } from '../../HexMap/generation/initialPlacement';
 import { rangeSimple } from '../tile-generators';
 import { useGameDefinition } from './GameDefinitionProvider';
-import { deselect } from './interactions/deselect';
 import { pressHex } from './interactions/pressHex';
+import { activateSystemAction } from './system-actions/activate-system-action';
 
 const generatedRange = { type: 'range' as const, range: 5 };
 const generateMap = false;
@@ -16,9 +17,17 @@ const generateMap = false;
 export const useGameController = () => {
   const { game: selectedGame } = useGameDefinition();
   const [gameState, setGameState] = useState<GameState>({
-    player: {
-      team1: { properties: {} },
-      team2: { properties: {} },
+    players: {
+      team1: {
+        properties: {
+          isTurnUsed: false,
+        },
+      },
+      team2: {
+        properties: {
+          isTurnUsed: false,
+        },
+      },
     },
     activePlayerId: 'team1',
     meId: 'team1',
@@ -48,7 +57,7 @@ export const useGameController = () => {
       targetHex: hex,
       selectedHex: Object.values(selectionState)[0],
       gameState,
-      activePlayer: gameState.player[gameState.activePlayerId],
+      activePlayer: gameState.players[gameState.activePlayerId],
     };
 
     actionState = pressHex(actionState, selectedGame);
@@ -59,7 +68,7 @@ export const useGameController = () => {
     setMapState({ ...actionState.mapState });
   });
 
-  const handleEndTurn = useUpdatingRef(() => {
+  const handleSystemAction = useUpdatingRef((type: SystemAction['type']) => {
     let actionState: ActionState = {
       mapState,
       selectionState,
@@ -67,15 +76,16 @@ export const useGameController = () => {
       targetHex: undefined,
       selectedHex: Object.values(selectionState)[0],
       gameState,
-      activePlayer: gameState.player[gameState.activePlayerId],
+      activePlayer: gameState.players[gameState.activePlayerId],
     };
 
-    actionState = deselect(actionState);
+    actionState = activateSystemAction(type, actionState, selectedGame);
 
+    setSelectionState(actionState.selectionState);
     setPreviewState(actionState.previewState);
-    setGameState({ ...gameState, activePlayerId: 'team2' });
+    setGameState(actionState.gameState);
     setMapState({ ...actionState.mapState });
   });
 
-  return { mapState, selectionState, gameState, pressHex: handlePressHex, endTurn: handleEndTurn };
+  return { mapState, selectionState, gameState, pressHex: handlePressHex, systemAction: handleSystemAction };
 };

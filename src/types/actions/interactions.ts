@@ -13,12 +13,15 @@ export type BoardInteraction = {
 
 export type Action = {
   type?: string;
-  set: IF[];
+  set: IF[] | IF;
 };
 
 export type SystemAction =
   | {
       type: 'end-sequence';
+    }
+  | {
+      type: 'end-turn';
     }
   | {
       type: 'give-control';

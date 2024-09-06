@@ -1,19 +1,15 @@
 import { IF, IFStringValue } from '../../../../../../types/actions/if';
 import { evalSet } from '../../eval-set';
-import { IFContext } from '../../types';
+import { GameModel } from '../../types';
 
 const shareTeam: IF = {
   subject: {
-    hex: {
-      contains: {
-        unit: {
-          aspects: {
-            team: {
-              target: {
-                hex: {
-                  contains: { unit: { aspects: { team: IFStringValue } } },
-                },
-              },
+    contains: {
+      unit: {
+        aspects: {
+          team: {
+            target: {
+              contains: { unit: { aspects: { team: IFStringValue } } },
             },
           },
         },
@@ -22,27 +18,21 @@ const shareTeam: IF = {
   },
 };
 
-const bothTeamsModel: Partial<IFContext> = {
-  model: {
-    subject: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team1',
-            },
-          },
+const bothTeamsModel: Partial<GameModel> = {
+  subject: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team1',
         },
       },
     },
-    target: {
-      hex: {
-        contains: {
-          unit: {
-            aspects: {
-              team: 'team2',
-            },
-          },
+  },
+  target: {
+    contains: {
+      unit: {
+        aspects: {
+          team: 'team2',
         },
       },
     },
@@ -50,9 +40,7 @@ const bothTeamsModel: Partial<IFContext> = {
 };
 
 test('can change static value', () => {
-  expect(bothTeamsModel.model.subject.hex.contains.unit.aspects.team).toBe(
-    'team1'
-  );
+  expect(bothTeamsModel.subject.contains.unit.aspects.team).toBe('team1');
   const updatedModel = evalSet(shareTeam, bothTeamsModel);
-  expect(updatedModel.subject.hex.contains.unit.aspects.team).toBe('team2');
+  expect(updatedModel.subject.contains.unit.aspects.team).toBe('team2');
 });

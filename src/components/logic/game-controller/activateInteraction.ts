@@ -1,16 +1,17 @@
 import { BoardInteraction } from '../../../types/actions/interactions';
-import { ActionState } from '../../../types/game';
+import { ActionState, GameDefinition } from '../../../types/game';
 import { activateAction } from './activateAction';
 
 export const activateInteraction = (
   actionState: ActionState,
-  interaction: BoardInteraction
+  interaction: BoardInteraction,
+  gameDefinition: GameDefinition
 ) => {
   if (!interaction.actions?.length) {
     return;
   }
   for (const action of interaction.actions) {
-    activateAction(actionState, action);
+    activateAction(actionState, action, gameDefinition);
   }
   /*const playerPostInteractions =
     gameDefinition.player['team1']?.postInteraction.filter(

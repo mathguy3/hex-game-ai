@@ -7,10 +7,11 @@ import { subjectHasNotMoved } from './helpers/subjectHasNotMoved';
 import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
 import { targetIsNotUnit } from './helpers/targetIsNotUnit';
 import { targetIsUnit } from './helpers/targetIsUnit';
+import { turnIsNotUsed } from './helpers/turnIsNotUsed';
 
 const moveUp = {
   type: 'movement' as const,
-  if: isFirstTeam,
+  if: { and: [turnIsNotUsed, isFirstTeam] },
   tiles: {
     add: [
       {
@@ -41,7 +42,7 @@ const moveUp = {
 
 const attackUp = {
   type: 'attack' as const,
-  if: isFirstTeam,
+  if: { and: [turnIsNotUsed, isFirstTeam] },
   tiles: {
     add: [
       {
@@ -66,7 +67,7 @@ const attackUp = {
 
 const moveDown = {
   type: 'movement' as const,
-  if: isSecondTeam,
+  if: { and: [turnIsNotUsed, isSecondTeam] },
   tiles: {
     add: [
       {
@@ -97,7 +98,7 @@ const moveDown = {
 
 const attackDown = {
   type: 'attack' as const,
-  if: isSecondTeam,
+  if: { and: [turnIsNotUsed, isSecondTeam] },
   tiles: {
     add: [
       {

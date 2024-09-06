@@ -16,6 +16,11 @@ export type IFKeyValue = {
   key: IFValue;
   value: IFValue;
 };
+export type IFElse = {
+  if: IFValue;
+  then: IFValue;
+  else?: IFValue;
+};
 
 export type IFNumber = number;
 export type IFString = string;
@@ -34,13 +39,7 @@ export const IFObjectValue = 'OBJECT_VALUE';
 export type IFArrayConst = 'ARRAY_VALUE';
 export const IFArrayValue = 'ARRAY_VALUE';
 
-export type IFConstValue =
-  | IFStringConst
-  | IFFloatConst
-  | IFIntConst
-  | IFBooleanConst
-  | IFObjectConst
-  | IFArrayConst;
+export type IFConstValue = IFStringConst | IFFloatConst | IFIntConst | IFBooleanConst | IFObjectConst | IFArrayConst;
 export type IFObject = { [key: string]: IFValue };
 export type IFArray = IFValue[];
 export type IFVector = { q: IFValue; r: IFValue; s: IFValue };
