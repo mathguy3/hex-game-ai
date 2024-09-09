@@ -16,7 +16,7 @@ export const activateAction = (
     }
     if (gameDefinition.game.events) {
       const event = gameDefinition.game.events[action.type];
-      const eventActions = asArray(event.actions);
+      const eventActions = event ? asArray(event.actions) : [];
       for (const eventAction of eventActions) {
         const eventSets = asArray(eventAction.set);
         for (const set of eventSets) {

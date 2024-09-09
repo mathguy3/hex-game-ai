@@ -33,6 +33,16 @@ export const hexChess: GameDefinition = {
         },
       },
     },
+    cards: {
+      'time-1': {
+        actions: {
+          top: [],
+          bottom: [],
+        },
+        requirements: [{}],
+        properties: {},
+      },
+    },
   },
   name: 'Hex Chess',
 };

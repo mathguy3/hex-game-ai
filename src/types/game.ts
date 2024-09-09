@@ -28,8 +28,15 @@ export type GameDefinition = {
     sequencing?: Sequence;
     playerInteractions?: UIInteraction[];
     events?: Record<string, ResponseEvent>;
+    cards?: Record<string, CardDefinition>;
   };
   players?: Record<string, PlayerDefinition>;
+};
+
+export type CardDefinition = {
+  actions: Record<string, Sequence[]>;
+  requirements: {}[];
+  properties: Record<string, any>;
 };
 
 export type Sequence = {
@@ -38,6 +45,13 @@ export type Sequence = {
 };
 
 export type PlayerState = {
+  properties: Record<string, any>;
+  hand?: CardState[];
+};
+
+type CardState = {
+  id: string;
+  kind: string;
   properties: Record<string, any>;
 };
 

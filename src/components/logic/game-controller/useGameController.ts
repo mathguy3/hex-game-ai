@@ -22,8 +22,30 @@ export const useGameController = () => {
         properties: {
           isTurnUsed: false,
         },
+        hand: [
+          {
+            id: '1',
+            kind: 'time-1',
+            properties: { ...selectedGame.game.cards['time-1'].properties },
+          },
+          {
+            id: '2',
+            kind: 'time-1',
+            properties: { ...selectedGame.game.cards['time-1'].properties },
+          },
+          {
+            id: '3',
+            kind: 'time-1',
+            properties: { ...selectedGame.game.cards['time-1'].properties },
+          },
+        ],
       },
       team2: {
+        properties: {
+          isTurnUsed: false,
+        },
+      },
+      team3: {
         properties: {
           isTurnUsed: false,
         },
@@ -49,15 +71,20 @@ export const useGameController = () => {
   const [selectionState, setSelectionState] = useState<Record<string, HexItem>>({});
   const [previewState, setPreviewState] = useState<Record<string, HexItem>>({});
 
+  const basicActionState: ActionState = {
+    mapState,
+    selectionState,
+    previewState,
+    targetHex: undefined,
+    selectedHex: Object.values(selectionState)[0],
+    gameState,
+    activePlayer: gameState.players[gameState.activePlayerId],
+  };
+
   const handlePressHex = useUpdatingRef((hex: HexItem) => {
     let actionState: ActionState = {
-      mapState,
-      selectionState,
-      previewState,
-      targetHex: hex,
+      ...basicActionState,
       selectedHex: Object.values(selectionState)[0],
-      gameState,
-      activePlayer: gameState.players[gameState.activePlayerId],
     };
 
     actionState = pressHex(actionState, selectedGame);
@@ -69,15 +96,7 @@ export const useGameController = () => {
   });
 
   const handleSystemAction = useUpdatingRef((type: SystemAction['type']) => {
-    let actionState: ActionState = {
-      mapState,
-      selectionState,
-      previewState,
-      targetHex: undefined,
-      selectedHex: Object.values(selectionState)[0],
-      gameState,
-      activePlayer: gameState.players[gameState.activePlayerId],
-    };
+    let actionState: ActionState = basicActionState;
 
     actionState = activateSystemAction(type, actionState, selectedGame);
 
@@ -87,5 +106,20 @@ export const useGameController = () => {
     setMapState({ ...actionState.mapState });
   });
 
-  return { mapState, selectionState, gameState, pressHex: handlePressHex, systemAction: handleSystemAction };
+  const saveActionState = useUpdatingRef((actionState: ActionState) => {
+    setSelectionState(actionState.selectionState);
+    setPreviewState(actionState.previewState);
+    setGameState(actionState.gameState);
+    setMapState(actionState.mapState);
+  });
+
+  return {
+    mapState,
+    selectionState,
+    gameState,
+    pressHex: handlePressHex,
+    systemAction: handleSystemAction,
+    basicActionState,
+    saveActionState,
+  };
 };

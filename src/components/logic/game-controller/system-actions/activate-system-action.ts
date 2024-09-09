@@ -18,7 +18,8 @@ export const activateSystemAction = (
   actionState: ActionState,
   gameDefinition: GameDefinition
 ) => {
-  const action = actions[type];
-  actionState = activateAction(actionState, action, gameDefinition);
+  const { actionState: updatedActionState, action } = actions[type](actionState, gameDefinition);
+  actionState = updatedActionState;
+  actionState = action ? activateAction(actionState, action, gameDefinition) : actionState;
   return actionState;
 };
