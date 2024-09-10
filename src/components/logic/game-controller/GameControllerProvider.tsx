@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { createContext, MutableRefObject, useContext, useState } from 'react';
 import { origin } from '../../../configuration/constants';
 import { HexItem, MapState, Tile } from '../../../types';
 import { SystemAction } from '../../../types/actions/interactions';
@@ -11,10 +11,18 @@ import { useGameDefinition } from './GameDefinitionProvider';
 import { pressHex } from './interactions/pressHex';
 import { activateSystemAction } from './system-actions/activate-system-action';
 
+type GameControllerCtx = {
+  basicActionState: ActionState;
+  pressHex: MutableRefObject<(hex: HexItem) => void>;
+  systemAction: MutableRefObject<(type: SystemAction['type']) => void>;
+  saveActionState: MutableRefObject<(actionState: ActionState) => void>;
+};
+
 const generatedRange = { type: 'range' as const, range: 5 };
 const generateMap = false;
+const GameControllerContext = createContext<GameControllerCtx>(null);
 
-export const useGameController = () => {
+export const GameControllerProvider = ({ children }: React.PropsWithChildren) => {
   const { game: selectedGame } = useGameDefinition();
   const [gameState, setGameState] = useState<GameState>({
     players: {
@@ -38,6 +46,11 @@ export const useGameController = () => {
             kind: 'time-1',
             properties: { ...selectedGame.game.cards['time-1'].properties },
           },
+          {
+            id: '4',
+            kind: 'time-1',
+            properties: { ...selectedGame.game.cards['time-1'].properties },
+          },
         ],
       },
       team2: {
@@ -50,6 +63,10 @@ export const useGameController = () => {
           isTurnUsed: false,
         },
       },
+    },
+    cardManager: {
+      state: 'select',
+      selectionSlots: 2,
     },
     activePlayerId: 'team1',
     meId: 'team1',
@@ -79,15 +96,18 @@ export const useGameController = () => {
     selectedHex: Object.values(selectionState)[0],
     gameState,
     activePlayer: gameState.players[gameState.activePlayerId],
+    gameDefinition: selectedGame,
   };
 
   const handlePressHex = useUpdatingRef((hex: HexItem) => {
     let actionState: ActionState = {
       ...basicActionState,
+      targetHex: hex,
       selectedHex: Object.values(selectionState)[0],
     };
 
-    actionState = pressHex(actionState, selectedGame);
+    console.log('pressingHex', actionState);
+    actionState = pressHex(actionState);
 
     setSelectionState(actionState.selectionState);
     setPreviewState(actionState.previewState);
@@ -98,7 +118,7 @@ export const useGameController = () => {
   const handleSystemAction = useUpdatingRef((type: SystemAction['type']) => {
     let actionState: ActionState = basicActionState;
 
-    actionState = activateSystemAction(type, actionState, selectedGame);
+    actionState = activateSystemAction(type, actionState);
 
     setSelectionState(actionState.selectionState);
     setPreviewState(actionState.previewState);
@@ -112,14 +132,18 @@ export const useGameController = () => {
     setGameState(actionState.gameState);
     setMapState(actionState.mapState);
   });
-
-  return {
-    mapState,
-    selectionState,
-    gameState,
-    pressHex: handlePressHex,
-    systemAction: handleSystemAction,
-    basicActionState,
-    saveActionState,
-  };
+  return (
+    <GameControllerContext.Provider
+      value={{
+        pressHex: handlePressHex,
+        systemAction: handleSystemAction,
+        basicActionState,
+        saveActionState,
+      }}
+    >
+      {children}
+    </GameControllerContext.Provider>
+  );
 };
+
+export const useGameController = () => useContext(GameControllerContext);

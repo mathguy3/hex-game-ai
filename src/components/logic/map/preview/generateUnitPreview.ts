@@ -3,7 +3,7 @@ import { colors } from '../../../../configuration/colors';
 import { Coordinates, Tile } from '../../../../types';
 import { BoardInteractionType } from '../../../../types/actions/interactions';
 import { Preview } from '../../../../types/actions/preview';
-import { ActionState, GameDefinition } from '../../../../types/game';
+import { ActionState } from '../../../../types/game';
 import { getKey } from '../../../../utils/coordinates/getKey';
 import { mapApplyIndex } from '../../../../utils/record/mapApplyIndex';
 import { evalIf } from '../../if/if-engine/eval-if';
@@ -12,14 +12,10 @@ import { generateTileSet } from '../hex/generateTileSet';
 
 type PreviewTile = { tile: Tile; preview: Record<string, Preview> };
 
-export const generateUnitPreview = (
-  actionState: ActionState,
-  gameDefinition: GameDefinition,
-  unitKind: string,
-  coordinates: Coordinates
-) => {
+export const generateUnitPreview = (actionState: ActionState, unitKind: string, coordinates: Coordinates) => {
   let previewTiles: Record<string, PreviewTile> = {};
-  const unitDefinition = gameDefinition.units[unitKind];
+  console.log('GUP', actionState);
+  const unitDefinition = actionState.gameDefinition.units[unitKind];
   assert(unitDefinition, `No definition for selected unit ${unitKind}`);
 
   for (const interaction of unitDefinition.interactions) {

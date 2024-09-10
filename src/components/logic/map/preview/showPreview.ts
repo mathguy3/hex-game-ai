@@ -1,33 +1,20 @@
-import { ActionState, GameDefinition } from '../../../../types/game';
+import { ActionState } from '../../../../types/game';
 import { mapApplyIndex } from '../../../../utils/record/mapApplyIndex';
 import { mapApplyState } from '../../../../utils/record/mapApplyState';
 import { clearPreviews } from './clearMapPreview';
 import { generateUnitPreview } from './generateUnitPreview';
 
-export const showPreview = (actionState: ActionState, gameDefinition: GameDefinition): ActionState => {
+export const showPreview = (actionState: ActionState): ActionState => {
   //console.log('Clearing old previews', actionState.previewState);
-  let { mapState, selectionState, previewState, selectedHex, targetHex, gameState, activePlayer } =
-    clearPreviews(actionState);
+  const updatedState = clearPreviews(actionState);
+  const { selectedHex, mapState, previewState } = updatedState;
 
   if (!selectedHex || !selectedHex.contains.unit || !selectedHex.isSelected) {
     console.log('Unit not selected, skipping preview');
-    return {
-      mapState,
-      selectionState,
-      previewState,
-      selectedHex,
-      targetHex,
-      gameState,
-      activePlayer,
-    };
+    return updatedState;
   }
 
-  const generatedTiles = generateUnitPreview(
-    actionState,
-    gameDefinition,
-    selectedHex.contains.unit.kind,
-    selectedHex.coordinates
-  );
+  const generatedTiles = generateUnitPreview(actionState, selectedHex.contains.unit.kind, selectedHex.coordinates);
 
   //console.log('Applying generated tiles', generatedTiles);
   mapApplyState(mapState, generatedTiles, (hex, tile) => ({
@@ -43,12 +30,8 @@ export const showPreview = (actionState: ActionState, gameDefinition: GameDefini
   //console.log('updated preview state', selectionState, previewState);
 
   return {
+    ...updatedState,
     mapState,
-    selectionState,
     previewState,
-    selectedHex,
-    targetHex,
-    gameState,
-    activePlayer,
   };
 };

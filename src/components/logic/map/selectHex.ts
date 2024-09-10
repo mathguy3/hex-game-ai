@@ -2,7 +2,7 @@ import { ActionState } from '../../../types/game';
 import { unselectCoordinates } from './unselectCoordinates';
 
 export const selectHex = (actionState: ActionState): ActionState => {
-  let { mapState, selectionState, previewState, selectedHex, targetHex, gameState, activePlayer } = actionState;
+  let { mapState, selectionState, selectedHex, targetHex } = actionState;
 
   mapState = unselectCoordinates(mapState, selectionState);
 
@@ -11,5 +11,5 @@ export const selectHex = (actionState: ActionState): ActionState => {
   mapState[targetHex.key] = targetHex;
   selectedHex = targetHex;
 
-  return { mapState, selectionState, previewState, selectedHex, targetHex, gameState, activePlayer };
+  return { ...actionState, mapState, selectionState, selectedHex, targetHex };
 };

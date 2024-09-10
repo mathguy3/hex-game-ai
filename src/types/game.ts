@@ -49,14 +49,20 @@ export type PlayerState = {
   hand?: CardState[];
 };
 
-type CardState = {
+export type CardState = {
   id: string;
   kind: string;
   properties: Record<string, any>;
 };
 
+export type CardManagerState = {
+  state: 'view' | 'select' | 'play';
+  selectionSlots: number;
+};
+
 export type GameState = {
   players: Record<string, PlayerState>;
+  cardManager: CardManagerState;
   activePlayerId: string;
   meId: string;
 };
@@ -68,5 +74,8 @@ export type ActionState = {
   targetHex: HexItem;
   selectedHex: HexItem | undefined;
   gameState: GameState;
+
+  // Readonly
+  gameDefinition: GameDefinition;
   activePlayer: PlayerState;
 };

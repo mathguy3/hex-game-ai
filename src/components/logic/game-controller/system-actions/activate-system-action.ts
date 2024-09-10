@@ -1,5 +1,5 @@
 import { SystemAction } from '../../../../types/actions/interactions';
-import { ActionState, GameDefinition } from '../../../../types/game';
+import { ActionState } from '../../../../types/game';
 import { activateAction } from '../activateAction';
 import { endTurn } from './end-turn';
 
@@ -13,13 +13,9 @@ const actions: Record<SystemAction['type'], any> = {
   'player-turn': () => {},
 };
 
-export const activateSystemAction = (
-  type: SystemAction['type'],
-  actionState: ActionState,
-  gameDefinition: GameDefinition
-) => {
-  const { actionState: updatedActionState, action } = actions[type](actionState, gameDefinition);
+export const activateSystemAction = (type: SystemAction['type'], actionState: ActionState) => {
+  const { actionState: updatedActionState, action } = actions[type](actionState);
   actionState = updatedActionState;
-  actionState = action ? activateAction(actionState, action, gameDefinition) : actionState;
+  actionState = action ? activateAction(actionState, action) : actionState;
   return actionState;
 };

@@ -1,8 +1,8 @@
 import { IFStringValue } from '../../../../types/actions/if';
-import { ActionState, GameDefinition } from '../../../../types/game';
+import { ActionState } from '../../../../types/game';
 import { deselect } from '../interactions/deselect';
 
-export const endTurn = (actionState: ActionState, gameDefinition: GameDefinition) => {
+export const endTurn = (actionState: ActionState) => {
   const playerIds = Object.keys(actionState.gameState.players);
   const nextPlayerIndex = playerIds.indexOf(actionState.gameState.activePlayerId) + 1;
   console.log(actionState.gameState.activePlayerId, playerIds[nextPlayerIndex] ?? playerIds[0]);
