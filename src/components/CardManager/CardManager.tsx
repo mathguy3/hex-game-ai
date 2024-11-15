@@ -3,29 +3,38 @@ import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortabl
 import IconExpandLess from '@mui/icons-material/ExpandLess';
 import IconExpandMore from '@mui/icons-material/ExpandMore';
 import { Box, Button, IconButton } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CardState } from '../../types/game';
+import { CardState, PlayerState } from '../../types/game';
 import { useOutsideAlerter } from '../../utils/useOutsideAlerter';
 import { DraggableCard } from '../Card/DraggableCard';
 import { InnerCard } from '../Card/InnerCard';
 import { useGameController } from '../logic/game-controller/GameControllerProvider';
+import { previewCard } from '../logic/game-controller/cards/previewCard';
+import { endInteraction } from '../logic/game-controller/system-actions/end-action';
 
 export const CardManager = () => {
   const { basicActionState, saveActionState } = useGameController();
-  const { gameState } = basicActionState;
-  const { cardManager } = gameState;
+  const { gameState, localState } = basicActionState;
+  const { cardManager } = localState;
   const [active, setActive] = useState(null);
   const [selected, setSelected] = useState(null);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   function handleDragStart(event) {
     setSelected(event.active.id);
     setActive({ id: event.active.id, kind: event.active.data.current.kind });
+    saveActionState.current(previewCard(basicActionState, event.active.id));
   }
 
-  const playerHand = gameState.players[gameState.meId].hand;
+  // console.log('localState', localState);
+  const playerHand = (gameState.players[localState.meId] as PlayerState).hand;
   const [dropSlots, setDropSlots] = useState<(CardState | null)[]>(Array(cardManager.selectionSlots).fill(null));
+  //Reset slots and open if state changes
+  useEffect(() => {
+    setIsOpen(false);
+    setDropSlots(Array(cardManager.selectionSlots).fill(null));
+  }, [cardManager.selectionSlots]);
   const filteredHand = playerHand.filter((x) => !dropSlots.some((y) => y?.id === x.id));
 
   const handleUnselect = () => {
@@ -36,7 +45,7 @@ export const CardManager = () => {
   function handleDragEnd(event: DragEndEvent) {
     setActive(null);
     const { active, over } = event;
-    if (typeof over.id === 'string' && over.id.startsWith('slot')) {
+    if (typeof over?.id === 'string' && over.id.startsWith('slot')) {
       const droppedCard = playerHand.find((x) => x.id === active.id);
       const slotIndex = Number(over.id.replace('slot', ''));
       setDropSlots(dropSlots.toSpliced(slotIndex, 1, droppedCard));
@@ -44,10 +53,10 @@ export const CardManager = () => {
       return;
     }
 
-    if (active.id !== over.id) {
+    if (active.id !== over?.id) {
       let ph = [...playerHand];
       const oldIndex = ph.findIndex((x) => x.id === active.id);
-      const newIndex = ph.findIndex((x) => x.id === over.id);
+      const newIndex = ph.findIndex((x) => x.id === over?.id);
       const oldValue = ph[oldIndex];
       ph = [...ph.toSpliced(oldIndex, 1).toSpliced(newIndex, 0, oldValue)];
       saveActionState.current({
@@ -56,7 +65,7 @@ export const CardManager = () => {
           ...gameState,
           players: {
             ...gameState.players,
-            [gameState.meId]: { ...gameState.players[gameState.meId], hand: ph },
+            [localState.meId]: { ...gameState.players[localState.meId], hand: ph },
           },
         },
       });
@@ -90,22 +99,27 @@ export const CardManager = () => {
   };
   const containerHeight = isOpen ? openHeight : closedHeight;
   const handleSelect = () => {
-    saveActionState.current({
+    console.log('handle Select', dropSlots);
+
+    // TODO: Send 'action' instead
+    let updatedState = {
       ...basicActionState,
       gameState: {
         ...gameState,
         players: {
           ...gameState.players,
-          [gameState.meId]: {
-            ...gameState.players[gameState.meId],
-            hand: playerHand.filter((x) => dropSlots.some((y) => y.id === x.id)),
+          [localState.meId]: {
+            ...gameState.players[localState.meId],
+            selected: playerHand.filter((x) => dropSlots.some((y) => y.id === x.id)),
           },
         },
-        cardManager: { ...cardManager, state: 'view' },
       },
-    });
+    };
+    updatedState = endInteraction(updatedState);
+    saveActionState.current(updatedState);
     setDropSlots(Array(cardManager.selectionSlots).fill(null));
   };
+
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       {cardManager.state === 'select' && isOpen && (

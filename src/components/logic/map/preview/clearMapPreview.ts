@@ -1,10 +1,5 @@
-import { ActionState } from '../../../../types/game';
-import { mapApplyState } from '../../../../utils/record/mapApplyState';
+import { ActionState, LocalState } from '../../../../types/game';
 
 export const clearPreviews = (actionState: ActionState) => {
-  const mapState = mapApplyState(actionState.mapState, actionState.previewState, (hex) => ({
-    ...hex,
-    preview: {},
-  }));
-  return { ...actionState, mapState, previewState: {} as (typeof actionState)['previewState'] };
+  return { ...actionState, localState: { ...actionState.localState, previewState: {} as LocalState['previewState'] } };
 };

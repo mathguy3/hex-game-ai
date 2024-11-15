@@ -2,20 +2,20 @@ import { ActionState } from '../../../../types/game';
 import { showPreview } from '../../map/preview/showPreview';
 import { selectHex } from '../../map/selectHex';
 import { isPlayerTurn } from '../../util/isPlayerTurn';
-import { activateHex } from './activateHex';
+import { DoAction } from '../GameControllerProvider';
 
-export const pressHex = (actionState: ActionState): ActionState => {
-  console.log('pressHex', actionState);
-  const { targetHex, previewState } = actionState;
-  console.time('pressHex');
-  if (previewState[targetHex.key] && isPlayerTurn(actionState.gameState)) {
-    console.log('Activating interactions');
-    actionState = activateHex(actionState);
+export const pressHex = (actionState: ActionState, doAction: DoAction): ActionState => {
+  const { targetHex, localState, gameState } = actionState;
+
+  const canInteract = isPlayerTurn(gameState, localState) && localState.mapManager.state === 'play';
+
+  if (localState.previewState[targetHex.key] && canInteract) {
+    // This needs to trigger the interaction/next part of the sequence
+    //actionState = activateHex(actionState, doAction);
   } else {
-    console.log('Selecting hex');
+    // Local only
     actionState = selectHex(actionState);
-    if (isPlayerTurn(actionState.gameState)) {
-      console.log('Previewing ', actionState);
+    if (canInteract) {
       actionState = showPreview(actionState);
     }
   }

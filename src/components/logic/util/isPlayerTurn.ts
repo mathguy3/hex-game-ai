@@ -1,5 +1,5 @@
-import { GameState } from '../../../types/game';
+import { GameState, LocalState } from '../../../types/game';
 
-export const isPlayerTurn = (gameState: GameState) => {
-  return gameState.activePlayerId === gameState.meId;
+export const isPlayerTurn = (gameState: GameState, localState: LocalState) => {
+  return gameState.activePlayerId === localState.meId;
 };

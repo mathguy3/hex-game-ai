@@ -25,26 +25,38 @@ const getQueenAttackMove = (attack?: boolean) => ({
 export const queen: UnitDefinition = {
   type: 'unit',
   kind: 'queen',
-  aspects: {},
+  properties: {},
   interactions: [
     {
-      type: 'movement',
+      type: 'hex' as const,
+      kind: 'movement',
       if: turnIsNotUsed,
-      tiles: getQueenAttackMove(),
+      targeting: {
+        userSelect: true,
+        tiles: getQueenAttackMove(),
+      },
       actions: [
         {
-          type: 'movement',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],
     },
     {
-      type: 'attack',
+      type: 'hex' as const,
+      kind: 'attack',
       if: turnIsNotUsed,
-      tiles: getQueenAttackMove(true),
+      targeting: {
+        userSelect: true,
+        tiles: getQueenAttackMove(true),
+      },
       actions: [
         {
-          type: 'attack',
+          type: 'action' as const,
+          name: 'attack',
+          description: 'Attacks target unit, setting target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],

@@ -1,7 +1,6 @@
 import { colors } from '../../../../configuration/colors';
 //import { gameDefinition } from '../../../../configuration/gameDefinition';
 import { Coordinates, Tile } from '../../../../types';
-import { BoardInteractionType } from '../../../../types/actions/interactions';
 import { Preview } from '../../../../types/actions/preview';
 import { ActionState } from '../../../../types/game';
 import { getKey } from '../../../../utils/coordinates/getKey';
@@ -14,7 +13,6 @@ type PreviewTile = { tile: Tile; preview: Record<string, Preview> };
 
 export const generateUnitPreview = (actionState: ActionState, unitKind: string, coordinates: Coordinates) => {
   let previewTiles: Record<string, PreviewTile> = {};
-  console.log('GUP', actionState);
   const unitDefinition = actionState.gameDefinition.units[unitKind];
   assert(unitDefinition, `No definition for selected unit ${unitKind}`);
 
@@ -29,19 +27,19 @@ export const generateUnitPreview = (actionState: ActionState, unitKind: string, 
     ) {
       continue;
     }
-    previewTiles = applyPreviewTiles(
+    previewTiles = applyTiles(
       previewTiles,
-      generateTileSet(interaction.tiles, coordinates, actionState),
-      interaction.type
+      generateTileSet(interaction.targeting.tiles, coordinates, actionState, false),
+      interaction.kind
     );
   }
   return previewTiles;
 };
 
-const applyPreviewTiles = (
+const applyTiles = (
   previewTiles: Record<string, PreviewTile>,
   interactionTiles: Record<string, Tile>,
-  interactionName: BoardInteractionType
+  interactionName: string
 ) => {
   return mapApplyIndex(previewTiles, interactionTiles, (prev, item) => ({
     tile: item,
@@ -52,7 +50,7 @@ const applyPreviewTiles = (
   }));
 };
 
-function getPreview<T extends BoardInteractionType>(tileType: T, tile: Tile): Preview {
+function getPreview(tileType: string, tile: Tile): Preview {
   return {
     type: tileType,
     color: colors.hex[tileType],

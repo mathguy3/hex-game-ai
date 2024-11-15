@@ -40,6 +40,10 @@ export interface OffsetTileSelect extends TileSelectBase {
   type: 'offset';
   offset: Coordinates;
 }
+export interface HexTileSelect extends TileSelectBase {
+  type: 'hex';
+  tileIf?: IF;
+}
 export interface KindTileSelect extends TileSelectBase {
   type: 'kind';
   target: 'unit' | 'hex';
@@ -51,6 +55,7 @@ export interface AspectTileSelect extends TileSelectBase {
   aspect: Aspect;
 }
 export type TileSelect =
+  | HexTileSelect
   | DirectionTileSelect
   | DiagonalTileSelect
   | OrthogonalTileSelect

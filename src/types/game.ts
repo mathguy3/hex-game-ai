@@ -1,52 +1,60 @@
-import { Action, BoardInteraction, SystemAction, UIInteraction } from './actions/interactions';
+import { ActionSubject } from '../components/logic/game-controller/sequencer';
+import { IF } from './actions/if';
+import { CardInteraction, HexInteraction, Interaction, Targeting, UIInteraction } from './actions/interactions';
+import { TileSelect } from './actions/tiles';
 import { UnitDefinition } from './entities/unit/unit';
 import { HexItem, MapState } from './map';
-
-type Event = BoardInteraction | UIInteraction | Action | SystemAction;
-
-type Events = {
-  preTurn?: Event[];
-  postTurn?: Event[];
-  postInteraction?: Event[];
-};
 
 type PlayerDefinition = {
   canBeAI?: boolean;
   canBeNone?: boolean;
 };
 
-type ResponseEvent = {
-  type: string;
-  actions: Action[] | Action;
-};
-
 export type GameDefinition = {
   name: string;
   units: Record<string, UnitDefinition>;
-  game: Events & {
-    map: Record<string, HexItem>;
-    sequencing?: Sequence;
-    playerInteractions?: UIInteraction[];
-    events?: Record<string, ResponseEvent>;
-    cards?: Record<string, CardDefinition>;
-  };
-  players?: Record<string, PlayerDefinition>;
+  players: Record<string, PlayerDefinition>;
+  actions: Record<string, Sequence | Interaction>;
+  cards?: Record<string, CardDefinition>;
+  map: Record<string, HexItem>;
+  sequencing: Sequence;
 };
 
 export type CardDefinition = {
   actions: Record<string, Sequence[]>;
-  requirements: {}[];
-  properties: Record<string, any>;
+  requirements?: {}[];
+  properties?: Record<string, any>;
+  targeting?: Targeting;
 };
 
-export type Sequence = {
-  type: 'alternating' | 'continuous';
-  events: (Sequence | Event)[][];
-};
+export type Sequence =
+  | {
+    type: 'continuous';
+    actions: (Interaction | Sequence)[];
+  }
+  | { type: 'repeating'; breakOn: IF; actions: (Interaction | Sequence)[] }
+  | {
+    type: 'options';
+    multi?: number;
+    interactions: {
+      card?: CardInteraction;
+      hex?: HexInteraction;
+      ui?: UIInteraction;
+    };
+  };
 
+// This data should not be available to everyone
 export type PlayerState = {
-  properties: Record<string, any>;
+  properties?: Record<string, any>;
   hand?: CardState[];
+  selected?: CardState[];
+  type?: 'player' | 'ai';
+};
+
+export type OtherPlayerState = {
+  properties?: Record<string, any>;
+  cardsInHand?: number;
+  type: 'player' | 'ai';
 };
 
 export type CardState = {
@@ -60,22 +68,66 @@ export type CardManagerState = {
   selectionSlots: number;
 };
 
+export type MapManagerState = {
+  state: 'view' | 'play';
+  selector?: TileSelect;
+};
+
+export type ActiveAction = {
+  activeAction: string;
+};
+
+export type ActionContext = {
+  id: string;
+  action: Interaction | Sequence;
+  subjects?: ActionSubject[];
+  previousContext?: ActionContext;
+  currentIndex?: number;
+  isComplete?: boolean;
+}
+
+export type ActionHistory = {
+  id: string;
+  action: Interaction | Sequence;
+  subjects?: ActionSubject[];
+}
+
 export type GameState = {
-  players: Record<string, PlayerState>;
-  cardManager: CardManagerState;
+  gameId: string;
+  players: Record<string, PlayerState | OtherPlayerState>;
+  activeAction?: Interaction | Sequence;
+  activeActions: Record<string, Sequence | Interaction>;
+  actionContext: ActionContext;
+  actionHistory: ActionHistory[];
+  activeStep: string;
   activePlayerId: string;
+};
+
+export type LocalState = {
   meId: string;
+  mapManager: MapManagerState;
+  cardManager: CardManagerState;
+  selectionState: MapState;
+  previewState: MapState;
+  playerState: PlayerState;
 };
 
 export type ActionState = {
-  mapState: MapState;
-  selectionState: MapState;
-  previewState: MapState;
-  targetHex: HexItem;
-  selectedHex: HexItem | undefined;
+  mapState: MapState; // Contains local data (preview, isSelected etc)
   gameState: GameState;
+  localState: LocalState; // Can not go to the api
 
   // Readonly
   gameDefinition: GameDefinition;
-  activePlayer: PlayerState;
+  targetHex: HexItem;
+  selectedHex: HexItem | undefined;
+  selectedCard: CardState | undefined;
+  activePlayer: PlayerState | OtherPlayerState;
+};
+
+// This is all stuff that needs to come back from the api
+export type SharedState = {
+  mapState: MapState;
+  gameState: GameState;
+  playerState: PlayerState; // me maybe doesn't come back from the api?
 };

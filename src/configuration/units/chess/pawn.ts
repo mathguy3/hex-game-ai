@@ -1,3 +1,4 @@
+import { HexInteraction } from '../../../types/actions/interactions';
 import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { isFirstTeam } from './helpers/isFirstTeam';
 import { isSecondTeam } from './helpers/isSecondTeam';
@@ -9,113 +10,139 @@ import { targetIsNotUnit } from './helpers/targetIsNotUnit';
 import { targetIsUnit } from './helpers/targetIsUnit';
 import { turnIsNotUsed } from './helpers/turnIsNotUsed';
 
-const moveUp = {
-  type: 'movement' as const,
+const moveTwice: HexInteraction = {
+  type: 'hex',
+  kind: 'movement',
   if: { and: [turnIsNotUsed, isFirstTeam] },
-  tiles: {
-    add: [
-      {
-        type: 'direction' as const,
-        direction: 2,
-        range: 2,
-        tileIf: targetIsNotUnit,
-        isBlocking: targetIsUnit,
-        if: subjectHasNotMoved,
-      },
-      {
-        type: 'direction' as const,
-        direction: 2,
-        range: 1,
-        tileIf: targetIsNotUnit,
-        isBlocking: targetIsUnit,
-        if: subjectHasMoved,
-      },
-    ],
+  targeting: {
+    userSelect: true,
+    tiles: {
+      add: [
+        {
+          type: 'direction' as const,
+          direction: 2,
+          range: 2,
+          tileIf: targetIsNotUnit,
+          isBlocking: targetIsUnit,
+          if: subjectHasNotMoved,
+        },
+        {
+          type: 'direction' as const,
+          direction: 2,
+          range: 1,
+          tileIf: targetIsNotUnit,
+          isBlocking: targetIsUnit,
+          if: subjectHasMoved,
+        },
+      ],
+    },
   },
   actions: [
     {
-      type: 'movement' as const,
+      type: 'action' as const,
+      name: 'moveToHex',
+      description:
+        'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
       set: moveToHex,
-    },
+    }
   ],
 };
 
-const attackUp = {
-  type: 'attack' as const,
+const attackUp: HexInteraction = {
+  type: 'hex' as const,
+  kind: 'attack',
   if: { and: [turnIsNotUsed, isFirstTeam] },
-  tiles: {
-    add: [
-      {
-        type: 'offset' as const,
-        offset: { q: -1, r: 0, s: 1 },
-        tileIf: targetIsEnemyUnit,
-      },
-      {
-        type: 'offset' as const,
-        offset: { q: 1, r: -1, s: 0 },
-        tileIf: targetIsEnemyUnit,
-      },
-    ],
+  targeting: {
+    userSelect: true,
+    tiles: {
+      add: [
+        {
+          type: 'offset' as const,
+          offset: { q: -1, r: 0, s: 1 },
+          tileIf: targetIsEnemyUnit,
+        },
+        {
+          type: 'offset' as const,
+          offset: { q: 1, r: -1, s: 0 },
+          tileIf: targetIsEnemyUnit,
+        },
+      ],
+    },
   },
   actions: [
     {
-      type: 'attack' as const,
+      type: 'action' as const,
+      name: 'attack',
+      description: 'Attacks target unit, setting target unit aspect hasMoved: true',
       set: moveToHex,
     },
   ],
 };
 
-const moveDown = {
-  type: 'movement' as const,
+const moveDown: HexInteraction = {
+  type: 'hex' as const,
+  kind: 'movement',
   if: { and: [turnIsNotUsed, isSecondTeam] },
-  tiles: {
-    add: [
-      {
-        type: 'direction' as const,
-        direction: 5,
-        range: 2,
-        tileIf: targetIsNotUnit,
-        isBlocking: targetIsUnit,
-        if: subjectHasNotMoved,
-      },
-      {
-        type: 'direction' as const,
-        direction: 5,
-        range: 1,
-        tileIf: targetIsNotUnit,
-        isBlocking: targetIsUnit,
-        if: subjectHasMoved,
-      },
-    ],
+  targeting: {
+    userSelect: true,
+    tiles: {
+      add: [
+        {
+          type: 'direction' as const,
+          direction: 5,
+          range: 2,
+          tileIf: targetIsNotUnit,
+          isBlocking: targetIsUnit,
+          if: subjectHasNotMoved,
+        },
+        {
+          type: 'direction' as const,
+          direction: 5,
+          range: 1,
+          tileIf: targetIsNotUnit,
+          isBlocking: targetIsUnit,
+          if: subjectHasMoved,
+        },
+      ],
+    },
   },
   actions: [
     {
-      type: 'movement' as const,
+      type: 'action' as const,
+      name: 'moveToHex',
+      description:
+        'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
       set: moveToHex,
     },
   ],
 };
 
-const attackDown = {
-  type: 'attack' as const,
+const attackDown: HexInteraction = {
+  type: 'hex' as const,
+  kind: 'attack',
   if: { and: [turnIsNotUsed, isSecondTeam] },
-  tiles: {
-    add: [
-      {
-        type: 'offset' as const,
-        offset: { q: -1, r: 1, s: 0 },
-        tileIf: targetIsEnemyUnit,
-      },
-      {
-        type: 'offset' as const,
-        offset: { q: 1, r: 0, s: -1 },
-        tileIf: targetIsEnemyUnit,
-      },
-    ],
+  targeting: {
+    userSelect: true,
+    tiles: {
+      add: [
+        {
+          type: 'offset' as const,
+          offset: { q: -1, r: 1, s: 0 },
+          tileIf: targetIsEnemyUnit,
+        },
+        {
+          type: 'offset' as const,
+          offset: { q: 1, r: 0, s: -1 },
+          tileIf: targetIsEnemyUnit,
+        },
+      ],
+    },
   },
   actions: [
     {
-      type: 'attack' as const,
+      type: 'action' as const,
+      name: 'attack',
+      description: 'Attacks target unit, setting target unit aspect hasMoved: true',
       set: moveToHex,
     },
   ],
@@ -124,6 +151,6 @@ const attackDown = {
 export const pawn: UnitDefinition = {
   type: 'unit',
   kind: 'pawn',
-  aspects: {},
-  interactions: [moveUp, attackUp, moveDown, attackDown],
+  properties: {},
+  interactions: [moveTwice, attackUp, moveDown, attackDown],
 };

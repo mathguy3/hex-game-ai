@@ -9,14 +9,19 @@ import { HexImg } from './HexImg';
 
 type HexProps = {
   item: HexItem;
+  isSelected: boolean;
+  preview: Record<string, Preview> | undefined;
   onSelectedRef: React.MutableRefObject<(hex: HexItem) => void>;
 };
 
 const flipYRender = false;
 const renderqs = false;
 
-export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
-  const { coordinates, isSelected } = item;
+export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: HexProps) => {
+  if (item.key === '0.0.0') {
+    console.log('Hex render', item);
+  }
+  const { coordinates } = item;
   if (!coordinates) {
     console.log(item);
   }
@@ -32,16 +37,20 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
     onSelectedRef.current?.(item);
   }, [item, onSelectedRef]);
 
-  const preview =
-    item.preview['attack'] ??
-    item.preview['movement'] ??
+  if (isSelected) {
+    console.log("yeah i'm selected", coordinates);
+  }
+
+  const hexPreview =
+    preview?.['attack'] ??
+    preview?.['movement'] ??
     ({
       type: 'none',
       color: isSelected ? colors.hex.selection : '#000',
       tile: { type: 'tile', coordinates: item.coordinates, key: item.key },
     } as Preview);
 
-  if (Object.keys(item.preview).length) {
+  if (Object.keys(hexPreview).length) {
     //console.log('preview!', item.key, item.preview);
   }
 
@@ -54,7 +63,7 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
   if (item.contains.unit) {
     //console.log('team color', teamColor);
   }
-  const isPreview = preview.type !== 'none';
+  const isPreview = hexPreview.type !== 'none';
   return (
     <Box
       position="absolute"
@@ -76,9 +85,9 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
           </Box>
         </div>
       )}
-      <HexImg width={gridColumnWidth} strokeWidth={isSelected || isPreview ? 4 : 2} color={preview.color} />
+      <HexImg width={gridColumnWidth} strokeWidth={isSelected || isPreview ? 4 : 2} color={hexPreview.color} />
       {item.contains.unit && <Soldier key={item.contains.unit.id} item={item.contains.unit} />}
-
+      {/*Object.keys(item.preview)*/}
       <Box
         position="absolute"
         top={gridRowHeight * 0.7}
@@ -88,9 +97,9 @@ export const Hex = React.memo(({ item, onSelectedRef }: HexProps) => {
         bgcolor={teamColor}
       />
 
-      {preview.tile.type === 'pathrange' ? (
+      {hexPreview.tile.type === 'pathrange' ? (
         <Box position="absolute" top={gridRowHeight * 0.35} left={gridColumnWidth * 0.45} fontWeight={800}>
-          {preview.tile.pathRange}
+          {hexPreview.tile.pathRange}
         </Box>
       ) : undefined}
     </Box>

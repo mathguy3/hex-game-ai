@@ -1,7 +1,6 @@
 import { CoordinateKey, Coordinates, Tile } from '../../../../types';
 import { TileSelect } from '../../../../types/actions/tiles';
 import { ActionState } from '../../../../types/game';
-import { getKey } from '../../../../utils/coordinates/getKey';
 import { evalIf } from '../../if/if-engine/eval-if';
 import * as tileGenerators from '../../tile-generators';
 import { TileGenerator } from '../../tile-generators/types';
@@ -16,6 +15,7 @@ export const generateTiles = (
 ): Record<string, Tile> => {
   const generator = tileGenerators[tileSelect.type] as TileGenerator<TileSelect>;
 
+  //const generator
   if (!generator) {
     console.error('no tile generator for', tileSelect.type);
     return {};
@@ -30,12 +30,15 @@ export const generateTiles = (
       isValid &&
       (!tileSelect.tileIf ||
         evalIf(tileSelect.tileIf, {
-          target: { parent: actionState.mapState, field: tile.key },
-          subject: { parent: actionState.mapState, field: getKey(subject) },
+          subject: { parent: actionState.mapState, field: tile.key },
+          context: { parent: actionState, field: 'gameState' }
         }));
 
     return isUniversallyValid && isValid && passesCheck;
   }
   const results = generator(tileSelect, subject, actionState, checkTile, initialSearch);
-  return Object.fromEntries(Object.entries(results).filter((x) => checkTile(x[1])));
+  console.log('generator results', results);
+  const results2 = Object.fromEntries(Object.entries(results).filter((x) => checkTile(x[1])));
+  console.log(results2);
+  return results2;
 };

@@ -21,7 +21,10 @@ import { getSimpleValue } from './getSimpleValue';
 const evalByType = {
   if: (context, value) => value === getTargetValue(context.selected),
   set: (context, value) => {
-    context.selected.parent[context.selected.field] = value;
+    context.selectedParent.parent[context.selectedParent.field] = {
+      ...context.selected.parent,
+      [context.selected.field]: value,
+    };
     return true;
   },
   eval: (_context, value) => value,
@@ -32,7 +35,7 @@ export const selectIfValue = (context: IFContext) => {
 
   if (isSimpleValue(ifValue)) {
     const value = getSimpleValue(ifValue, context);
-    console.log('SELECTING SIMPLE VALUE', ifValue, value, context);
+    //console.log('SELECTING SIMPLE VALUE', ifValue, value, context);
     return evalByType[context.type](context, value);
   }
   if (!ifValue) {

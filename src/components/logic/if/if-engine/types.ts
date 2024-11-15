@@ -16,6 +16,7 @@ export type IFContext<T extends IFValue = IFValue, Model = GameModel> = {
   ifValue?: T;
   model: Model;
   selected?: TargetContext;
+  selectedParent?: TargetContext;
   path: string;
   state: any;
 };

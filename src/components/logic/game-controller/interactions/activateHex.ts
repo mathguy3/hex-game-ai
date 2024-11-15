@@ -1,6 +1,5 @@
 import { UnitState } from '../../../../types/entities/unit/unit';
 import { ActionState } from '../../../../types/game';
-import { showPreview } from '../../map/preview/showPreview';
 import { selectHex } from '../../map/selectHex';
 import { activateInteraction } from '../activateInteraction';
 
@@ -18,6 +17,5 @@ export const activateHex = (actionState: ActionState): ActionState => {
 
   actionState = activateInteraction(actionState, interactionDefinition);
   actionState = selectHex(actionState);
-  actionState = showPreview(actionState);
   return actionState;
 };

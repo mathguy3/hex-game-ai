@@ -10,7 +10,7 @@ export const activateAction = (actionState: ActionState, action: Action | System
     for (const set of sets) {
       evalSet(set, getModel(actionState));
     }
-    if (actionState.gameDefinition.game.events) {
+    /*if (actionState.gameDefinition..events) {
       const event = actionState.gameDefinition.game.events[action.type];
       const eventActions = event ? asArray(event.actions) : [];
       for (const eventAction of eventActions) {
@@ -19,7 +19,7 @@ export const activateAction = (actionState: ActionState, action: Action | System
           evalSet(set, getModel(actionState));
         }
       }
-    }
+    }*/
   }
   return actionState;
 };

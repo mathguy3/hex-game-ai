@@ -13,10 +13,12 @@ export const selectField = (context: IFContext, path: string, isOperation?: bool
     nextTarget = getTargetValue(nextTarget);
   }
   log('selecting path:', '', path, nextPath, nextTarget, isOperation, context.selected);
+  const nextSelected = isOperation ? context.selected : nextTarget;
   return {
     ...context,
     ifValue: context.ifValue[path],
-    selected: isOperation ? context.selected : nextTarget,
+    selected: nextSelected,
+    selectedParent: context.selected,
     path: nextPath,
   };
 };

@@ -1,5 +1,5 @@
 import { rangeSimple } from '../../components/logic/tile-generators';
-import { origin } from '../../configuration/constants';
+import { originHex } from '../../configuration/constants';
 import { CoordinateKey, Coordinates, MapState, Tile } from '../../types';
 import { UnitKind } from '../../types/kinds/units';
 import { fromKey } from '../../utils/coordinates/fromKey';
@@ -12,7 +12,7 @@ export const mapGen = (tiles: MapState = {}) => {
       return mapGen({ ...tiles, [coordinates]: makeHex(fromKey(coordinates)) });
     },
     radius: (radius: number) => {
-      const newTiles = rangeSimple({ type: 'range' as const, range: radius }, origin, true);
+      const newTiles = rangeSimple({ type: 'range' as const, range: radius }, originHex, true);
       const newHexes = mapRecord(newTiles, (x: Tile) => makeHex(x.coordinates));
       return mapGen({ ...newHexes });
     },
