@@ -1,6 +1,8 @@
 import { ActionRequest, doSequence } from "../../components/logic/game-controller/sequencer";
+import { WebSocketMessage } from "../../game/websocket";
 import { MapState } from "../../types";
 import { ActionState, GameDefinition, GameState, LocalState, OtherPlayerState, PlayerState } from "../../types/game";
+import { broadcastToGame } from "../startup";
 
 export interface GameSession {
     id: string;
@@ -134,22 +136,27 @@ export class GameManager {
             };
         }
 
-        var meId = game.gameState.players[userId].teamId;
+        var meId = this.getPlayerByPlayerId(gameId, userId).teamId;
         // Verify it's the player's turn
-        if (game.gameState.activePlayerId !== meId) {
+        if (game.gameState.activePlayerId !== meId && request.type !== 'continue') {
+            console.log('Not your turn', game.gameState.activePlayerId, meId);
             throw new Error('Not your turn');
         }
+
+        localState.meId = meId;
+        localState.playerState = this.getPlayerInfo(gameId, userId, userId);
 
         // Build action state
         const actionState: ActionState = {
             mapState: game.mapState,
             gameState: game.gameState,
-            localState: { ...localState, meId: userId, playerState: this.getPlayerInfo(gameId, userId, userId) },
+            localState,
             gameDefinition: game.gameDefinition,
             targetHex: null,
             selectedHex: null,
             selectedCard: null,
-            activePlayer: game.gameState.players[userId],
+            activePlayer: game.gameState.players[meId],
+            shouldUpdateLocalState: false,
         }
 
         // Execute the action sequence
@@ -162,6 +169,16 @@ export class GameManager {
 
         game.gameState = newState.gameState;
         game.mapState = newState.mapState;
+
+        // Broadcast update to all players
+        this.broadcast(gameId, {
+            type: 'gameUpdate',
+            gameId,
+            payload: {
+                gameState: this.mapPlayerInfo(newState.gameState, userId),
+                mapState: newState.mapState
+            }
+        });
 
         // Map player info before returning
         return {
@@ -294,6 +311,10 @@ export class GameManager {
         if (!game.gameState.hasStarted && Object.keys(game.gameState.players).length === 0) {
             this.removeGame(gameId);
         }
+    }
+
+    private broadcast(gameId: string, message: WebSocketMessage) {
+        broadcastToGame(gameId, message);
     }
 }
 

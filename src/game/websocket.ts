@@ -1,6 +1,7 @@
 // Define all possible message types that match server endpoints
-type WebSocketMessage = {
-    type: string;
+export type WebSocketMessage = {
+    type: 'gameUpdate' | 'playerJoined' | 'playerLeft' | 'getGameUpdate';
+    gameId: string;
     payload: any;
     requestId?: string;
 };

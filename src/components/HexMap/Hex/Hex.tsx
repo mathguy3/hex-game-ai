@@ -18,9 +18,7 @@ const flipYRender = false;
 const renderqs = false;
 
 export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: HexProps) => {
-  if (item.key === '0.0.0') {
-    console.log('Hex render', item);
-  }
+
   const { coordinates } = item;
   if (!coordinates) {
     console.log(item);

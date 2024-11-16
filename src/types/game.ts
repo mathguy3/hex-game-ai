@@ -129,6 +129,7 @@ export type ActionState = {
   mapState: MapState; // Contains local data (preview, isSelected etc)
   gameState: GameState;
   localState: LocalState; // Can not go to the api
+  shouldUpdateLocalState: boolean;
 
   // Readonly
   gameDefinition: GameDefinition;

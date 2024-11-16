@@ -13,7 +13,6 @@ export const interact = (actionState: ActionState, stepId: string, action: Seque
     }
 
     const { activeAction } = actionState.gameState;
-    console.log('activeAction', activeAction);
     if (activeAction.type !== 'options') {
         throw new Error('trying to interact during a non options step');
     }
@@ -25,20 +24,6 @@ export const interact = (actionState: ActionState, stepId: string, action: Seque
     if (request.subjects.length > 1) {
         throw new Error('subjects limited to 1 for now');
     }
-
-    const previousContext = actionState.gameState.actionContext;
-
-    /*actionState.gameState.actionHistory.push({
-        id: stepId,
-        action: action,
-        subjects: request.subjects,
-    });
-    actionState.gameState.actionContext = {
-        id: stepId,
-        action: action,
-        subjects: request.subjects,
-        previousContext,
-    };*/
 
     for (const subject of request.subjects) {
         const definedInteraction = activeAction.interactions[subject.type];

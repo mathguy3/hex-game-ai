@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { MapState } from "../../../types";
 import { ActionState, GameState, LocalState } from "../../../types/game";
 import { ActionRequest, doSequence } from "./sequencer";
@@ -15,35 +15,37 @@ export const useActionHandler = (params: {
 }) => {
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const handleAction = async (request: ActionRequest, actionState: ActionState = params.basicActionState) => {
-        setIsProcessing(true);
-
+    const handleAction = useCallback(async (request: ActionRequest, actionState: ActionState = params.basicActionState) => {
         try {
+            // Immediately apply optimistic update
+            const optimisticState = doSequence(actionState, request);
+
+            // Update UI immediately with all changes including active player
+            params.setLocalState({ ...optimisticState.localState });
+            params.setGameState({ ...optimisticState.gameState });
+            params.setMapState({ ...optimisticState.mapState });
+
+            // Send to server in background
             if (params.hasEnoughPlayers) {
-                // Use server-side action handling
-                const response = await params.client.handleAction({
+                setIsProcessing(true);
+                const serverResponse = await params.client.handleAction({
                     gameId: params.gameId,
                     request,
                     localState: params.localState
                 });
 
-                // Update state with response
-                params.setLocalState({ ...response.localState });
-                params.setGameState({ ...response.gameState });
-                params.setMapState({ ...response.mapState });
-            } else {
-                // Local handling for testing/single player
-                const newActionState = doSequence(actionState, request);
-                params.setLocalState({ ...newActionState.localState });
-                params.setGameState({ ...newActionState.gameState });
-                params.setMapState({ ...newActionState.mapState });
+                // Only update if server state differs significantly
+                if (JSON.stringify(serverResponse.gameState) !== JSON.stringify(optimisticState.gameState)) {
+                    params.setGameState({ ...serverResponse.gameState });
+                    params.setMapState({ ...serverResponse.mapState });
+                }
             }
         } catch (error) {
-            console.error('Failed to handle action:', error);
+            console.error('Action failed:', error);
         } finally {
             setIsProcessing(false);
         }
-    };
+    }, [params.gameId, params.hasEnoughPlayers, params.localState]);
 
     return { handleAction, isProcessing };
 }; 

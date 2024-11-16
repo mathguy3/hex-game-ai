@@ -21,24 +21,19 @@ export function generateTileSet(
         subject: { parent: actionState.mapState, field: getKey(subject) },
       })
   );
-  console.log('tileAddstouse', tileAddsToUse);
   const initial = mapToRecord(tileAddsToUse, (select) => generateTiles(select, subject, actionState));
-  console.log('initial', initial);
-  //console.log('initial generation', initial);
+
   const limitTo = tileGen.limit?.length
     ? mapToRecord(tileGen.limit, (select) => generateTiles(select, subject, actionState))
     : undefined;
 
-  //console.log('limit generation', limitTo);
   const limited = limitTo ? intersectRecords(initial, limitTo) : initial;
 
   const toRemove = tileGen.not?.length
     ? mapToRecord(tileGen.not, (select) => generateTiles(select, subject, actionState))
     : undefined;
 
-  //console.log('remove generation', toRemove);
   const final = toRemove ? diffRecord(limited, toRemove) : limited;
-  console.log('final generation', final);
 
   return !includeSubject
     ? diffRecord(final, { [getKey(subject)]: { coordinates: subject, key: getKey(subject), type: 'tile' } })

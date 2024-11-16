@@ -1,4 +1,5 @@
 import React, { createContext, MutableRefObject, useContext, useEffect, useState } from 'react';
+import { WebSocketMessage } from '../../../game/websocket';
 import { HexItem, MapState } from '../../../types';
 import { ActionState, GameState, LocalState } from '../../../types/game';
 import { useUpdatingRef } from '../../../utils/useUpdatingRef';
@@ -6,6 +7,7 @@ import { useClient } from '../client/ClientProvider';
 import { showPreview } from '../map/preview/showPreview';
 import { selectHex } from '../map/selectHex';
 import { isPlayerTurn } from '../util/isPlayerTurn';
+import { useWebSocket } from '../websocket/WebSocketProvider';
 import { useGameDefinition } from './GameDefinitionProvider';
 import { ActionRequest } from './sequencer';
 import { useActionHandler } from './useActionHandler';
@@ -14,8 +16,8 @@ type GameControllerCtx = {
   basicActionState: ActionState;
   pressHex: MutableRefObject<(hex: HexItem) => void>;
   saveActionState: MutableRefObject<(actionState: ActionState) => void>;
+  doAction: MutableRefObject<(request: ActionRequest) => void>;
 };
-export type DoAction = (actionState: ActionState) => Promise<ActionState>;
 
 const GameControllerContext = createContext<GameControllerCtx>(null);
 
@@ -52,6 +54,7 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
     activePlayer: gameState.players[gameState.activePlayerId],
     gameDefinition: selectedGame,
     localState,
+    shouldUpdateLocalState: false,
   };
 
   const { handleAction, isProcessing } = useActionHandler({
@@ -103,19 +106,30 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
       setMapState({ ...actionState.mapState });
     }
   });
-
-  useEffect(() => {
-    const handleStepChange = async () => {
-      const request: ActionRequest = {
-        type: 'continue',
-        playerId: localState.meId,
+  /*
+    useEffect(() => {
+      const handleStepChange = async () => {
+        const request: ActionRequest = {
+          type: 'continue',
+          playerId: localState.meId,
+        };
+  
+        await handleAction(request);
       };
-
-      await handleAction(request);
-    };
-
-    handleStepChange();
-  }, [gameState.activeStep, client, localState.meId]);
+  
+      // Initial call
+      handleStepChange();
+  
+      // Set up polling
+      const pollInterval = setInterval(() => {
+        handleStepChange();
+      }, 1000);
+  
+      // Cleanup
+      return () => {
+        clearInterval(pollInterval);
+      };
+    }, [gameState.activeStep]);*/
 
   const saveActionState = useUpdatingRef((actionState: ActionState) => {
     setLocalState(actionState.localState);
@@ -123,12 +137,95 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
     setMapState(actionState.mapState);
   });
 
+  const doAction = useUpdatingRef((request: ActionRequest) => {
+    handleAction(request);
+  });
+
+  useEffect(() => {
+    const handleWebSocketMessage = (event: MessageEvent) => {
+      const message: WebSocketMessage = JSON.parse(event.data);
+
+      if (message.type === 'gameUpdate' && message.gameId === gameState.gameId) {
+        setGameState(message.payload.gameState);
+        setMapState(message.payload.mapState);
+        if (message.payload.shouldSetLocalState) {
+          setLocalState(message.payload.localState);
+        }
+      }
+      // When we get a player joined message, we should request a game state update
+      if (message.type === 'playerJoined' && message.gameId === gameState.gameId) {
+        console.log('playerJoined', message);
+        const userId = gameState.players[localState.meId].playerId;
+        sendMessage({
+          type: 'getGameUpdate',
+          gameId: gameState.gameId,
+          payload: {
+            userId,
+            gameState: gameState,
+            mapState: mapState,
+          }
+        });
+      }
+    };
+
+    // Add WebSocket listener
+    window.addEventListener('message', handleWebSocketMessage);
+
+    return () => {
+      window.removeEventListener('message', handleWebSocketMessage);
+    };
+  }, [gameState.gameId]);
+
+  const { sendMessage } = useWebSocket();
+
+  useEffect(() => {
+    if (gameState?.gameId) {
+      // Join the game's WebSocket room
+      console.log('joining game', gameState.gameId);
+      sendMessage({
+        type: 'playerJoined',
+        gameId: gameState.gameId,
+        payload: {
+          playerId: localState.meId
+        }
+      });
+
+      return () => {
+        // Leave the game's WebSocket room
+        sendMessage({
+          type: 'playerLeft',
+          gameId: gameState.gameId,
+          payload: {
+            playerId: localState.meId
+          }
+        });
+      };
+    }
+  }, [gameState?.gameId]);
+
+  useEffect(() => {
+    if (isPlayerTurn(gameState, localState)) {
+      doAction.current({ type: 'continue', playerId: localState.meId });
+    }
+    // it needs to poll every second
+    const pollInterval = setInterval(() => {
+      if (isPlayerTurn(gameState, localState)) {
+        doAction.current({ type: 'continue', playerId: localState.meId });
+      }
+    }, 500);
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, [isPlayerTurn(gameState, localState)]);
+
   return (
     <GameControllerContext.Provider
       value={{
         pressHex: handlePressHex,
         basicActionState,
-        saveActionState
+        saveActionState,
+        doAction
       }}
     >
       {children}

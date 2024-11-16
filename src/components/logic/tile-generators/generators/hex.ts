@@ -14,13 +14,9 @@ export const hex: TileGenerator<HexTileSelect> = (tileSelect, subject, actionSta
       subject: { parent: actionState.mapState, field: x.key },
       context: { parent: actionState, field: 'gameState' },
     });
-    if (x.key === '0.0.0') {
-      console.log('RESULTS', tileSelect.tileIf, x, result);
-    }
     return result;
   });
 
-  console.log('matching targets', matchingTargets);
 
   return mapToRecord(matchingTargets, (item) => ({
     [item.key]: {

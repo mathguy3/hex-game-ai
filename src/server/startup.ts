@@ -1,6 +1,7 @@
 import Bun from 'bun';
 import { chat } from './chat/chat';
 import { createGame } from './games/createGame';
+import { gameManager } from './games/gameManager';
 import { handleAction } from './games/handleAction';
 import { joinGame } from './games/joinGame';
 import { leaveGame } from './games/leaveGame';
@@ -43,20 +44,15 @@ const gameConnections = new Map<string, Set<WebSocket>>();
 Bun.serve({
   port: 3004,
   development: true,
-  error(error: Error) {
-    console.error('Server error:', error);
-    return new Response(`Error: ${error.message}`, {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  },
-  async fetch(req: Request) {
-    try {
-      console.log('Server fetch');
-      const headers = new Headers();
+  async fetch(req, server) {
+    // Upgrade the request to WebSocket if it's a WebSocket request
+    if (req.headers.get("Upgrade") === "websocket") {
+      const { response } = server.upgrade(req);
+      return response;
+    }
 
+    try {
+      const headers = new Headers();
       headers.set('Access-Control-Allow-Origin', '*');
       headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       headers.set('Access-Control-Allow-Headers', 'Content-Type');
@@ -84,63 +80,70 @@ Bun.serve({
       return response;
     } catch (error) {
       console.error('Server error:', error);
-
-      return new Response(
-        JSON.stringify({
-          error: error instanceof Error ? error.message : 'Unknown error occurred',
-          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
   },
-
   websocket: {
     open(ws) {
-      // When a client connects, they should send a "join" message first
-      console.log("Client connected");
+      console.log("WebSocket connection opened", new Date().toISOString());
     },
     message(ws, message) {
+      //console.log("WebSocket message received:", message);
       try {
         const data = JSON.parse(message as string);
 
         switch (data.type) {
-          case 'join':
+          case 'playerJoined': {
             const gameId = data.gameId;
             if (!gameConnections.has(gameId)) {
               gameConnections.set(gameId, new Set());
             }
             gameConnections.get(gameId)?.add(ws);
 
-            // Broadcast to other players in the game
             broadcastToGame(gameId, {
               type: 'playerJoined',
-              playerId: data.playerId,
-              // ... other player data
-            }, ws); // Exclude the sender
+              gameId,
+              payload: {
+                playerId: data.playerId,
+              }
+            }, ws);
             break;
+          }
 
-          case 'leave':
+          case 'playerLeft': {
             leaveGameWS(ws, data.gameId);
             break;
+          }
+
+          case 'getGameUpdate': {
+            const gameId = data.gameId;
+            const gameState = gameManager.getGameState(gameId, data.payload.userId);
+            ws.send(JSON.stringify({
+              type: 'gameUpdate',
+              gameId,
+              payload: {
+                gameState: gameState.gameState,
+                mapState: gameState.mapState
+              }
+            }));
+            break;
+          }
         }
       } catch (e) {
         console.error('WebSocket message error:', e);
       }
     },
     close(ws) {
-      // Clean up when client disconnects
+      console.log("WebSocket connection closed", new Date().toISOString());
       removeFromAllGames(ws);
     }
   }
 });
 
-function broadcastToGame(gameId: string, message: any, exclude?: WebSocket) {
+export function broadcastToGame(gameId: string, message: any, exclude?: WebSocket) {
   const connections = gameConnections.get(gameId);
   if (!connections) return;
 

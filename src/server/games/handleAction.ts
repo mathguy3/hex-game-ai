@@ -33,6 +33,8 @@ export const handleAction = (
             throw new Error('Invalid action request');
         }
 
+        console.log('handleAction', request);
+
         // Handle the action and get the response
         const response = gameManager.handleAction(
             gameId,
@@ -42,7 +44,7 @@ export const handleAction = (
         );
 
         // Validate the response
-        if (!response.gameState || !response.mapState || !response.localState) {
+        if (!response.gameState || !response.mapState) {
             throw new Error('Invalid game state after action');
         }
 
@@ -56,6 +58,6 @@ export const handleAction = (
         });
 
         // Rethrow with more context
-        throw new Error(`Failed to handle action: ${error.message}`);
+        throw error;
     }
 };  

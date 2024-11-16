@@ -25,7 +25,6 @@ export const applyPreviewTiles = (
   } as HexTileSelect;
   previewTiles = applyTiles(previewTiles, generateTileSet(asTileSet(selector), start ?? originHex, actionState), type);
 
-  console.log('applying preview tiles', previewTiles, type);
   mapApplyState(mapState, previewTiles, (hex, tile) => ({
     ...hex,
     preview: tile.preview,

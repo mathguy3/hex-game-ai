@@ -37,8 +37,6 @@ export const generateTiles = (
     return isUniversallyValid && isValid && passesCheck;
   }
   const results = generator(tileSelect, subject, actionState, checkTile, initialSearch);
-  console.log('generator results', results);
   const results2 = Object.fromEntries(Object.entries(results).filter((x) => checkTile(x[1])));
-  console.log(results2);
   return results2;
 };

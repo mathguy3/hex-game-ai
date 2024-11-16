@@ -7,6 +7,7 @@ import { HexMap } from '../HexMap/HexMap';
 import { ClientProvider, useClient } from '../logic/client/ClientProvider';
 import { GameControllerProvider } from '../logic/game-controller/GameControllerProvider';
 import { GameDefinitionProvider } from '../logic/game-controller/GameDefinitionProvider';
+import { WebSocketProvider } from '../logic/websocket/WebSocketProvider';
 import { ConfigureMenu } from './ConfigureMenu';
 import { GamePicker } from './GamePicker';
 import { MainMenu } from './MainMenu';
@@ -187,8 +188,10 @@ export const GameUI: React.FC = () => {
 
   return (
     <ClientProvider>
-      <Username />
-      <CurrentPage navigate={navigate} data={pageState.data} />
+      <WebSocketProvider>
+        <Username />
+        <CurrentPage navigate={navigate} data={pageState.data} />
+      </WebSocketProvider>
     </ClientProvider>
   );
 };

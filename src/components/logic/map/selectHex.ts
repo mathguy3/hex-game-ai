@@ -4,7 +4,6 @@ import { unselectCoordinates } from './unselectCoordinates';
 export const selectHex = (actionState: ActionState): ActionState => {
   let { localState, selectedHex, targetHex } = unselectCoordinates(actionState, actionState.localState.selectionState);
 
-  console.log('after unselect', selectedHex, targetHex, selectedHex);
 
   selectedHex = targetHex;
 

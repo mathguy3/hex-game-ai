@@ -20,7 +20,6 @@ export const showPreview = (actionState: ActionState): ActionState => {
     preview: tile.preview,
   }));
 
-  console.log('updated preview state', localState.selectionState, localState.previewState);
 
   return {
     ...updatedState,

@@ -3,7 +3,6 @@ import { moveToHex } from './helpers/moveToHex';
 import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
 import { targetIsNotUnit } from './helpers/targetIsNotUnit';
 import { targetIsUnit } from './helpers/targetIsUnit';
-import { turnIsNotUsed } from './helpers/turnIsNotUsed';
 
 const getQueenAttackMove = (attack?: boolean) => ({
   add: [
@@ -30,7 +29,6 @@ export const queen: UnitDefinition = {
     {
       type: 'hex' as const,
       kind: 'movement',
-      if: turnIsNotUsed,
       targeting: {
         userSelect: true,
         tiles: getQueenAttackMove(),
@@ -47,7 +45,6 @@ export const queen: UnitDefinition = {
     {
       type: 'hex' as const,
       kind: 'attack',
-      if: turnIsNotUsed,
       targeting: {
         userSelect: true,
         tiles: getQueenAttackMove(true),

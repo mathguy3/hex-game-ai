@@ -6,8 +6,6 @@ import { resolveAction } from './resolveAction';
 export const moveToNextStep = (actionState: ActionState, completeOptions?: boolean) => {
   const { activeStep, activeAction, activeActions, actionContext, hasStarted } = actionState.gameState;
 
-  console.log('moveToNextStep', actionContext);
-
   function popContext() {
     const parentStep = actionContext.previousContext.id;
     const parentAction = actionContext.previousContext.action;
@@ -49,7 +47,6 @@ export const moveToNextStep = (actionState: ActionState, completeOptions?: boole
     const nextIndex = actionContext.currentIndex == null ? 0 : actionContext.currentIndex + 1;
 
     if (actionContext.isComplete) {
-      console.log('sequence complete', actionContext);
       return popContext();
     } else if (nextIndex < activeAction.actions.length) {
       actionContext.currentIndex = nextIndex;
