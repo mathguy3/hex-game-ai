@@ -38,8 +38,8 @@ const noMoreEnemies = {};
 
 export const hexChess: GameDefinition = {
   players: {
-    player1: {},
-    player2: {},
+    team1: {},
+    team2: {},
   },
   map: mapGen().radius(6).tile('7.-4.-3').spawn('queen', '0.0.0', 'team1').spawn('queen', '1.1.-2', 'team2').result(),
   sequencing: {
@@ -95,4 +95,5 @@ export const hexChess: GameDefinition = {
     king,
   },
   name: 'Hex Chess',
+  description: 'A strategic board game'
 };

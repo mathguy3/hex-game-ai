@@ -4,7 +4,7 @@ import { isOptions } from './isOptions';
 import { resolveAction } from './resolveAction';
 
 export const moveToNextStep = (actionState: ActionState, completeOptions?: boolean) => {
-  const { activeStep, activeAction, activeActions, actionContext } = actionState.gameState;
+  const { activeStep, activeAction, activeActions, actionContext, hasStarted } = actionState.gameState;
 
   console.log('moveToNextStep', actionContext);
 
@@ -23,6 +23,13 @@ export const moveToNextStep = (actionState: ActionState, completeOptions?: boole
       nextStep: parentStep,
       nextAction: parentAction, // This will already be resolved
     };
+  }
+
+  if (activeStep == 'setup' && !hasStarted) {
+    return {
+      nextStep: activeStep,
+      nextAction: activeAction
+    }
   }
 
   // Handle options completion

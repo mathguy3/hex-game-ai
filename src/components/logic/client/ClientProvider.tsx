@@ -38,7 +38,7 @@ export const ClientProvider = ({ children }: React.PropsWithChildren) => {
     }
   }, []);
   function handler(route: string) {
-    return async (params: Record<string, any>) => {
+    return async (params?: Record<string, any>) => {
       const response = await fetch(`${baseUrl}/${route}`, {
         method: 'POST',
         body: JSON.stringify({ ...params, sessionId }),
@@ -49,8 +49,11 @@ export const ClientProvider = ({ children }: React.PropsWithChildren) => {
   const client: Omit<ServerRoutes, 'id'> = useMemo(
     () => ({
       chat: handler('chat'),
-      info: handler('info'),
-      play: handler('play'),
+      createGame: handler('createGame'),
+      joinGame: handler('joinGame'),
+      listGames: handler('listGames'),
+      handleAction: handler('handleAction'),
+      leaveGame: handler('leaveGame'),
     }),
     [sessionId]
   );

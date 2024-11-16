@@ -1,5 +1,4 @@
-import { Button } from '@mui/material';
-import Box from '@mui/material/Box';
+import { Box, List, ListItem, Typography } from '@mui/material';
 import { useEffect } from 'react';
 import { isDev } from '../../configuration/constants';
 import { useGameController } from '../logic/game-controller/GameControllerProvider';
@@ -9,8 +8,8 @@ import { MapFrame } from './MapFrame';
 import { SelectionInfo } from './SelectionInfo';
 
 export const HexMap = () => {
-  const { pressHex, systemAction, saveActionState, basicActionState } = useGameController();
-  const { localState, mapState, gameState } = basicActionState;
+  const { pressHex, saveActionState, basicActionState } = useGameController();
+  const { localState, mapState, gameState, gameDefinition } = basicActionState;
   console.log('HexMap', basicActionState.mapState);
 
   useEffect(() => {
@@ -31,10 +30,33 @@ export const HexMap = () => {
           {Object.values(localState.selectionState).map((x) => (
             <SelectionInfo key={x.key} item={x} />
           ))}
+
+          <Box sx={{
+            bgcolor: 'background.paper',
+            p: 1,
+            mt: 2,
+            border: '1px solid grey',
+            borderRadius: 1
+          }}>
+            <Typography variant="subtitle2">Players:</Typography>
+            <List dense>
+              {Object.values(gameState.players).map((player) => {
+                if (!player) return null;
+                return (
+                  <ListItem key={player.teamId} sx={{
+                    color: player.teamId === gameState.activePlayerId ? 'primary.main' : 'text.primary'
+                  }}>
+                    {` - ${player.name ?? player.teamId}`}{player.teamId === localState.meId && ' (me)'}
+                    {player.teamId === gameState.activePlayerId && ' (active)'}
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Box>
         </Box>
       )}
       <MapFrame>
-        <Box id="inner-inner" position="relative">
+        <Box id="inner-inner" position="relative" >
           {Object.values(mapState).map((x) => {
             if (x.key === '0.0.0') {
               console.log('HexMap render', x);
@@ -43,16 +65,6 @@ export const HexMap = () => {
           })}
         </Box>
       </MapFrame>
-
-      <Box position="fixed" top={0} right={0}>
-        <Button
-          variant="contained"
-          disabled={/*!isPlayerTurn(gameState)*/ false}
-          onClick={() => systemAction.current('end-turn')}
-        >
-          {'End turn'}
-        </Button>
-      </Box>
       <Box position="fixed" top={0} left={150}>
         {gameState.activePlayerId}
       </Box>

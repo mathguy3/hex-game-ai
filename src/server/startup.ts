@@ -1,21 +1,45 @@
 import Bun from 'bun';
 import { chat } from './chat/chat';
-import { info } from './game';
-import { play } from './play';
+import { createGame } from './games/createGame';
+import { handleAction } from './games/handleAction';
+import { joinGame } from './games/joinGame';
+import { leaveGame } from './games/leaveGame';
+import { listGames } from './games/listGames';
 import { getUser, id } from './user/id';
+
 
 const serverRoutes = {
   id,
   chat,
-  info,
-  play,
+  joinGame,
+  createGame,
+  listGames,
+  handleAction,
+  leaveGame
 };
 
-type ClientType<T> = T extends (params: infer A) => infer R ? (params: Omit<A, 'user'>) => Promise<R> : unknown;
+// Helper type to check if a function has parameters
+type HasParams<T> = T extends (params: infer P) => any
+  ? P extends { user: any }
+  ? keyof Omit<P, 'user'> extends never
+  ? false
+  : true
+  : false
+  : false;
+
+// Modified ClientType to handle parameterless routes
+type ClientType<T> = T extends (params: any) => infer R
+  ? HasParams<T> extends true
+  ? (params: Omit<Parameters<T>[0], 'user'>) => Promise<R>
+  : () => Promise<R>
+  : unknown;
+
 export type ServerRoutes = {
   [Key in keyof typeof serverRoutes]: ClientType<(typeof serverRoutes)[Key]>;
 };
 console.log('Server startup');
+const gameConnections = new Map<string, Set<WebSocket>>();
+
 Bun.serve({
   port: 3004,
   development: true,
@@ -50,7 +74,8 @@ Bun.serve({
         console.log(routeName, params, user);
         return new Response('401', { headers, status: 401, statusText: 'sessionId not found, use /id first' });
       }
-      const response = new Response(JSON.stringify(handler({ ...params, user })), { headers });
+      const result = await handler({ ...params, user });
+      const response = new Response(JSON.stringify(result), { headers });
 
       if (!response.ok) {
         throw new Error(`Request failed: ${response.statusText}`);
@@ -74,25 +99,77 @@ Bun.serve({
       );
     }
   },
+
   websocket: {
     open(ws) {
-      console.log('WebSocket connected');
-    },
-    error(ws, error) {
-      console.error('WebSocket error:', error);
-    },
-    close(ws) {
-      console.log('WebSocket closed');
+      // When a client connects, they should send a "join" message first
+      console.log("Client connected");
     },
     message(ws, message) {
       try {
-        // Your message handling
-      } catch (error) {
-        console.error('WebSocket message error:', error);
-        ws.send(JSON.stringify({
-          error: error instanceof Error ? error.message : 'Unknown error occurred'
-        }));
+        const data = JSON.parse(message as string);
+
+        switch (data.type) {
+          case 'join':
+            const gameId = data.gameId;
+            if (!gameConnections.has(gameId)) {
+              gameConnections.set(gameId, new Set());
+            }
+            gameConnections.get(gameId)?.add(ws);
+
+            // Broadcast to other players in the game
+            broadcastToGame(gameId, {
+              type: 'playerJoined',
+              playerId: data.playerId,
+              // ... other player data
+            }, ws); // Exclude the sender
+            break;
+
+          case 'leave':
+            leaveGameWS(ws, data.gameId);
+            break;
+        }
+      } catch (e) {
+        console.error('WebSocket message error:', e);
       }
+    },
+    close(ws) {
+      // Clean up when client disconnects
+      removeFromAllGames(ws);
     }
   }
 });
+
+function broadcastToGame(gameId: string, message: any, exclude?: WebSocket) {
+  const connections = gameConnections.get(gameId);
+  if (!connections) return;
+
+  const messageStr = JSON.stringify(message);
+  for (const client of connections) {
+    if (client !== exclude) {
+      client.send(messageStr);
+    }
+  }
+}
+
+function leaveGameWS(ws: WebSocket, gameId: string) {
+  const connections = gameConnections.get(gameId);
+  if (connections) {
+    connections.delete(ws);
+    if (connections.size === 0) {
+      gameConnections.delete(gameId);
+    }
+  }
+}
+
+function removeFromAllGames(ws: WebSocket) {
+  for (const [gameId, connections] of gameConnections.entries()) {
+    if (connections.has(ws)) {
+      leaveGameWS(ws, gameId);
+      broadcastToGame(gameId, {
+        type: 'playerLeft',
+        // ... player data
+      });
+    }
+  }
+}

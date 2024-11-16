@@ -1,8 +1,8 @@
 import React, { createContext, useContext } from 'react';
-import { GameDefinition } from '../../../types/game';
+import { GameSession } from '../../../server/games/gameManager';
 
 type GameDefinitionCtx = {
-  game: GameDefinition;
+  game: GameSession;
 };
 
 const GameDefinitionContext = createContext<GameDefinitionCtx>(null);

@@ -27,7 +27,6 @@ export const CardManager = () => {
     saveActionState.current(previewCard(basicActionState, event.active.id));
   }
 
-  // console.log('localState', localState);
   const playerHand = (gameState.players[localState.meId] as PlayerState).hand;
   const [dropSlots, setDropSlots] = useState<(CardState | null)[]>(Array(cardManager.selectionSlots).fill(null));
   //Reset slots and open if state changes
@@ -35,7 +34,7 @@ export const CardManager = () => {
     setIsOpen(false);
     setDropSlots(Array(cardManager.selectionSlots).fill(null));
   }, [cardManager.selectionSlots]);
-  const filteredHand = playerHand.filter((x) => !dropSlots.some((y) => y?.id === x.id));
+  const filteredHand = playerHand?.filter((x) => !dropSlots.some((y) => y?.id === x.id)) ?? [];
 
   const handleUnselect = () => {
     setActive(null);

@@ -12,6 +12,7 @@ type PlayerDefinition = {
 
 export type GameDefinition = {
   name: string;
+  description: string;
   units: Record<string, UnitDefinition>;
   players: Record<string, PlayerDefinition>;
   actions: Record<string, Sequence | Interaction>;
@@ -45,16 +46,24 @@ export type Sequence =
 
 // This data should not be available to everyone
 export type PlayerState = {
+  playerId?: string;
+  name?: string;
+  teamId: string;
   properties?: Record<string, any>;
   hand?: CardState[];
   selected?: CardState[];
   type?: 'player' | 'ai';
+  status: 'active' | 'inactive';
 };
 
 export type OtherPlayerState = {
+  playerId?: string;
+  name?: string;
+  teamId: string;
   properties?: Record<string, any>;
   cardsInHand?: number;
   type: 'player' | 'ai';
+  status: 'active' | 'inactive';
 };
 
 export type CardState = {
@@ -94,6 +103,7 @@ export type ActionHistory = {
 
 export type GameState = {
   gameId: string;
+  hasStarted: boolean;
   players: Record<string, PlayerState | OtherPlayerState>;
   activeAction?: Interaction | Sequence;
   activeActions: Record<string, Sequence | Interaction>;
@@ -104,11 +114,14 @@ export type GameState = {
 };
 
 export type LocalState = {
-  meId: string;
+  // These are the states that the local client can change
   mapManager: MapManagerState;
   cardManager: CardManagerState;
   selectionState: MapState;
   previewState: MapState;
+
+  // readonly state
+  meId: string;
   playerState: PlayerState;
 };
 

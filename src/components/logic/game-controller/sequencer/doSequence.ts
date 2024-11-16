@@ -39,11 +39,17 @@ export type ActionRequest = { playerId: string } & (
     type: 'interact';
     subjects: ActionSubject[];
   }
+  | {
+    type: 'start';
+  }
 );
 
 export const doSequence = (actionState: ActionState, request: ActionRequest) => {
   // We don't move to the next step if we are interacting
   const { nextStep, nextAction } = moveToNextStep(actionState);
+  if (!nextAction) {
+    return actionState;
+  }
 
   const handlerType: keyof typeof handlers = when([
     ['interact', request.type === 'interact'],
@@ -51,7 +57,6 @@ export const doSequence = (actionState: ActionState, request: ActionRequest) => 
     ['options', isOptions(nextAction)],
     ['sequence'] // fallback case
   ]);
-  console.log('nextStep', nextStep, handlerType);
 
   // Need to make sure subject and target are setup first
   const sequenceHandler = handlers[handlerType];
