@@ -1,4 +1,5 @@
 import { ActionState } from '../../../../types/game';
+import { isPlayerTurn } from '../../util/isPlayerTurn';
 import { when } from '../../util/when';
 import * as handlers from './sequences';
 import { isAction } from './utils/isAction';
@@ -45,8 +46,16 @@ export type ActionRequest = { playerId: string } & (
 );
 
 export const doSequence = (actionState: ActionState, request: ActionRequest) => {
+  if (!isPlayerTurn(actionState.gameState, actionState.localState)) {
+    return actionState;
+  }
+  actionState.autoContinue = false;
   // We don't move to the next step if we are interacting
   const { nextStep, nextAction } = moveToNextStep(actionState);
+
+  if (nextStep == 'setup' && request.type !== 'start') {
+    return actionState;
+  }
 
   const handlerType: keyof typeof handlers = when([
     ['interact', request.type === 'interact'],
@@ -56,12 +65,18 @@ export const doSequence = (actionState: ActionState, request: ActionRequest) => 
     ['sequence'] // fallback case
   ]);
 
+  console.log("taking step", nextStep, handlerType);
+
   // Need to make sure subject and target are setup first
   const sequenceHandler = handlers[handlerType];
 
   actionState = sequenceHandler(actionState, nextStep, nextAction, request);
 
-  return actionState;
+  if (actionState.autoContinue) {
+    return doSequence(actionState, { type: 'continue', playerId: request.playerId });
+  } else {
+    return actionState;
+  }
 };
 
 

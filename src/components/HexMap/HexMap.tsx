@@ -9,8 +9,8 @@ import PlayerList from './PlayerList';
 import { SelectionInfo } from './SelectionInfo';
 
 export const HexMap = () => {
-  const { pressHex, saveActionState, basicActionState, doAction } = useGameController();
-  const { localState, mapState, gameState, gameDefinition } = basicActionState;
+  const { pressHex,  basicActionState, doAction } = useGameController();
+  const { localState, mapState, gameState, } = basicActionState;
 
   const handleStartGame = () => {
     doAction.current({
@@ -18,14 +18,6 @@ export const HexMap = () => {
       type: 'start'
     });
   };
-
-  useEffect(() => {
-    if (localState.mapManager.state === 'play') {
-      //saveActionState.current(applyPreviewTiles(basicActionState, localState.mapManager.selector, 'interaction'));
-    } else {
-      saveActionState.current(clearPreviews(basicActionState));
-    }
-  }, [localState.mapManager.state]);
 
   return (
     <>

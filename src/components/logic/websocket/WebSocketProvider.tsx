@@ -11,7 +11,7 @@ export const WebSocketProvider: React.FC<React.PropsWithChildren> = ({ children 
     const wsRef = useRef<WebSocket>();
 
     useEffect(() => {
-        const ws = new WebSocket('ws://localhost:3004');
+        const ws = new WebSocket('ws://localhost:3006');
 
         ws.onopen = () => {
             console.log('WebSocket connected');

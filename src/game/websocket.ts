@@ -28,7 +28,7 @@ export class GameWebSocket {
     private messageHandlers: Map<string, Set<(payload: any) => void>>;
     private pendingRequests: Map<string, { resolve: Function; reject: Function }>;
 
-    constructor(private readonly url: string = 'ws://localhost:3004') {
+    constructor(private readonly url: string = 'ws://localhost:3006') {
         this.messageHandlers = new Map();
         this.pendingRequests = new Map();
         this.connect();

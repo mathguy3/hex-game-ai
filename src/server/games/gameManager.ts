@@ -1,7 +1,7 @@
 import { ActionRequest, doSequence } from "../../components/logic/game-controller/sequencer";
 import { WebSocketMessage } from "../../game/websocket";
 import { MapState } from "../../types";
-import { ActionState, GameDefinition, GameState, LocalState, OtherPlayerState, PlayerState } from "../../types/game";
+import { ActionState, GameDefinition, GameState, LocalControl, LocalState, OtherPlayerState, PlayerState } from "../../types/game";
 import { broadcastToGame } from "../startup";
 
 export interface GameSession {
@@ -9,6 +9,7 @@ export interface GameSession {
     gameDefinition: GameDefinition;
     gameState: GameState;
     mapState: MapState;
+    localControl: LocalControl;
     maxPlayers: number;
 }
 
@@ -43,7 +44,8 @@ export class GameManager {
                 activeStep: 'setup'
             },
             mapState: structuredClone(params.gameDefinition.map),
-            maxPlayers: 2
+            maxPlayers: 2,
+            localControl: {}
         };
         console.log(newGame.gameState.players);
         newGame.gameState.players.team1 = {
@@ -123,6 +125,7 @@ export class GameManager {
         gameState: GameState;
         mapState: MapState;
         localState: LocalState;
+        localControl: LocalControl;
     } {
         const game = this.games[gameId];
         if (!game) throw new Error('Game not found');
@@ -133,6 +136,7 @@ export class GameManager {
                 gameState: this.mapPlayerInfo(game.gameState, userId),
                 mapState: game.mapState,
                 localState,
+                localControl: game.localControl
             };
         }
 
@@ -156,7 +160,7 @@ export class GameManager {
             selectedHex: null,
             selectedCard: null,
             activePlayer: game.gameState.players[meId],
-            shouldUpdateLocalState: false,
+            localControl: game.localControl
         }
 
         // Execute the action sequence
@@ -176,7 +180,8 @@ export class GameManager {
             gameId,
             payload: {
                 gameState: this.mapPlayerInfo(newState.gameState, userId),
-                mapState: newState.mapState
+                mapState: newState.mapState,
+                localControl: newState.localControl
             }
         });
 
@@ -184,7 +189,8 @@ export class GameManager {
         return {
             gameState: this.mapPlayerInfo(game.gameState, userId),
             mapState: game.mapState,
-            localState: newState.localState
+            localState: newState.localState,
+            localControl: newState.localControl
         };
     }
 

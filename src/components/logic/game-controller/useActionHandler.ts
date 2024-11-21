@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { MapState } from "../../../types";
-import { ActionState, GameState, LocalState } from "../../../types/game";
+import { ActionState, GameState, LocalControl, LocalState } from "../../../types/game";
 import { ActionRequest, doSequence } from "./sequencer";
+import { useUpdatingRef } from '../../../utils/useUpdatingRef';
 
 export const useActionHandler = (params: {
     client: any;
@@ -9,21 +10,22 @@ export const useActionHandler = (params: {
     hasEnoughPlayers: boolean;
     localState: LocalState;
     basicActionState: ActionState;
-    setLocalState: (state: LocalState) => void;
     setGameState: (state: GameState) => void;
+    setLocalControl: (state: LocalControl) => void;
     setMapState: (state: MapState) => void;
 }) => {
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const handleAction = useCallback(async (request: ActionRequest, actionState: ActionState = params.basicActionState) => {
+    const handleAction = useUpdatingRef(async (request: ActionRequest, actionState: ActionState = params.basicActionState) => {
         try {
             // Immediately apply optimistic update
             const optimisticState = doSequence(actionState, request);
+            console.log("------ optimisticState ------", optimisticState.gameState.activeStep);
 
             // Update UI immediately with all changes including active player
-            params.setLocalState({ ...optimisticState.localState });
             params.setGameState({ ...optimisticState.gameState });
             params.setMapState({ ...optimisticState.mapState });
+            params.setLocalControl({ ...optimisticState.localControl });
 
             // Send to server in background
             if (params.hasEnoughPlayers) {
@@ -33,19 +35,14 @@ export const useActionHandler = (params: {
                     request,
                     localState: params.localState
                 });
-
-                // Only update if server state differs significantly
-                if (JSON.stringify(serverResponse.gameState) !== JSON.stringify(optimisticState.gameState)) {
-                    params.setGameState({ ...serverResponse.gameState });
-                    params.setMapState({ ...serverResponse.mapState });
-                }
+                console.log("------ serverResponse ------", serverResponse.gameState.activeStep);
             }
         } catch (error) {
             console.error('Action failed:', error);
         } finally {
             setIsProcessing(false);
         }
-    }, [params.gameId, params.hasEnoughPlayers, params.localState]);
+    });
 
     return { handleAction, isProcessing };
 }; 

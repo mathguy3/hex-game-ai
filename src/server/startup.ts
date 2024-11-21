@@ -42,7 +42,7 @@ console.log('Server startup');
 const gameConnections = new Map<string, Set<WebSocket>>();
 
 Bun.serve({
-  port: 3004,
+  port: 3006,
   development: true,
   async fetch(req, server) {
     // Upgrade the request to WebSocket if it's a WebSocket request
@@ -126,7 +126,8 @@ Bun.serve({
               gameId,
               payload: {
                 gameState: gameState.gameState,
-                mapState: gameState.mapState
+                mapState: gameState.mapState,
+                localControl: gameState.localControl
               }
             }));
             break;

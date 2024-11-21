@@ -22,6 +22,7 @@ interface PageState {
     gameSession?: GameSession;
     isNewGame?: boolean;
     gameId?: string;
+    myId?: string;
   };
 }
 
@@ -60,7 +61,8 @@ const GamePickerPage: React.FC<PageProps> = ({ navigate }) => {
         data: {
           gameSession: newGame,
           isNewGame: true,
-          gameId: newGame.id
+          gameId: newGame.id,
+          myId: 'team1'
         }
       });
     } catch (error) {
@@ -87,8 +89,9 @@ const GamePickerPage: React.FC<PageProps> = ({ navigate }) => {
       navigate({
         type: 'game',
         data: {
-          gameSession: gameSession,
-          gameId: gameSession.id
+          gameSession: response.gameSession,
+          gameId: gameSession.id,
+          myId: response.myId
         }
       });
     } catch (error) {
@@ -156,7 +159,7 @@ const GamePage: React.FC<PageProps> = ({ navigate, data }) => {
         Back to Games
       </Button>
       <GameDefinitionProvider game={data.gameSession}>
-        <GameControllerProvider>
+        <GameControllerProvider meId={data.myId}>
           <HexMap />
           <CardManager />
         </GameControllerProvider>

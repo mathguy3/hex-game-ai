@@ -1,7 +1,7 @@
 import { ActionSubject } from '../components/logic/game-controller/sequencer';
 import { IF } from './actions/if';
 import { CardInteraction, HexInteraction, Interaction, Targeting, UIInteraction } from './actions/interactions';
-import { TileSelect } from './actions/tiles';
+import { TileSelect, TileSet } from './actions/tiles';
 import { UnitDefinition } from './entities/unit/unit';
 import { HexItem, MapState } from './map';
 
@@ -79,7 +79,7 @@ export type CardManagerState = {
 
 export type MapManagerState = {
   state: 'view' | 'play';
-  selector?: TileSelect;
+  selector?: TileSet;
 };
 
 export type ActiveAction = {
@@ -125,11 +125,18 @@ export type LocalState = {
   playerState: PlayerState;
 };
 
+export type LocalControl = {
+  mapSelector?: TileSet;
+};
+
 export type ActionState = {
-  mapState: MapState; // Contains local data (preview, isSelected etc)
+  mapState: MapState;
   gameState: GameState;
-  localState: LocalState; // Can not go to the api
-  shouldUpdateLocalState: boolean;
+  localState: LocalState;
+  localControl: LocalControl;
+
+  // don't return
+  autoContinue?: boolean;
 
   // Readonly
   gameDefinition: GameDefinition;

@@ -1,6 +1,7 @@
 import { ActionRequest } from "../../components/logic/game-controller/sequencer";
 import { MapState } from "../../types";
 import { GameState, LocalState } from "../../types/game";
+import { createPatch, Patch } from "../../utils/statePatch";
 import { User } from "../user/id";
 import { gameManager } from "./gameManager";
 
@@ -8,6 +9,7 @@ interface ActionResponse {
     gameState: GameState;
     mapState: MapState;
     localState: LocalState;
+    patch: Patch<{ gameState: GameState, mapState: MapState }>;
 }
 
 export const handleAction = (
@@ -35,6 +37,7 @@ export const handleAction = (
 
         console.log('handleAction', request);
 
+        const { gameState, mapState, localControl } = gameManager.getGameState(gameId, user.id);
         // Handle the action and get the response
         const response = gameManager.handleAction(
             gameId,
@@ -48,7 +51,9 @@ export const handleAction = (
             throw new Error('Invalid game state after action');
         }
 
-        return response;
+        const patch = createPatch({ gameState, mapState, localControl }, { gameState: response.gameState, mapState: response.mapState, localControl: response.localControl });
+
+        return { ...response, patch };
     } catch (error) {
         console.error('Error handling action:', {
             gameId,

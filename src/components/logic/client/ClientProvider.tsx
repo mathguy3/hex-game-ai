@@ -9,7 +9,7 @@ type ClientCtx = {
 const ClientContext = createContext<ClientCtx>(null);
 
 // eslint-disable-next-line
-const baseUrl = `http://${location.hostname}:3004`;
+const baseUrl = `http://${location.hostname}:3006`;
 
 const getOrAddId = () => {
   let id = sessionStorage.getItem('id');

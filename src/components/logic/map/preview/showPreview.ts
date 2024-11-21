@@ -4,12 +4,11 @@ import { clearPreviews } from './clearMapPreview';
 import { generateUnitPreview } from './generateUnitPreview';
 
 export const showPreview = (actionState: ActionState): ActionState => {
-  //console.log('Clearing old previews', actionState.previewState);
   const updatedState = clearPreviews(actionState);
   const { selectedHex, localState } = updatedState;
 
+  
   if (!selectedHex || !selectedHex.contains.unit) {
-    console.log('Unit not selected, skipping preview');
     return updatedState;
   }
 
@@ -19,7 +18,6 @@ export const showPreview = (actionState: ActionState): ActionState => {
     ...hex,
     preview: tile.preview,
   }));
-
 
   return {
     ...updatedState,

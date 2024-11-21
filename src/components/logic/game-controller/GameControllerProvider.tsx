@@ -1,7 +1,7 @@
 import React, { createContext, MutableRefObject, useContext, useEffect, useState } from 'react';
 import { WebSocketMessage } from '../../../game/websocket';
 import { HexItem, MapState } from '../../../types';
-import { ActionState, GameState, LocalState } from '../../../types/game';
+import { ActionState, GameState, LocalControl, LocalState } from '../../../types/game';
 import { useUpdatingRef } from '../../../utils/useUpdatingRef';
 import { useClient } from '../client/ClientProvider';
 import { showPreview } from '../map/preview/showPreview';
@@ -11,6 +11,10 @@ import { useWebSocket } from '../websocket/WebSocketProvider';
 import { useGameDefinition } from './GameDefinitionProvider';
 import { ActionRequest } from './sequencer';
 import { useActionHandler } from './useActionHandler';
+import { isHexInTileSet } from '../map/hex/isHexInTileSet';
+import { clearPreviews } from '../map/preview/clearMapPreview';
+import { clearSelection } from '../map/unselectCoordinates';
+import { moveToNextStep } from './sequencer/utils/moveToNextStep';
 
 type GameControllerCtx = {
   basicActionState: ActionState;
@@ -21,15 +25,15 @@ type GameControllerCtx = {
 
 const GameControllerContext = createContext<GameControllerCtx>(null);
 
-export const GameControllerProvider = ({ children }: React.PropsWithChildren) => {
+export const GameControllerProvider = ({ children, meId }: React.PropsWithChildren<{ meId: string }>) => {
   const { client } = useClient();
   const { game: selectedGameSession } = useGameDefinition();
   const selectedGame = selectedGameSession.gameDefinition;
   // TODO: Split this with local state
   const [localState, setLocalState] = useState<LocalState>({
-    meId: 'team1',
+    meId,
     playerState: {
-      teamId: 'team1',
+      teamId: meId,
       status: 'active'
     },
     previewState: {},
@@ -44,6 +48,7 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
   });
   const [gameState, setGameState] = useState<GameState>(selectedGameSession.gameState);
   const [mapState, setMapState] = useState<MapState>(selectedGameSession.mapState);
+  const [localControl, setLocalControl] = useState<LocalControl>({});
 
   const basicActionState: ActionState = {
     mapState,
@@ -54,18 +59,18 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
     activePlayer: gameState.players[gameState.activePlayerId],
     gameDefinition: selectedGame,
     localState,
-    shouldUpdateLocalState: false,
+    localControl,
   };
 
-  const { handleAction, isProcessing } = useActionHandler({
+  const { handleAction, } = useActionHandler({
     client,
     gameId: gameState.gameId,
     hasEnoughPlayers: Object.keys(gameState.players).length >= 2,
     localState,
     basicActionState,
-    setLocalState,
     setGameState,
-    setMapState
+    setMapState,
+    setLocalControl,
   });
 
   const handlePressHex = useUpdatingRef(async (hex: HexItem) => {
@@ -74,8 +79,9 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
       targetHex: hex,
     };
 
-    const canInteract = isPlayerTurn(gameState, localState) && localState.mapManager.state === 'play';
+    const canInteract = isPlayerTurn(gameState, localState);
     const somethingSelected = Object.values(localState.selectionState).length > 0;
+
 
     if (somethingSelected && localState.previewState[hex.key] &&
       !localState.previewState[hex.key].preview.interaction && canInteract) {
@@ -93,12 +99,16 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
         }],
       };
 
-      await handleAction(request, actionState);
+      await handleAction.current(request, actionState);
     } else {
       // Local only preview/selection handling
       actionState = selectHex(actionState);
       if (canInteract) {
-        actionState = showPreview(actionState);
+        const canSelectThatThing = localControl.mapSelector && isHexInTileSet(hex.coordinates, localControl.mapSelector, actionState);
+
+        if (canSelectThatThing) {
+          actionState = showPreview(actionState);
+        }
       }
 
       setLocalState({ ...actionState.localState });
@@ -106,50 +116,44 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
       setMapState({ ...actionState.mapState });
     }
   });
-  /*
-    useEffect(() => {
-      const handleStepChange = async () => {
-        const request: ActionRequest = {
-          type: 'continue',
-          playerId: localState.meId,
-        };
-  
-        await handleAction(request);
-      };
-  
-      // Initial call
-      handleStepChange();
-  
-      // Set up polling
-      const pollInterval = setInterval(() => {
-        handleStepChange();
-      }, 1000);
-  
-      // Cleanup
-      return () => {
-        clearInterval(pollInterval);
-      };
-    }, [gameState.activeStep]);*/
 
   const saveActionState = useUpdatingRef((actionState: ActionState) => {
-    setLocalState(actionState.localState);
     setGameState(actionState.gameState);
     setMapState(actionState.mapState);
   });
 
-  const doAction = useUpdatingRef((request: ActionRequest) => {
-    handleAction(request);
-  });
-
   useEffect(() => {
     const handleWebSocketMessage = (event: MessageEvent) => {
-      const message: WebSocketMessage = JSON.parse(event.data);
+      let message: WebSocketMessage;
+      try {
+        message = JSON.parse(event.data);
+        //console.log('WebSocket message received:', event.data);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+        return;
+      }
 
       if (message.type === 'gameUpdate' && message.gameId === gameState.gameId) {
-        setGameState(message.payload.gameState);
-        setMapState(message.payload.mapState);
-        if (message.payload.shouldSetLocalState) {
-          setLocalState(message.payload.localState);
+        const updatedGameState = message.payload.gameState;
+        const updatedMapState = message.payload.mapState;
+        const updatedLocalControl = message.payload.localControl;
+        console.log('---- gameUpdate ---', updatedGameState.activeStep, updatedMapState['0.0.0'].contains);
+        setGameState(updatedGameState);
+        setMapState(updatedMapState);
+        console.log('localControl', updatedLocalControl);
+        setLocalControl(updatedLocalControl);
+        // in 500ms kick of a continue
+        const { nextStep } = moveToNextStep({
+          ...basicActionState,
+          gameState: updatedGameState,
+          mapState: updatedMapState
+        }, true);
+        const canContinue = nextStep != updatedGameState.activeStep
+        console.log("game update finished for step", nextStep, updatedGameState.activeStep, updatedGameState.activeAction?.type, canContinue);
+        if (isPlayerTurn(updatedGameState, localState) && canContinue) {
+          setTimeout(() => {
+            handleAction.current({ playerId: localState.meId, type: 'continue' });
+          }, 50);
         }
       }
       // When we get a player joined message, we should request a game state update
@@ -175,6 +179,15 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
       window.removeEventListener('message', handleWebSocketMessage);
     };
   }, [gameState.gameId]);
+
+  useEffect(() => {
+    const updatedState = clearPreviews(clearSelection(basicActionState));
+    if (isPlayerTurn(gameState, localState) && localControl.mapSelector) {
+      setLocalState({ ...updatedState.localState, mapManager: { ...updatedState.localState.mapManager, state: 'play' } });
+    } else {
+      setLocalState({ ...updatedState.localState, mapManager: { ...updatedState.localState.mapManager, state: 'view' } });
+    }
+  }, [isPlayerTurn(gameState, localState), localControl.mapSelector])
 
   const { sendMessage } = useWebSocket();
 
@@ -203,29 +216,13 @@ export const GameControllerProvider = ({ children }: React.PropsWithChildren) =>
     }
   }, [gameState?.gameId]);
 
-  useEffect(() => {
-    if (isPlayerTurn(gameState, localState)) {
-      doAction.current({ type: 'continue', playerId: localState.meId });
-    }
-    // it needs to poll every second
-    const pollInterval = setInterval(() => {
-      if (isPlayerTurn(gameState, localState)) {
-        doAction.current({ type: 'continue', playerId: localState.meId });
-      }
-    }, 500);
-
-    return () => {
-      clearInterval(pollInterval);
-    };
-  }, [isPlayerTurn(gameState, localState)]);
-
   return (
     <GameControllerContext.Provider
       value={{
         pressHex: handlePressHex,
         basicActionState,
         saveActionState,
-        doAction
+        doAction: handleAction
       }}
     >
       {children}

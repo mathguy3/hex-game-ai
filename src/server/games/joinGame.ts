@@ -15,7 +15,7 @@ export interface JoinGameResponse {
     localState: LocalState;
 }
 
-export const joinGame = ({ gameId, user }): GameSession => {
+export const joinGame = ({ gameId, user }): { gameSession: GameSession, myId: string } => {
     if (!gameManager.hasGame(gameId)) {
         throw new Error('Game not found');
     }
@@ -30,7 +30,10 @@ export const joinGame = ({ gameId, user }): GameSession => {
             playerState = gameManager.addPlayer(gameId, user.id, user.name);
         }
 
-        return gameManager.getGameState(gameId, user.id);
+        const gameSession = gameManager.getGameState(gameId, user.id);
+        const myId = gameManager.getPlayerByPlayerId(gameId, user.id).teamId;
+
+        return { gameSession, myId };
     } catch (error) {
         console.error('Failed to join game:', error);
         throw error;

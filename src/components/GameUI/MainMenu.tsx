@@ -12,7 +12,7 @@ export const MainMenu = (props: MainMenuProps) => {
       <Button onClick={onConfigure}>{'Configure game'}</Button>
       <Button
         onClick={async () => {
-          const response = await fetch('http://localhost:3004/play', {
+          const response = await fetch('http://localhost:3006/play', {
             method: 'POST',
             body: JSON.stringify({
               game: 'gameid',

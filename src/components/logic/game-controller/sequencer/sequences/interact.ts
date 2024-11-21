@@ -59,8 +59,6 @@ export const interact = (actionState: ActionState, stepId: string, action: Seque
                         throw new Error('Invalid subject or target');
                     }
 
-                    actionState = clearSelection(clearPreviews(actionState));
-
                     actionState.gameState.actionContext.isComplete = true;
 
                     actionState.gameState.activeStep = actionState.gameState.activeStep + '.hex';
@@ -78,6 +76,7 @@ export const interact = (actionState: ActionState, stepId: string, action: Seque
                         subjects: actionState.gameState.actionContext.subjects,
                         previousContext: actionState.gameState.actionContext,
                     }
+                    actionState.autoContinue = true;
                 }
                 break;
             case 'card':

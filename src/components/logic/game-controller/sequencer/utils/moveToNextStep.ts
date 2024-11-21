@@ -3,20 +3,27 @@ import { isAction } from './isAction';
 import { isOptions } from './isOptions';
 import { resolveAction } from './resolveAction';
 
-export const moveToNextStep = (actionState: ActionState, completeOptions?: boolean) => {
+export const moveToNextStep = (actionState: ActionState, readOnly?: boolean) => {
   const { activeStep, activeAction, activeActions, actionContext, hasStarted } = actionState.gameState;
+
+  const noChange = {
+    nextStep: activeStep,
+    nextAction: activeAction
+  };
 
   function popContext() {
     const parentStep = actionContext.previousContext.id;
     const parentAction = actionContext.previousContext.action;
-    actionState.gameState.actionContext = actionContext.previousContext;
-    actionState.gameState.actionHistory.push({
-      id: parentStep,
-      action: parentAction
-    });
-    actionState.gameState.activeStep = parentStep;
-    actionState.gameState.activeAction = parentAction;
-    delete activeActions[activeStep];
+    if (!readOnly) {
+      actionState.gameState.actionContext = actionContext.previousContext;
+      actionState.gameState.actionHistory.push({
+        id: parentStep,
+        action: parentAction
+      });
+      actionState.gameState.activeStep = parentStep;
+      actionState.gameState.activeAction = parentAction;
+      delete activeActions[activeStep];
+    }
     return {
       nextStep: parentStep,
       nextAction: parentAction, // This will already be resolved
@@ -24,10 +31,7 @@ export const moveToNextStep = (actionState: ActionState, completeOptions?: boole
   }
 
   if (activeStep == 'setup' && !hasStarted) {
-    return {
-      nextStep: activeStep,
-      nextAction: activeAction
-    }
+    return noChange;
   }
 
   // Handle options completion
@@ -35,12 +39,10 @@ export const moveToNextStep = (actionState: ActionState, completeOptions?: boole
     if (actionContext.isComplete) {
       return popContext();
     } else {
-      return {
-        nextStep: activeStep,
-        nextAction: activeAction
-      };
-    }
+      return noChange;
+    };
   }
+
 
   // Handle sequence progression
   if ('actions' in activeAction) {
@@ -56,23 +58,22 @@ export const moveToNextStep = (actionState: ActionState, completeOptions?: boole
         id: nextStep,
         action: nextAction
       };
-      actionState.gameState.actionContext = {
-        ...nextContextBase,
-        subjects: actionContext.subjects,
-        previousContext: actionContext
-      };
-      actionState.gameState.actionHistory.push(nextContextBase);
-      actionState.gameState.activeStep = nextStep;
-      actionState.gameState.activeAction = nextAction;
+      if (!readOnly) {
+        actionState.gameState.actionContext = {
+          ...nextContextBase,
+          subjects: actionContext.subjects,
+          previousContext: actionContext
+        };
+        actionState.gameState.actionHistory.push(nextContextBase);
+        actionState.gameState.activeStep = nextStep;
+        actionState.gameState.activeAction = nextAction;
+      }
       return {
         nextStep,
         nextAction
       };
     } else {
-      return {
-        nextStep: activeStep,
-        nextAction: activeAction
-      };
+      return noChange;
     }
   }
 
@@ -84,8 +85,5 @@ export const moveToNextStep = (actionState: ActionState, completeOptions?: boole
   console.error('Unknown action type', activeAction);
 
   // Default case - stay on current action
-  return {
-    nextStep: activeStep,
-    nextAction: activeAction
-  };
+  return noChange;
 };

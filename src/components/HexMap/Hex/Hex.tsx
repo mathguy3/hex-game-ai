@@ -4,6 +4,7 @@ import { colors } from '../../../configuration/colors';
 import { gridColumnWidth, gridRowHeight, isDev } from '../../../configuration/constants';
 import { Preview } from '../../../types/actions/preview';
 import { HexItem } from '../../../types/map';
+import { useRefLogger } from '../../../utils/useRefLogger';
 import { Soldier } from '../../Soldier/Soldier';
 import { HexImg } from './HexImg';
 
@@ -18,11 +19,12 @@ const flipYRender = false;
 const renderqs = false;
 
 export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: HexProps) => {
-
   const { coordinates } = item;
   if (!coordinates) {
     console.log(item);
   }
+  //useRefLogger(item, "Hex item")
+  //useRefLogger(preview, "Hex preview")
   const s = coordinates.s ?? -(coordinates.q + coordinates.r);
   console.assert(coordinates.q + coordinates.r + s === 0, `Invalid coordinate ${JSON.stringify(coordinates)}`);
 
