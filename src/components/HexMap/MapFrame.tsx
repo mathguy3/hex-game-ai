@@ -14,15 +14,40 @@ export const MapFrame = ({ children }: React.PropsWithChildren) => {
   const mainTouch = useRef<Touch | undefined>();
   const mainTouchPoint = useRef<{ left: number; top: number } | undefined>();
   const handleZoom = useCallback(
-    (event: any) => {
-      if (!innerRef.current) {
+    (event: WheelEvent) => {
+      if (!innerRef.current || !mapRef.current) {
         return;
       }
       event.preventDefault();
+
+      // Get mouse position relative to the viewport
+      const rect = mapRef.current.getBoundingClientRect();
+      const mouseX = event.clientX - rect.left;
+      const mouseY = event.clientY - rect.top;
+
+      // Calculate mouse position relative to the scaled content
+      const contentX = (mouseX - offset.current.left) / scale;
+      const contentY = (mouseY - offset.current.top) / scale;
+
+      // Calculate new scale with bounds
       const zoomIn = event.deltaY < 0;
-      const nextScale = zoomIn ? scale * 1.25 : scale * 0.8;
+      const nextScale = Math.min(Math.max(
+        zoomIn ? scale * 1.15 : scale * 0.85,
+        0.2  // minimum zoom
+      ), 2.0); // maximum zoom
+
+      // Calculate new offset to keep mouse position fixed
+      const newLeft = mouseX - contentX * nextScale;
+      const newTop = mouseY - contentY * nextScale;
+
+      // Update scale and position
       setScale(nextScale);
-      innerRef.current.style['transform'] = `scale(${nextScale})`;
+      offset.current = { left: newLeft, top: newTop };
+
+      // Apply transformations
+      innerRef.current.style.transform = `scale(${nextScale})`;
+      innerRef.current.style.left = `${newLeft}px`;
+      innerRef.current.style.top = `${newTop}px`;
     },
     [scale]
   );
