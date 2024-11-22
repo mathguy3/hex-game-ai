@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { ServerRoutes } from '../../../server/startup';
 import { User } from '../../../server/user/id';
+import { uuid } from '../../../utils/uuid';
 
 type ClientCtx = {
   client: Omit<ServerRoutes, 'id'>;
@@ -14,7 +15,7 @@ const baseUrl = `http://${location.hostname}:3006`;
 const getOrAddId = () => {
   let id = sessionStorage.getItem('id');
   if (!id) {
-    id = crypto.randomUUID();
+    id = uuid();
     sessionStorage.setItem('id', id);
   }
   return id;

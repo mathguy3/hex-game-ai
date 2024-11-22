@@ -1,5 +1,5 @@
 import { ActionRequest, doSequence } from "../../components/logic/game-controller/sequencer";
-import { WebSocketMessage } from "../../game/websocket";
+import { WebSocketMessage } from "../../components/logic/websocket/WebSocketProvider";
 import { MapState } from "../../types";
 import { ActionState, GameDefinition, GameState, LocalControl, LocalState, OtherPlayerState, PlayerState } from "../../types/game";
 import { broadcastToGame } from "../startup";

@@ -41,7 +41,7 @@ export type ServerRoutes = {
 console.log('Server startup');
 const gameConnections = new Map<string, Set<WebSocket>>();
 
-Bun.serve({
+const server = Bun.serve({
   port: 3006,
   development: true,
   async fetch(req, server) {
@@ -85,6 +85,9 @@ Bun.serve({
         headers: { 'Content-Type': 'application/json' }
       });
     }
+  },
+  error(error) {
+    console.error('Server error:', error);
   },
   websocket: {
     open(ws) {
@@ -143,6 +146,8 @@ Bun.serve({
     }
   }
 });
+
+console.log(server);
 
 export function broadcastToGame(gameId: string, message: any, exclude?: WebSocket) {
   const connections = gameConnections.get(gameId);

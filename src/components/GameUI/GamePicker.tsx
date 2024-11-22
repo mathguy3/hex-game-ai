@@ -21,7 +21,7 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
       try {
         const { games } = await client.listGames();
         console.log('games', games);
-        setGames(games);
+        setGames(games ?? []);
         setError(null);
       } catch (err) {
         setError('Failed to load games');

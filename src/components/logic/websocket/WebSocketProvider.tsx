@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
-import { WebSocketMessage } from '../../../game/websocket';
+
+export type WebSocketMessage = {
+    type: 'gameUpdate' | 'playerJoined' | 'playerLeft' | 'getGameUpdate';
+    gameId: string;
+    payload: any;
+    requestId?: string;
+};
 
 interface WebSocketContextType {
     sendMessage: (message: WebSocketMessage) => void;
@@ -7,11 +13,13 @@ interface WebSocketContextType {
 
 const WebSocketContext = createContext<WebSocketContextType>(null);
 
+const baseUrl = `http://${window.location.hostname}:3006`;
+
 export const WebSocketProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const wsRef = useRef<WebSocket>();
 
     useEffect(() => {
-        const ws = new WebSocket('ws://localhost:3006');
+        const ws = new WebSocket(baseUrl);
 
         ws.onopen = () => {
             console.log('WebSocket connected');
