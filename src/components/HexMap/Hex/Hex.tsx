@@ -1,10 +1,9 @@
 import Box from '@mui/material/Box';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { colors } from '../../../configuration/colors';
 import { gridColumnWidth, gridRowHeight, isDev } from '../../../configuration/constants';
 import { Preview } from '../../../types/actions/preview';
 import { HexItem } from '../../../types/map';
-import { useRefLogger } from '../../../utils/useRefLogger';
 import { Soldier } from '../../Soldier/Soldier';
 import { HexImg } from './HexImg';
 
@@ -33,7 +32,7 @@ export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: Hex
     ? -coordinates.r * gridRowHeight - coordinates.q * (gridRowHeight / 2)
     : coordinates.r * gridRowHeight + coordinates.q * (gridRowHeight / 2);
 
-  const handlSelection = useCallback(() => {
+  const handlSelection = useCallback((e) => {
     onSelectedRef.current?.(item);
   }, [item, onSelectedRef]);
 
@@ -64,12 +63,45 @@ export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: Hex
     //console.log('team color', teamColor);
   }
   const isPreview = hexPreview.type !== 'none';
+
+  const [touchStartPosition, setTouchStartPosition] = useState<{ x: number, y: number } | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStartPosition({ x: touch.clientX, y: touch.clientY });
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartPosition) return;
+
+    // If there was movement, check if it was significant
+    if (e.changedTouches.length > 0) {
+      const touch = e.changedTouches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartPosition.x);
+      const deltaY = Math.abs(touch.clientY - touchStartPosition.y);
+
+      // If movement was minimal (less than 10px), consider it a tap
+      if (deltaX < 10 && deltaY < 10) {
+        onSelectedRef.current?.(item);
+      }
+    }
+
+    setTouchStartPosition(null);
+  }, [item, onSelectedRef, touchStartPosition]);
+
+  const handleTouchCancel = useCallback(() => {
+    setTouchStartPosition(null);
+  }, []);
+
   return (
     <Box
       position="absolute"
       left={leftOffset}
       top={topOffset}
       onClick={handlSelection}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
       zIndex={isSelected || isPreview ? 1 : 0}
     >
       {isDev && (

@@ -147,7 +147,7 @@ const server = Bun.serve({
   }
 });
 
-console.log(server);
+console.log(`Server running at ${server.url}`);
 
 export function broadcastToGame(gameId: string, message: any, exclude?: WebSocket) {
   const connections = gameConnections.get(gameId);
