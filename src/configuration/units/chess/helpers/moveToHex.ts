@@ -14,18 +14,5 @@ export const moveToHex = [
     subject: {
       contains: {},
     },
-  },
-  {
-    target: {
-      contains: {
-        unit: {
-          aspects: {
-            hasMoved: {
-              value: true,
-            },
-          },
-        },
-      },
-    },
-  },
+  }
 ];

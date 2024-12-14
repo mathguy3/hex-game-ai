@@ -18,24 +18,36 @@ const getBishopAttackMove = (attack?: boolean) => ({
 export const bishop: UnitDefinition = {
   type: 'unit',
   kind: 'bishop',
-  aspects: {},
+  properties: {},
   interactions: [
     {
-      type: 'movement',
-      tiles: getBishopAttackMove(),
+      type: 'hex' as const,
+      kind: 'movement',
+      targeting: {
+        userSelect: true,
+        tiles: getBishopAttackMove(),
+      },
       actions: [
         {
-          type: 'movement',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],
     },
     {
-      type: 'attack',
-      tiles: getBishopAttackMove(true),
+      type: 'hex' as const,
+      kind: 'attack',
+      targeting: {
+        userSelect: true,
+        tiles: getBishopAttackMove(true),
+      },
       actions: [
         {
-          type: 'attack',
+          type: 'action' as const,
+          name: 'attackHex',
+          description: 'Attacks target hex, and sets target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],

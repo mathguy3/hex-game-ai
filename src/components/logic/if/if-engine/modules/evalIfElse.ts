@@ -10,10 +10,10 @@ export const evalIfElse = (context: IFContext): boolean => {
   if (!isIfElse(ifElse)) {
     throw new Error("Can't do ifelse on not ifelse");
   }
-  console.log('---------');
+  //console.log('---------');
   const ifResult = getIf({ ...context, ifValue: ifElse.if, type: 'if' });
-  console.dir(ifElse.if, { depth: null });
-  console.log(ifResult);
+  //console.dir(ifElse.if, { depth: null });
+  //console.log(ifResult);
   if (ifResult) {
     const { field } = getFields(ifElse.then);
     return selectIfValue(selectField({ ...context, ifValue: ifElse.then }, field));

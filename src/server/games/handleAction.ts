@@ -35,7 +35,7 @@ export const handleAction = (
             throw new Error('Invalid action request');
         }
 
-        console.log('handleAction', request);
+        //console.log('handleAction', request);
 
         const { gameState, mapState, localControl } = gameManager.getGameState(gameId, user.id);
         // Handle the action and get the response

@@ -98,7 +98,6 @@ export const CardManager = () => {
   };
   const containerHeight = isOpen ? openHeight : closedHeight;
   const handleSelect = () => {
-    console.log('handle Select', dropSlots);
 
     // TODO: Send 'action' instead
     let updatedState = {

@@ -18,12 +18,12 @@ export const aspect: TileGenerator<AspectTileSelect> = (
   let matchingTargets: HexItem[];
   if (tileSelect.target === 'hex') {
     matchingTargets = targets.filter((x) =>
-      areEqualShallow(tileSelect.aspect, x.aspects)
+      areEqualShallow(tileSelect.aspect, x.properties)
     );
   } else {
     targets = hexList.filter((x) => x.contains.length);
     matchingTargets = targets.filter((x) =>
-      areEqualShallow(tileSelect.aspect, x.contains[0].aspects)
+      areEqualShallow(tileSelect.aspect, x.contains[0].properties)
     );
   }
 

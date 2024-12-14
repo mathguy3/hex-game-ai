@@ -65,7 +65,7 @@ export const doSequence = (actionState: ActionState, request: ActionRequest) => 
     ['sequence'] // fallback case
   ]);
 
-  console.log("taking step", nextStep, handlerType);
+  //console.log("taking step", nextStep, handlerType);
 
   // Need to make sure subject and target are setup first
   const sequenceHandler = handlers[handlerType];

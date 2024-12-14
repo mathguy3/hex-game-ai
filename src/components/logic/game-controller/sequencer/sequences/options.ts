@@ -10,13 +10,14 @@ export const options = (actionState: ActionState, stepId: string, action: Sequen
     if (actionState.gameState.actionContext.isComplete) {
         Object.values(action.interactions).forEach((option) => {
             if (option.type === 'hex') {
-                actionState.localControl = { ...actionState.localControl, mapSelector: null };
+                actionState.localControl = { ...actionState.localControl, activeActions: {} };
             }
         });
     } else {
         Object.values(action.interactions).forEach((option) => {
             if (option.type === 'hex') {
-                actionState.localControl = { ...actionState.localControl, mapSelector: option.targeting.tiles };
+                console.log("activating option", option)
+                actionState.localControl = { ...actionState.localControl, activeActions: { ...actionState.localControl.activeActions, [option.kind]: option.targeting.tiles } };
             }
         });
     }

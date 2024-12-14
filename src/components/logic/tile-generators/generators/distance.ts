@@ -10,7 +10,7 @@ export const distance: TileGenerator<DistanceTileSelect> = (
   tileSet: DistanceTileSelect,
   coords: Coordinates
 ) => {
-  const { range } = tileSet;
+  const { range, tileIf } = tileSet;
   const finalCoords = [];
   let currentHex = vectorAdd(coords, vectorScale(getDirection(4), range));
   for (let direction = 0; direction < 6; direction++) {
@@ -19,8 +19,8 @@ export const distance: TileGenerator<DistanceTileSelect> = (
       currentHex = getNeighbor(currentHex, direction);
     }
   }
-  console.log('Distance gen', finalCoords);
+  //console.log('Distance gen', finalCoords);
   const tileRecord = coordsToTiles(finalCoords);
-  console.log('distance gen', tileRecord);
+  //console.log('distance gen', tileRecord);
   return tileRecord;
 };

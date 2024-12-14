@@ -2,7 +2,7 @@ export const makeUnit = (team: string, kind?: string) => ({
   type: 'unit',
   kind: kind,
   id: team,
-  aspects: {
+  properties: {
     team: { type: 'team', value: team },
   },
 });

@@ -21,24 +21,36 @@ const getKingAttackMove = (attack?: boolean) => ({
 export const king: UnitDefinition = {
   type: 'unit',
   kind: 'king',
-  aspects: {},
+  properties: {},
   interactions: [
     {
-      type: 'movement',
-      tiles: getKingAttackMove(),
+      type: 'hex' as const,
+      kind: 'movement',
+      targeting: {
+        userSelect: true,
+        tiles: getKingAttackMove(),
+      },
       actions: [
         {
-          type: 'movement',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],
     },
     {
-      type: 'attack',
-      tiles: getKingAttackMove(true),
+      type: 'hex' as const,
+      kind: 'attack',
+      targeting: {
+        userSelect: true,
+        tiles: getKingAttackMove(true),
+      },
       actions: [
         {
-          type: 'attack',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],

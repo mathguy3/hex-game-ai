@@ -21,10 +21,10 @@ export const sequence = (actionState: ActionState, stepId: string, action: Seque
             context.isComplete = true;
         } else {
             context.currentIndex = null;
-            console.log('sequence complete', actionState.gameState.activePlayerId);
+            //console.log('sequence complete', actionState.gameState.activePlayerId);
             // I really want to be able to cycle through the activePlayerId, but I'm not sure how to do that here sure okay
             actionState.gameState.activePlayerId = actionState.gameState.activePlayerId === 'team1' ? 'team2' : 'team1';
-            console.log('sequence complete teams have changed??', actionState.gameState.activePlayerId);
+            //console.log('sequence complete teams have changed??', actionState.gameState.activePlayerId);
         }
     }
 

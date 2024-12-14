@@ -39,6 +39,15 @@ export const IFObjectValue = 'OBJECT_VALUE';
 export type IFArrayConst = 'ARRAY_VALUE';
 export const IFArrayValue = 'ARRAY_VALUE';
 
+export const sentinelValues = {
+  [IFStringValue]: IFStringValue,
+  [IFFloatValue]: IFFloatValue,
+  [IFIntValue]: IFIntValue,
+  [IFBooleanValue]: IFBooleanValue,
+  [IFObjectValue]: IFObjectValue,
+  [IFArrayValue]: IFArrayValue
+};
+
 export type IFConstValue = IFStringConst | IFFloatConst | IFIntConst | IFBooleanConst | IFObjectConst | IFArrayConst;
 export type IFObject = { [key: string]: IFValue };
 export type IFArray = IFValue[];
@@ -59,20 +68,20 @@ export type IFValue =
 
 export type IFTargetSelector =
   | {
-      target: IFValue;
-    }
+    target: IFValue;
+  }
   | {
-      subject: IFValue;
-    }
+    subject: IFValue;
+  }
   | {
-      context: IFValue;
-    };
+    context: IFValue;
+  };
 
 export type IF =
   | IFTargetSelector
   | {
-      or: IFValue[]; // inclusive or
-    }
+    or: IFValue[]; // inclusive or
+  }
   | {
-      and: IFValue[]; // exclusive and
-    };
+    and: IFValue[]; // exclusive and
+  };

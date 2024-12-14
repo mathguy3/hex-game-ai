@@ -2,9 +2,7 @@ import { originHex } from "../../../../../configuration/constants";
 import { Interaction } from "../../../../../types/actions/interactions";
 import { ActionState, PlayerState, Sequence } from "../../../../../types/game";
 import { generateTileSet } from "../../../map/hex/generateTileSet";
-import { clearPreviews } from "../../../map/preview/clearMapPreview";
 import { generateUnitPreview } from "../../../map/preview/generateUnitPreview";
-import { clearSelection } from "../../../map/unselectCoordinates";
 import { ActionRequest } from "../doSequence";
 
 export const interact = (actionState: ActionState, stepId: string, action: Sequence | Interaction, request: ActionRequest) => {
@@ -35,11 +33,11 @@ export const interact = (actionState: ActionState, stepId: string, action: Seque
                 if (subject.targets?.length > 1) {
                     throw new Error('targets limited to 1 for hexes for now');
                 }
-                const hex = actionState.mapState[subject.id];
-                actionState.selectedHex = hex;
-                const { unit } = hex.contains;
+                const subjectHex = actionState.mapState[subject.id];
+                actionState.selectedHex = subjectHex;
+                const { unit } = subjectHex.contains;
                 //const unitDefinition = actionState.gameDefinition.units[unit.kind];
-                const unitPreview = generateUnitPreview(actionState, unit.kind, hex.coordinates);
+                const unitPreview = generateUnitPreview(actionState, unit.kind, subjectHex.coordinates);
                 const unitDefinition = actionState.gameDefinition.units[unit.kind];
                 for (const target of subject.targets) {
                     if (target.type != 'hex') {
@@ -51,28 +49,28 @@ export const interact = (actionState: ActionState, stepId: string, action: Seque
                     const defaultAction = Object.values(actionPreview.preview)[0];
                     const selectedPreview = target.kind ? actionPreview.preview[target.kind] : defaultAction;
 
-                    const finalInteraction = unitDefinition.interactions.find((x) => x.kind === selectedPreview.type);
+                    const unitInteraction = unitDefinition.interactions.find((x) => x.kind === selectedPreview.type);
 
                     const subjectTiles = generateTileSet(activeAction.interactions.hex.targeting.tiles, originHex, actionState, true);
-                    const targetTiles = generateTileSet(finalInteraction.targeting.tiles, hex.coordinates, actionState)
-                    if (!subjectTiles[hex.key] || !targetTiles[target.id]) {
+                    const targetTiles = generateTileSet(unitInteraction.targeting.tiles, subjectHex.coordinates, actionState)
+                    if (!subjectTiles[subjectHex.key] || !targetTiles[target.id]) {
                         throw new Error('Invalid subject or target');
                     }
 
                     actionState.gameState.actionContext.isComplete = true;
 
                     actionState.gameState.activeStep = actionState.gameState.activeStep + '.hex';
-                    actionState.gameState.activeAction = finalInteraction;
-                    actionState.gameState.activeActions[actionState.gameState.activeStep] = finalInteraction;
+                    actionState.gameState.activeAction = unitInteraction;
+                    actionState.gameState.activeActions[actionState.gameState.activeStep] = unitInteraction;
 
                     actionState.gameState.actionContext.subjects = [{
-                        id: hex.key,
+                        id: subjectHex.key,
                         targets: [target],
                         type: 'hex',
                     }];
                     actionState.gameState.actionContext = {
                         id: actionState.gameState.activeStep,
-                        action: finalInteraction,
+                        action: unitInteraction,
                         subjects: actionState.gameState.actionContext.subjects,
                         previousContext: actionState.gameState.actionContext,
                     }

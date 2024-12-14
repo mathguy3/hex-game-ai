@@ -58,7 +58,7 @@ export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: Hex
   if (item.contains.unit) {
     //console.log('THIS SPACE HAS UNIT', item.key, item.contains.unit);
   }
-  const teamColor = { team1: '#0000ff', team2: '#ff0000' }[item.contains.unit?.aspects.team?.value];
+  const teamColor = { team1: '#0000ff', team2: '#ff0000' }[item.contains.unit?.properties.team?.value];
   if (item.contains.unit) {
     //console.log('team color', teamColor);
   }
@@ -105,7 +105,7 @@ export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: Hex
       zIndex={isSelected || isPreview ? 1 : 0}
     >
       {isDev && (
-        <div style={{ userSelect: 'none', fontSize: '12px' }}>
+        <div style={{ userSelect: 'none', fontSize: '12px', zIndex: 1000 }}>
           <Box position="absolute" top="5px" left={gridColumnWidth / 2 - 5}>
             {renderqs ? 'q' : coordinates.q}
           </Box>
@@ -117,7 +117,7 @@ export const Hex = React.memo(({ item, isSelected, preview, onSelectedRef }: Hex
           </Box>
         </div>
       )}
-      <HexImg width={gridColumnWidth} strokeWidth={isSelected || isPreview ? 4 : 2} color={hexPreview.color} />
+      <HexImg width={gridColumnWidth} strokeWidth={isSelected || isPreview ? 4 : 2} color={hexPreview.color} zIndex={1} />
       {item.contains.unit && <Soldier key={item.contains.unit.id} item={item.contains.unit} />}
       {/*Object.keys(item.preview)*/}
       <Box

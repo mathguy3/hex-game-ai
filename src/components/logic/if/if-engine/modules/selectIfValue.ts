@@ -1,3 +1,4 @@
+import { sentinelValues } from '../../../../../types/actions/if';
 import { isIF } from '../is/isIf';
 import { isIfCompare } from '../is/isIfCompare';
 import { isIfElse } from '../is/isIfElse';
@@ -7,6 +8,7 @@ import { isKeyValue } from '../is/isKeyValue';
 import { isSimpleValue } from '../is/isSimpleValue';
 import { isTarget } from '../is/isTarget';
 import { IFContext } from '../types';
+import { debugLogger } from '../util/debug-logger';
 import { getFields } from '../util/getFields';
 import { getNextTarget } from '../util/getNextTarget';
 import { getTargetValue } from '../util/getTargetValue';
@@ -31,12 +33,25 @@ const evalByType = {
 };
 
 export const selectIfValue = (context: IFContext) => {
+  //console.log("Select If Value", context);
+  /*debugLogger.log({
+    step: 'Select Value Start',
+    path: context.path,
+    context
+  });*/
+
   const { ifValue } = context;
 
   if (isSimpleValue(ifValue)) {
     const value = getSimpleValue(ifValue, context);
-    //console.log('SELECTING SIMPLE VALUE', ifValue, value, context);
-    return evalByType[context.type](context, value);
+    debugLogger.log({
+      step: 'Simple Value',
+      path: context.path,
+      result: value
+    });
+    // don't want to 'eval' here, only set or if
+    const contextType = context.type === 'eval' && typeof ifValue == 'string' && !sentinelValues[ifValue] ? 'if' : context.type;
+    return evalByType[contextType](context, value);
   }
   if (!ifValue) {
     console.log('WHATS');

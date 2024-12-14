@@ -8,7 +8,7 @@ export const endInteraction = (actionState: ActionState) => {
   const pathUp = path.slice(0, path.lastIndexOf('.'));
   //actionState = updateStepPath(actionState, pathUp);
   actionState = deselect(actionState);
-  console.log('deselect', actionState);
+  //console.log('deselect', actionState);
   actionState = deactivateOptions(actionState);
   return actionState;
 };

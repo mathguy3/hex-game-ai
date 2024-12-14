@@ -1,7 +1,7 @@
 import { ActionSubject } from '../components/logic/game-controller/sequencer';
 import { IF } from './actions/if';
 import { CardInteraction, HexInteraction, Interaction, Targeting, UIInteraction } from './actions/interactions';
-import { TileSelect, TileSet } from './actions/tiles';
+import { TileSet } from './actions/tiles';
 import { UnitDefinition } from './entities/unit/unit';
 import { HexItem, MapState } from './map';
 
@@ -126,7 +126,7 @@ export type LocalState = {
 };
 
 export type LocalControl = {
-  mapSelector?: TileSet;
+  activeActions: Record<string, TileSet>;
 };
 
 export type ActionState = {

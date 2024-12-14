@@ -17,7 +17,7 @@ export const generateUnitPreview = (actionState: ActionState, unitKind: string, 
   assert(unitDefinition, `No definition for selected unit ${unitKind}`);
 
   for (const interaction of unitDefinition.interactions) {
-    console.log('Preview for', interaction.type);
+    //console.log('Preview for', interaction.type);
     if (
       interaction.if &&
       !evalIf(interaction.if, {

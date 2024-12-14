@@ -47,7 +47,7 @@ export class GameManager {
             maxPlayers: 2,
             localControl: {}
         };
-        console.log(newGame.gameState.players);
+        //console.log(newGame.gameState.players);
         newGame.gameState.players.team1 = {
             playerId: params.creatorId,
             name: params.creatorName,

@@ -1,6 +1,7 @@
 import { CoordinateKey, Coordinates, Tile } from '../../../../types';
 import { TileSelect } from '../../../../types/actions/tiles';
 import { ActionState } from '../../../../types/game';
+import { getKey } from '../../../../utils/coordinates/getKey';
 import { evalIf } from '../../if/if-engine/eval-if';
 import * as tileGenerators from '../../tile-generators';
 import { TileGenerator } from '../../tile-generators/types';
@@ -30,10 +31,12 @@ export const generateTiles = (
       isValid &&
       (!tileSelect.tileIf ||
         evalIf(tileSelect.tileIf, {
-          subject: { parent: actionState.mapState, field: tile.key },
+          subject: { parent: actionState.mapState, field: getKey(subject) },
+          target: { parent: actionState.mapState, field: tile.key },
           context: { parent: actionState, field: 'gameState' }
         }));
 
+    console.log("log every one", tile, passesCheck)
     return isUniversallyValid && isValid && passesCheck;
   }
   const results = generator(tileSelect, subject, actionState, checkTile, initialSearch);

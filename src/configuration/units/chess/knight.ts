@@ -17,24 +17,36 @@ const getKnightAttackMove = (attack?: boolean) => ({
 export const knight: UnitDefinition = {
   type: 'unit',
   kind: 'knight',
-  aspects: {},
+  properties: {},
   interactions: [
     {
-      type: 'movement',
-      tiles: getKnightAttackMove(),
+      type: 'hex' as const,
+      kind: 'movement',
+      targeting: {
+        userSelect: true,
+        tiles: getKnightAttackMove(),
+      },
       actions: [
         {
-          type: 'movement',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets newly movedc target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],
     },
     {
-      type: 'attack',
-      tiles: getKnightAttackMove(true),
+      type: 'hex' as const,
+      kind: 'attack',
+      targeting: {
+        userSelect: true,
+        tiles: getKnightAttackMove(true),
+      },
       actions: [
         {
-          type: 'attack',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],

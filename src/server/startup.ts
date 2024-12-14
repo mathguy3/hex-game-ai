@@ -67,7 +67,7 @@ const server = Bun.serve({
 
       const user = getUser(params.sessionId);
       if ((!params.sessionId || !user) && routeName !== 'id') {
-        console.log(routeName, params, user);
+        //console.log(routeName, params, user);
         return new Response('401', { headers, status: 401, statusText: 'sessionId not found, use /id first' });
       }
       const result = await handler({ ...params, user });

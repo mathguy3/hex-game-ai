@@ -1,5 +1,6 @@
 import { HexItem } from '../../../../types';
 import { HexTileSelect } from '../../../../types/actions/tiles';
+import { getKey } from '../../../../utils/coordinates/getKey';
 import { mapToRecord } from '../../../../utils/record/mapToRecord';
 import { evalIf } from '../../if/if-engine/eval-if';
 import { TileGenerator } from '../types';
@@ -11,7 +12,8 @@ export const hex: TileGenerator<HexTileSelect> = (tileSelect, subject, actionSta
   let targets: HexItem[] = hexList;
   let matchingTargets: HexItem[] = targets.filter((x) => {
     const result = !tileSelect.tileIf || evalIf(tileSelect.tileIf, {
-      subject: { parent: actionState.mapState, field: x.key },
+      target: { parent: actionState.mapState, field: x.key },
+      subject: { parent: actionState.mapState, field: getKey(subject) },
       context: { parent: actionState, field: 'gameState' },
     });
     return result;

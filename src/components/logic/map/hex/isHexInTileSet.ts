@@ -10,7 +10,7 @@ export function isHexInTileSet(
   tileSet: TileSet,
   actionState: ActionState
 ): boolean {
-  const generatedTileSet = generateTileSet(tileSet, hex, actionState, true);
+  const generatedTileSet = generateTileSet(tileSet, originHex, actionState, true);
   const hexKey = getKey(hex);
   return hexKey in generatedTileSet;
 }

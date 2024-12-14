@@ -19,18 +19,19 @@ export const direction: TileGenerator<DirectionTileSelect> = (tileSet, subject, 
       key: nextKey,
     };
 
-    finalSet[nextKey] = nextTile;
-
     if (
       isBlocking &&
       (!defaultIsValidTile(nextTile, subject, actionState) ||
         evalIf(isBlocking, {
           subject: { parent: actionState.mapState, field: getKey(subject) },
           target: { parent: actionState.mapState, field: nextKey },
+          context: { parent: actionState, field: 'gameState' }
         }))
     ) {
       break;
     }
+
+    finalSet[nextKey] = nextTile;
   }
   return finalSet;
 };

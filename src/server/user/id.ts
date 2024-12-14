@@ -11,7 +11,7 @@ export const userRecord: Record<string, User> = {};
 
 export function id({ sessionId }: { sessionId: string }) {
   if (sessionIds[sessionId]) {
-    console.log('session found', sessionId, sessionIds[sessionId], userRecord[sessionIds[sessionId]]);
+    //console.log('session found', sessionId, sessionIds[sessionId], userRecord[sessionIds[sessionId]]);
     return userRecord[sessionIds[sessionId]];
   }
 

@@ -1,6 +1,7 @@
 import { rangeSimple } from '../../components/logic/tile-generators';
 import { originHex } from '../../configuration/constants';
-import { CoordinateKey, Coordinates, MapState, Tile } from '../../types';
+import { CoordinateKey, Coordinates, HexItem, MapState, Tile } from '../../types';
+import { UnitState } from '../../types/entities/unit/unit';
 import { UnitKind } from '../../types/kinds/units';
 import { fromKey } from '../../utils/coordinates/fromKey';
 import { getKey } from '../../utils/coordinates/getKey';
@@ -30,12 +31,12 @@ export const mapGen = (tiles: MapState = {}) => {
   };
 };
 
-const makeHex = (coordinates: Coordinates) => {
+const makeHex = (coordinates: Coordinates): HexItem => {
   return {
     type: 'hex' as const,
     key: getKey(coordinates),
     kind: coordinates.q === -2 ? 'river' : 'hex',
-    aspects: {},
+    properties: {},
     coordinates: coordinates,
     isSelected: false,
     contains: {},
@@ -43,11 +44,11 @@ const makeHex = (coordinates: Coordinates) => {
   };
 };
 
-const makeUnit = (team?: string, kind?: UnitKind) => ({
+const makeUnit = (team?: string, kind?: UnitKind): UnitState => ({
   type: 'unit' as const,
   kind: kind,
   id: team,
-  aspects: {
+  properties: {
     ...(team ? { team: { type: 'team' as const, value: team } } : {}),
     health: { type: 'health', value: 100 },
     fallbackHealth: { type: 'fallbackHealth', value: 50 },

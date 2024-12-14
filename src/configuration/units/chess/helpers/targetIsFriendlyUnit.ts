@@ -1,6 +1,6 @@
 import { IFStringValue } from '../../../../types/actions/if';
 
-export const targetIsEnemyUnit = {
+export const targetIsFriendlyUnit = {
   and: [
     {
       target: {
@@ -18,11 +18,9 @@ export const targetIsEnemyUnit = {
             properties: {
               team: {
                 value: {
-                  not: {
-                    subject: {
-                      contains: {
-                        unit: { properties: { team: { value: IFStringValue } } },
-                      },
+                  subject: {
+                    contains: {
+                      unit: { properties: { team: { value: IFStringValue } } },
                     },
                   },
                 },

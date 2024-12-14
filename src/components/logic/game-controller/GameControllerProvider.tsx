@@ -47,7 +47,7 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
   });
   const [gameState, setGameState] = useState<GameState>(selectedGameSession.gameState);
   const [mapState, setMapState] = useState<MapState>(selectedGameSession.mapState);
-  const [localControl, setLocalControl] = useState<LocalControl>({});
+  const [localControl, setLocalControl] = useState<LocalControl>({ activeActions: {} });
 
   const basicActionState: ActionState = {
     mapState,
@@ -100,10 +100,11 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
 
       await handleAction.current(request, actionState);
     } else {
+      actionState = clearPreviews(actionState)
       // Local only preview/selection handling
       actionState = selectHex(actionState);
       if (canInteract) {
-        const canSelectThatThing = localControl.mapSelector && isHexInTileSet(hex.coordinates, localControl.mapSelector, actionState);
+        const canSelectThatThing = Object.values(localControl.activeActions).some(x => isHexInTileSet(hex.coordinates, x, actionState));
 
         if (canSelectThatThing) {
           actionState = showPreview(actionState);
@@ -181,12 +182,12 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
 
   useEffect(() => {
     const updatedState = clearPreviews(clearSelection(basicActionState));
-    if (isPlayerTurn(gameState, localState) && localControl.mapSelector) {
+    if (isPlayerTurn(gameState, localState)) {
       setLocalState({ ...updatedState.localState, mapManager: { ...updatedState.localState.mapManager, state: 'play' } });
     } else {
       setLocalState({ ...updatedState.localState, mapManager: { ...updatedState.localState.mapManager, state: 'view' } });
     }
-  }, [isPlayerTurn(gameState, localState), localControl.mapSelector])
+  }, [isPlayerTurn(gameState, localState)])
 
   const { sendMessage } = useWebSocket();
 

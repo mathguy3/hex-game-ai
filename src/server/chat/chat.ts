@@ -26,6 +26,6 @@ export const chat = ({ gameId, user, message }: { gameId: string; user: User; me
       messages: [...current.messages, { userId: user.id, message }],
     };
   }
-  console.log('Returning chat', gameId, message, chatLog);
+  //console.log('Returning chat', gameId, message, chatLog);
   return { chatLog: chatLog[gameId], users: userRecord };
 };

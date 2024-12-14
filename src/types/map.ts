@@ -16,7 +16,7 @@ export type HexItem = {
   key: CoordinateKey;
   coordinates: Coordinates;
   kind: string;
-  aspects: Record<string, Aspect>;
+  properties: Record<string, Aspect>;
   isSelected: boolean;
   contains: ContainState;
   preview: Record<string, Preview>;

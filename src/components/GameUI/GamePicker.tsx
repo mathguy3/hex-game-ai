@@ -20,7 +20,6 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
     const fetchGames = async () => {
       try {
         const { games } = await client.listGames();
-        console.log('games', games);
         setGames(games ?? []);
         setError(null);
       } catch (err) {

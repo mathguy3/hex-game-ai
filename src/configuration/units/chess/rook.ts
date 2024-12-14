@@ -18,24 +18,36 @@ const getRookAttackMove = (attack?: boolean) => ({
 export const rook: UnitDefinition = {
   type: 'unit',
   kind: 'rook',
-  aspects: {},
+  properties: {},
   interactions: [
     {
-      type: 'movement',
-      tiles: getRookAttackMove(),
+      type: 'hex' as const,
+      kind: 'movement',
+      targeting: {
+        userSelect: true,
+        tiles: getRookAttackMove(),
+      },
       actions: [
         {
-          type: 'movement',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],
     },
     {
-      type: 'attack',
-      tiles: getRookAttackMove(true),
+      type: 'hex' as const,
+      kind: 'attack',
+      targeting: {
+        userSelect: true,
+        tiles: getRookAttackMove(true),
+      },
       actions: [
         {
-          type: 'attack',
+          type: 'action' as const,
+          name: 'moveToHex',
+          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],
