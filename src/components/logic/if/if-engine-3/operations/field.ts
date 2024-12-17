@@ -9,8 +9,7 @@ export const field = {
             throw new Error("Field operation requires exactly one field");
         }
         const field = keys[0];
-        const { operationType } = getNextOperation(context);
-        const nextPath = context.path + '.' + operationType;
+        const nextPath = context.path + '.' + field;
         return {
             previousContext: context,
             path: nextPath, // selectNext

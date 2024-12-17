@@ -3,9 +3,16 @@ import * as operations from './operations';
 import { Context } from "./operations/types";
 
 export const doIf = (context: Context) => {
-    const { operationType } = getNextOperation(context);
-    const operation = operations[operationType];
-    const result = operation.op(context);
+    let currentContext = context;
+    let finalValue = null;
+    let iteration = 0;
+    do {
+        const { operationType } = getNextOperation(currentContext);
+        const operation = operations[operationType];
+        currentContext = operation.op(currentContext);
+        iteration++;
+    } while (iteration < 2);
+    console.log(currentContext.path);
 
-    return result;
+    return currentContext;
 }

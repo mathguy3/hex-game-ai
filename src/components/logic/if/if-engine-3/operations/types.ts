@@ -7,9 +7,11 @@ export type Operation = {
 
 export type Context = {
     ifItem: any;
-    modelItem: any
+    modelItem?: any
     contextModel: any;
     path: string;
     history: string[];
-    previousContext: Context | null;
+    previousContext?: Context;
+    result?: any;
+    isComplete
 }
