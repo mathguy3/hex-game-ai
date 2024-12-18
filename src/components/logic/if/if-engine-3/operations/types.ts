@@ -1,5 +1,6 @@
 export type Operation = {
     requiredFields: string[];
+    isLeaf?: boolean;
     startOp: (context: Context) => any;
     endOp?: (context: Context) => any;
 }

@@ -1,5 +1,3 @@
-// Write a basic test that runs a simple context on the doIf function I'll start writing right after this comment
-
 import { doIf } from "../if";
 
 describe("doIf", () => {

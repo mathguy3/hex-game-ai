@@ -3,10 +3,10 @@ import { Context } from './types';
 
 export const equals = {
     requiredFields: ["equals"],
-    op: (context: Context) => {
+    startOp: (context: Context) => {
         const keys = Object.keys(context.ifItem);
-        if (keys.length !== 1) {
-            throw new Error("Field operation requires exactly one field");
+        if (keys.length !== 1 || keys[0] !== 'equals') {
+            throw new Error("Field operation requires exactly one field" + JSON.stringify(keys));
         }
         const field = keys[0];
         const nextPath = context.path + '.' + field;
@@ -14,14 +14,14 @@ export const equals = {
             type: 'eval',
             previousContext: context,
             path: nextPath, // selectNext
-            modelItem: context.modelItem[field],
+            modelItem: context.modelItem,
             ifItem: context.ifItem[field], // selectNext
             isComplete: true,
             bag: context.bag,
             operationType: 'equals',
         };
     },
-    postOp: (context: Context) => {
+    endOp: (context: Context) => {
         console.log("---equals", context.modelItem, context.bag.result);
         return { ...context.previousContext, bag: context.bag };
     }

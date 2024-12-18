@@ -11,7 +11,8 @@ const map = {
 
 export const simple = {
     requiredFields: [],
-    op: (context: Context) => {
+    isLeaf: true,
+    startOp: (context: Context) => {
         const item = context.modelItem;
         if (typeof item !== 'string' && typeof item !== 'number' && typeof item !== 'boolean') {
             throw new Error("Simple operation requires a simple type" + JSON.stringify(item));
@@ -20,6 +21,10 @@ export const simple = {
         if (map[context.modelItem]) {
             context.bag.result = context.modelItem;
         }
-        return context;
+        context.bag.history.push(context.path + "." + context.bag.result);
+        return {
+            previousContext: context,
+            bag: context.bag
+        };
     }
 };

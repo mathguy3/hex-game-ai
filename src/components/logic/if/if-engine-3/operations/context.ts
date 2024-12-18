@@ -3,7 +3,7 @@ import { Context } from "./types";
 
 export const context = {
     requiredFields: ['context'],
-    op: (context: Context) => {
+    startOp: (context: Context) => {
         if (!('context' in context.ifItem)) {
             throw new Error("Wrong value type for context operation");
         }

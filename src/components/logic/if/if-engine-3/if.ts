@@ -15,10 +15,13 @@ export const doIf = (context: { ifItem: any; contextModel: any }) => {
     };
     let iteration = 0;
     let finalResult = undefined;
+    const activeOperations = {}
+    const { operationType } = getNextOperation(currentContext);
+    let nextOperation = operationType;
     do {
-        if (currentContext.isComplete) {
-            const endOperation = operationsObject[currentContext.operationType];
-            currentContext = endOperation.endOp ? endOperation.endOp(currentContext) : currentContext;
+        /*if (currentContext.isComplete) {
+            const { endOp } = operationsObject[currentContext.operationType];
+            currentContext = endOp ? endOp(currentContext) : currentContext;
             console.log("---operation ended", currentContext.path)
             currentContext = { ...currentContext.previousContext, bag: currentContext.bag };
 
@@ -28,14 +31,47 @@ export const doIf = (context: { ifItem: any; contextModel: any }) => {
             } else {
                 continue;
             }
+        }*/
+
+
+        if (nextOperation) {
+            const operation = operationsObject[nextOperation];
+            currentContext = operation.startOp(currentContext);
+            activeOperations[currentContext.path] = currentContext;
+
+            console.log("---starting operation", nextOperation, currentContext.path)
+
+            if (operation.isLeaf) {
+                console.log("---operation ended", currentContext.path)
+                currentContext = { ...currentContext.previousContext, bag: currentContext.bag };
+                nextOperation = undefined;
+            } else {
+                const { operationType } = getNextOperation(currentContext);
+                nextOperation = operationType;
+                console.log("---next operation", nextOperation)
+            }
+        } else {
+            // At some point this may 'continue' the operation instead of just ending
+            const activeOperation = activeOperations[currentContext.path];
+            if (!activeOperation) {
+                break;
+            }
+            console.log(currentContext.path)
+            console.log("---ending operation", activeOperation.path)
+            if (activeOperation.endOp) {
+                currentContext = activeOperation.endOp(currentContext);
+            }
+            currentContext = { ...currentContext.previousContext, bag: currentContext.bag };
+            nextOperation = undefined;
+            delete activeOperations[currentContext.path];
+            continue;
         }
 
-        const { operationType } = getNextOperation(currentContext);
-        const operation = operationsObject[operationType];
-        currentContext = operation.startOp(currentContext);
+        currentContext.bag.history.push(currentContext.path);
 
         iteration++;
     } while (currentContext);
 
-    return finalResult;
+    console.log(currentContext.bag.history)
+    return currentContext.bag.result;
 };
