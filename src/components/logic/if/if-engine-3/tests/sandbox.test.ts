@@ -16,7 +16,6 @@ describe("doIf", () => {
             path: 'start',
             history: ['start'],
         };
-        console.log(context.history)
         expect(doIf(context)).toBe(true);
     });
 });

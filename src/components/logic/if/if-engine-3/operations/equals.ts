@@ -1,4 +1,5 @@
 
+import { addPath } from '../utils/addPath';
 import { Context } from './types';
 
 export const equals = {
@@ -9,7 +10,7 @@ export const equals = {
             throw new Error("Field operation requires exactly one field" + JSON.stringify(keys));
         }
         const field = keys[0];
-        const nextPath = context.path + '.' + field;
+        const nextPath = addPath(context.path, field);
         return {
             type: 'eval',
             previousContext: context,
@@ -22,7 +23,7 @@ export const equals = {
         };
     },
     endOp: (context: Context) => {
-        console.log("---equals", context.modelItem, context.bag.result);
+        context.bag.result = context.modelItem == context.bag.result;
         return { ...context.previousContext, bag: context.bag };
     }
 };

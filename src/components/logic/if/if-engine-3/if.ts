@@ -8,68 +8,53 @@ export const doIf = (context: { ifItem: any; contextModel: any }) => {
     let currentContext: Context = {
         ifItem: context.ifItem,
         type: 'if',
-        path: 'start',
-        bag: { history: ['start'], contextModel: context.contextModel },
+        path: '',
+        bag: { history: [], contextModel: context.contextModel },
         isComplete: false,
-        operationType: 'start',
+        operationType: '',
     };
-    let iteration = 0;
-    let finalResult = undefined;
-    const activeOperations = {}
+    const activeContexts = {}
     const { operationType } = getNextOperation(currentContext);
     let nextOperation = operationType;
     do {
-        /*if (currentContext.isComplete) {
-            const { endOp } = operationsObject[currentContext.operationType];
-            currentContext = endOp ? endOp(currentContext) : currentContext;
-            console.log("---operation ended", currentContext.path)
-            currentContext = { ...currentContext.previousContext, bag: currentContext.bag };
 
-            if (iteration > 0 && currentContext.operationType == 'start') {
-                console.log(currentContext.bag)
-                break;
-            } else {
-                continue;
-            }
-        }*/
-
-
+        // Going down the tree
         if (nextOperation) {
             const operation = operationsObject[nextOperation];
             currentContext = operation.startOp(currentContext);
-            activeOperations[currentContext.path] = currentContext;
+            activeContexts[currentContext.path] = currentContext;
 
-            console.log("---starting operation", nextOperation, currentContext.path)
-
+            // operation needs to be updated based on what currentContext is now
             if (operation.isLeaf) {
-                console.log("---operation ended", currentContext.path)
+                // start going up the tree
                 currentContext = { ...currentContext.previousContext, bag: currentContext.bag };
                 nextOperation = undefined;
             } else {
+                // continue going down the tree
                 const { operationType } = getNextOperation(currentContext);
                 nextOperation = operationType;
-                console.log("---next operation", nextOperation)
             }
         } else {
+            // Going up the tree
+
             // At some point this may 'continue' the operation instead of just ending
-            const activeOperation = activeOperations[currentContext.path];
-            if (!activeOperation) {
+            const activeContext = activeContexts[currentContext.path];
+            if (!activeContext) {
+                if (currentContext.path != '') {
+                    throw new Error("Breaking on non-start path")
+                }
                 break;
             }
-            console.log(currentContext.path)
-            console.log("---ending operation", activeOperation.path)
-            if (activeOperation.endOp) {
-                currentContext = activeOperation.endOp(currentContext);
+            const operation = operationsObject[activeContext.operationType];
+            if (operation.endOp) {
+                currentContext = operation.endOp(currentContext);
             }
+            delete activeContexts[currentContext.path];
             currentContext = { ...currentContext.previousContext, bag: currentContext.bag };
             nextOperation = undefined;
-            delete activeOperations[currentContext.path];
-            continue;
         }
 
         currentContext.bag.history.push(currentContext.path);
-
-        iteration++;
     } while (currentContext);
 
     console.log(currentContext.bag.history)

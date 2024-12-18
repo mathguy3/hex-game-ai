@@ -1,3 +1,4 @@
+import { addPath } from "../utils/addPath";
 import { Context } from "./types";
 
 // type Map from $String/Object/Array/Number/Boolean to the value
@@ -13,7 +14,7 @@ export const simple = {
     requiredFields: [],
     isLeaf: true,
     startOp: (context: Context) => {
-        const item = context.modelItem;
+        const item = context.ifItem;
         if (typeof item !== 'string' && typeof item !== 'number' && typeof item !== 'boolean') {
             throw new Error("Simple operation requires a simple type" + JSON.stringify(item));
         }
@@ -21,10 +22,12 @@ export const simple = {
         if (map[context.modelItem]) {
             context.bag.result = context.modelItem;
         }
-        context.bag.history.push(context.path + "." + context.bag.result);
+        const path = addPath(context.path, context.bag.result);
+        context.bag.history.push(path);
         return {
             previousContext: context,
-            bag: context.bag
+            bag: context.bag,
+            path: path
         };
     }
 };

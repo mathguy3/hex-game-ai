@@ -1,9 +1,10 @@
 import { getNextOperation } from "../getNextOperation";
 import { Context } from "../operations/types";
+import { addPath } from "./addPath";
 
 export const selectNext = (context: Context) => {
     const { fields } = getNextOperation(context);
-    const nextPath = context.path + '.' + fields[0];
+    const nextPath = addPath(context.path, fields[0]);
     return {
         previousContext: context,
         path: nextPath,
