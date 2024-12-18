@@ -5,10 +5,11 @@ import { doIf } from "../if";
 describe("doIf", () => {
     it("should return true if the context is true", () => {
         const context = {
-            operationType: "if",
             ifItem: {
                 context: {
-                    name: 'test'
+                    name: {
+                        equals: 'test'
+                    }
                 }
             },
             contextModel: {
@@ -17,6 +18,7 @@ describe("doIf", () => {
             path: 'start',
             history: ['start'],
         };
+        console.log(context.history)
         expect(doIf(context)).toBe(true);
     });
 });

@@ -12,24 +12,14 @@ const map = {
 export const simple = {
     requiredFields: [],
     op: (context: Context) => {
-        const item = context.ifItem;
+        const item = context.modelItem;
         if (typeof item !== 'string' && typeof item !== 'number' && typeof item !== 'boolean') {
-            throw new Error("Simple operation requires a simple type");
+            throw new Error("Simple operation requires a simple type" + JSON.stringify(item));
         }
-        if (typeof item === 'number' || typeof item === 'boolean') {
-            context.result = item;
-            return context;
-        }
+        context.bag.result = item;
         if (map[context.modelItem]) {
-            context.result = context.modelItem;
-            return context;
+            context.bag.result = context.modelItem;
         }
-
-        context.result = item;
-        context.
         return context;
-    },
-    postOp: (context: Context) => {
-        return { ...context.previousContext, result: context.result };
     }
 };

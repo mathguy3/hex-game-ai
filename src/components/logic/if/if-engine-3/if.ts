@@ -1,18 +1,41 @@
-import { getNextOperation } from "./getNextOperation";
+import { getNextOperation } from './getNextOperation';
 import * as operations from './operations';
-import { Context } from "./operations/types";
+import { Context, Operation } from './operations/types';
 
-export const doIf = (context: Context) => {
-    let currentContext = context;
-    let finalValue = null;
+const operationsObject: Record<string, Operation> = operations;
+
+export const doIf = (context: { ifItem: any; contextModel: any }) => {
+    let currentContext: Context = {
+        ifItem: context.ifItem,
+        type: 'if',
+        path: 'start',
+        bag: { history: ['start'], contextModel: context.contextModel },
+        isComplete: false,
+        operationType: 'start',
+    };
     let iteration = 0;
+    let finalResult = undefined;
     do {
-        const { operationType } = getNextOperation(currentContext);
-        const operation = operations[operationType];
-        currentContext = operation.op(currentContext);
-        iteration++;
-    } while (iteration < 2);
-    console.log(currentContext.path);
+        if (currentContext.isComplete) {
+            const endOperation = operationsObject[currentContext.operationType];
+            currentContext = endOperation.endOp ? endOperation.endOp(currentContext) : currentContext;
+            console.log("---operation ended", currentContext.path)
+            currentContext = { ...currentContext.previousContext, bag: currentContext.bag };
 
-    return currentContext;
-}
+            if (iteration > 0 && currentContext.operationType == 'start') {
+                console.log(currentContext.bag)
+                break;
+            } else {
+                continue;
+            }
+        }
+
+        const { operationType } = getNextOperation(currentContext);
+        const operation = operationsObject[operationType];
+        currentContext = operation.startOp(currentContext);
+
+        iteration++;
+    } while (currentContext);
+
+    return finalResult;
+};

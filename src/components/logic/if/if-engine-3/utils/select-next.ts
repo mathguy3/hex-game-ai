@@ -2,15 +2,14 @@ import { getNextOperation } from "../getNextOperation";
 import { Context } from "../operations/types";
 
 export const selectNext = (context: Context) => {
-    const { operationType } = getNextOperation(context);
-    const nextPath = context.path + '.' + operationType;
+    const { fields } = getNextOperation(context);
+    const nextPath = context.path + '.' + fields[0];
     return {
         previousContext: context,
-        fields: [],
         path: nextPath,
-        history: [...context.history, nextPath],
-        contextModel: context.contextModel,
-        modelItem: context.contextModel,
-        ifItem: context.ifItem.context
+        modelItem: context.modelItem?.[fields[0]],
+        ifItem: context.ifItem[fields[0]],
+        isComplete: true,
+        bag: context.bag
     }
 }
