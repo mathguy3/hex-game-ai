@@ -1,5 +1,5 @@
-import { selectNext } from "../utils/select-next";
-import { Context } from "./types";
+import { selectNext } from "../../utils/select-next";
+import { Context } from "../types";
 
 export const context = {
     requiredFields: ['context'],
@@ -10,9 +10,11 @@ export const context = {
         const updatedContext = selectNext(context);
         return {
             ...updatedContext,
-            modelItem: context.bag.contextModel,
-            isComplete: true,
+            modelItem: context.bag.model.context,
             operationType: 'context',
         }
     },
+    revisitOp: (context: Context) => {
+        return { ...context, isComplete: true };
+    }
 }

@@ -2,7 +2,7 @@ export type Operation = {
     requiredFields: string[];
     isLeaf?: boolean;
     startOp: (context: Context) => any;
-    endOp?: (context: Context) => any;
+    revisitOp?: (context: Context) => any;
 }
 
 export type Context = {
@@ -17,6 +17,10 @@ export type Context = {
     bag: {
         history: string[];
         result?: any;
-        contextModel: any;
+        model: any;
     }
+    localBag?: Record<string, any>;
+    field?: string;
+    nextOperation?: string;
+    pendingOperations?: any[];
 }
