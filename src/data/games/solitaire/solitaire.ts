@@ -25,6 +25,8 @@ const hasNotStarted = {
   },
 };
 
+const tablePadding = 25;
+
 export const solitaire: GameDefinition = {
   name: 'Solitaire',
   config: {
@@ -63,6 +65,12 @@ export const solitaire: GameDefinition = {
   ui: {
     type: 'Zone',
     id: 'solitaire-ui',
+    styles: {
+      width: 1500,
+      height: 1000,
+      border: '1px solid #777',
+      borderRadius: 10,
+    },
     children: [
       {
         id: 'drawStack',
@@ -70,8 +78,8 @@ export const solitaire: GameDefinition = {
         disabled: hasNotStarted,
         styles: {
           position: 'absolute',
-          bottom: 0,
-          left: 0,
+          top: tablePadding,
+          left: tablePadding,
         },
       },
       {
@@ -79,10 +87,8 @@ export const solitaire: GameDefinition = {
         type: 'CardStack',
         styles: {
           position: 'absolute',
-          bottom: 0,
+          top: tablePadding,
           left: 400,
-          width: '150px',
-          height: '190px',
           backgroundColor: '#ccc',
         },
         disabled: hasNotStarted,

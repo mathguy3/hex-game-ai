@@ -21,6 +21,8 @@ type BaseUIModel = {
     position?: string | any;
     color?: string | any;
     backgroundColor?: string | any;
+    border?: string | any;
+    borderRadius?: number | string | any;
   };
   properties?: {
     [key: string]: any;

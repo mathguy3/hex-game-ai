@@ -11,14 +11,13 @@ import { CardState, PlayerState } from '../../types/game';
 import { useOutsideAlerter } from '../../utils/useOutsideAlerter';
 import { DraggableCard } from '../Card/DraggableCard';
 import { InnerCard } from '../Card/InnerCard';
-import { HexMap } from '../GameUI/HexMap/HexMap';
 import { useDragState } from './DragStateProvider';
 import { DroppableCard } from './DroppableCard';
 
-export const CardManager = () => {
+export const CardManager = ({ children }: { children: React.ReactNode }) => {
   const { isDragging, setIsDragging } = useDragState();
   const { basicActionState, saveActionState, handlePlaceCard } = useGameController();
-  const { gameState, localState } = basicActionState;
+  const { gameState, localState, gameDefinition } = basicActionState;
   const { cardManager } = localState;
   const [active, setActive] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -138,7 +137,7 @@ export const CardManager = () => {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <HexMap />
+      {children}
       {cardManager.state === 'select' && isOpen && (
         <Box position="fixed" left={0} top={0} right={0} bottom={0} bgcolor="#00000055">
           <Box
@@ -164,34 +163,43 @@ export const CardManager = () => {
           </Box>
         </Box>
       )}
-      <Box
-        component="ol"
-        display="flex"
-        flexDirection="row"
-        gap={2}
-        position="fixed"
-        bottom={0}
-        left={0}
-        right={0}
-        top={`calc(100% - ${containerHeight}px)`}
-        bgcolor="#5f5f5f"
-        padding="8px"
-        margin={0}
-        ref={focusRef}
-        onClick={handleFocus}
-      >
-        <SortableContext items={filteredHand} strategy={horizontalListSortingStrategy}>
-          {filteredHand.map((card) => (
-            <DraggableCard
-              key={card.id}
-              id={card.id}
-              kind={card.kind}
-              isSelected={selected === card.id}
-              disabled={!isOpen}
-            />
-          ))}
-        </SortableContext>
-      </Box>
+      {gameDefinition.config.useHand && (
+        <>
+          <Box
+            component="ol"
+            display="flex"
+            flexDirection="row"
+            gap={2}
+            position="fixed"
+            bottom={0}
+            left={0}
+            right={0}
+            top={`calc(100% - ${containerHeight}px)`}
+            bgcolor="#5f5f5f"
+            padding="8px"
+            margin={0}
+            ref={focusRef}
+            onClick={handleFocus}
+          >
+            <SortableContext items={filteredHand} strategy={horizontalListSortingStrategy}>
+              {filteredHand.map((card) => (
+                <DraggableCard
+                  key={card.id}
+                  id={card.id}
+                  kind={card.kind}
+                  isSelected={selected === card.id}
+                  disabled={!isOpen}
+                />
+              ))}
+            </SortableContext>
+          </Box>
+          <Box position="absolute" right="0" top={`calc(100% - ${containerHeight + 30}px)`}>
+            <IconButton onClick={toggleCollapse} sx={{ background: '#f5f5f5' }}>
+              {containerHeight === closedHeight ? <IconExpandLess /> : <IconExpandMore />}
+            </IconButton>
+          </Box>
+        </>
+      )}
       {createPortal(
         <DragOverlay>
           {active ? (
@@ -200,11 +208,6 @@ export const CardManager = () => {
         </DragOverlay>,
         document.body
       )}
-      <Box position="absolute" right="0" top={`calc(100% - ${containerHeight + 30}px)`}>
-        <IconButton onClick={toggleCollapse} sx={{ background: '#f5f5f5' }}>
-          {containerHeight === closedHeight ? <IconExpandLess /> : <IconExpandMore />}
-        </IconButton>
-      </Box>
     </DndContext>
   );
 };

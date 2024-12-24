@@ -6,7 +6,7 @@ const PlayerList = memo(
   ({ players, activePlayerId, meId }: { players: GameState['players']; activePlayerId: string; meId: string }) => {
     return (
       <>
-        <Typography variant="subtitle2">Players:</Typography>
+        <Typography variant="subtitle2">Players - {activePlayerId}</Typography>
         <List dense>
           {Object.values(players).map((player) => {
             if (!player) return null;
@@ -18,7 +18,7 @@ const PlayerList = memo(
                 }}
               >
                 {` - ${player.name ?? '{}'} `}
-                {'(' + player.teamId + ')'}
+                {/*'(' + player.teamId + ')'}*/}
                 {player.teamId === meId && ' (me)'}
                 {player.teamId === activePlayerId && ' (active)'}
               </ListItem>

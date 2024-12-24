@@ -9,6 +9,9 @@ import { GameDefinitionProvider } from '../../../logic/game-controller/GameDefin
 import { GameSession } from '../../../server/games/gameManager';
 import { CardManager } from '../../CardManager/CardManager';
 import { DragStateProvider } from '../../CardManager/DragStateProvider';
+import { HexMap } from '../../GameUI/HexMap/HexMap';
+import { TableFrame } from '../../GameUI/TableFrame';
+import { UIStart } from '../../GameUI/UI/UIStart';
 
 export const GamePage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,12 +42,17 @@ export const GamePage: React.FC = () => {
   return (
     <>
       <Button onClick={handleBack} sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1000 }} variant="contained">
-        Back to Games
+        {'<'}
       </Button>
       <GameDefinitionProvider game={gameSession}>
         <GameControllerProvider meId={myId}>
           <DragStateProvider>
-            <CardManager />
+            <CardManager>
+              <TableFrame>
+                <UIStart />
+                <HexMap />
+              </TableFrame>
+            </CardManager>
           </DragStateProvider>
         </GameControllerProvider>
       </GameDefinitionProvider>

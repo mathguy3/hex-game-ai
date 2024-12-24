@@ -18,7 +18,7 @@ export const CardStack = ({ id, type, disabled, styles, content, properties }: C
 
   const isDisabled = doEval(disabled);
   return (
-    <Box sx={{ ...mappedStyles, minWidth: '150px', minHeight: '190px', border: '1px solid #ccc', borderRadius: '4px' }}>
+    <Box sx={{ width: '150px', height: '190px', ...mappedStyles, border: '1px solid #ccc', borderRadius: '4px' }}>
       {testCards.map((card, index) => (
         <StackedCard
           isDisabled={isDisabled}
