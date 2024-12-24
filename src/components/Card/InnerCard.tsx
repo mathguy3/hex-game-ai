@@ -3,6 +3,7 @@ import { Box } from '@mui/material';
 type InnerCardProps = {
   id: string;
   kind: string;
+  name?: string;
   isFloating?: boolean;
   isSelected?: boolean;
   isDropped?: boolean;
@@ -13,7 +14,16 @@ type InnerCardProps = {
 const selectedSize = { width: '150px', height: '190px' };
 const unselectedSize = { width: '150px', height: '190px' };
 
-export const InnerCard = ({ id, kind, isFloating, isSelected, isDropped, onClick, styleOverrides }: InnerCardProps) => {
+export const InnerCard = ({
+  id,
+  kind,
+  name,
+  isFloating,
+  isSelected,
+  isDropped,
+  onClick,
+  styleOverrides,
+}: InnerCardProps) => {
   if (isFloating) {
     console.log(isSelected);
   }
@@ -38,6 +48,10 @@ export const InnerCard = ({ id, kind, isFloating, isSelected, isDropped, onClick
         boxShadow={isSelected ? '0px 0px 10px 2px rgba(255,238,46,1);' : undefined}
       >
         Id: {id} Kind: {kind}
+      </Box>
+      {/* Centered box with name please */}
+      <Box position="absolute" top="50%" left="50%" sx={{ transform: 'translate(-50%, -50%)' }}>
+        {name}
       </Box>
     </Box>
   );

@@ -24,6 +24,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   function handleDragStart(event: DragStartEvent) {
+    console.log('handleDragStart', event.active.id);
     setSelected(event.active.id);
     setActive({ id: event.active.id, kind: event.active.data.current.kind });
     //saveActionState.current(previewCard(basicActionState, event.active.id + ''));

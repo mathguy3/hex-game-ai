@@ -1,21 +1,5 @@
-import { IFStringValue } from '../../../types/actions/if';
 import { GameDefinition } from '../../../types/game';
-
-const isMyTeam = {
-  target: {
-    contains: {
-      unit: {
-        properties: {
-          team: {
-            value: {
-              context: { activePlayerId: IFStringValue },
-            },
-          },
-        },
-      },
-    },
-  },
-};
+import { cards } from './cards';
 
 const hasNotStarted = {
   context: {
@@ -36,7 +20,9 @@ export const solitaire: GameDefinition = {
   players: {
     player1: {},
   },
-  initialState: {},
+  initialState: {
+    drawStack: Object.values(cards),
+  },
   definitions: {
     map: {},
     sequencing: {
@@ -83,13 +69,56 @@ export const solitaire: GameDefinition = {
         },
       },
       {
-        id: 'stack1',
+        id: 'discardStack',
+        type: 'CardStack',
+        disabled: hasNotStarted,
+        styles: {
+          position: 'absolute',
+          top: tablePadding,
+          left: tablePadding + 200,
+        },
+      },
+      {
+        id: 'finalStack1',
         type: 'CardStack',
         styles: {
           position: 'absolute',
           top: tablePadding,
-          left: 400,
-          backgroundColor: '#ccc',
+          left: 500,
+          backgroundColor: '#eee',
+        },
+        disabled: hasNotStarted,
+      },
+      {
+        id: 'finalStack2',
+        type: 'CardStack',
+        styles: {
+          position: 'absolute',
+          top: tablePadding,
+          left: 700,
+          backgroundColor: '#eee',
+        },
+        disabled: hasNotStarted,
+      },
+      {
+        id: 'finalStack3',
+        type: 'CardStack',
+        styles: {
+          position: 'absolute',
+          top: tablePadding,
+          left: 900,
+          backgroundColor: '#eee',
+        },
+        disabled: hasNotStarted,
+      },
+      {
+        id: 'finalStack4',
+        type: 'CardStack',
+        styles: {
+          position: 'absolute',
+          top: tablePadding,
+          left: 1100,
+          backgroundColor: '#eee',
         },
         disabled: hasNotStarted,
       },

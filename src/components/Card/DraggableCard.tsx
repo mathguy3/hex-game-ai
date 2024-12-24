@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import { Draggable } from './Draggable';
 import { InnerCard } from './InnerCard';
 
@@ -5,6 +6,7 @@ type DraggableCardProps = {
   id: string;
   stackId?: string;
   kind: string;
+  name?: string;
   isFloating?: boolean;
   isSelected: boolean;
   onClick?: () => void;
@@ -15,6 +17,7 @@ export const DraggableCard = ({
   id,
   stackId,
   kind,
+  name,
   isFloating,
   isSelected,
   onClick,
@@ -26,6 +29,7 @@ export const DraggableCard = ({
       <InnerCard
         id={id}
         kind={kind}
+        name={name}
         isFloating={isFloating}
         isSelected={isSelected}
         onClick={onClick}

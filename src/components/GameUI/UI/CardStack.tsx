@@ -9,12 +9,20 @@ import { DroppableCard } from '../../CardManager/DroppableCard';
 import { CardStackUIModel } from './UI';
 import { mapStyles } from './utils/mapStyles';
 
+const cardsBasedOnId = (id: string) => ({
+  context: {
+    cardStacks: {
+      [id]: '$Array',
+    },
+  },
+});
+
 export const CardStack = ({ id, type, disabled, styles, content, properties }: CardStackUIModel) => {
   const { isDragging } = useDragState();
   const { basicActionState } = useGameController();
   const { doEval } = useIf(basicActionState.gameState);
   const mappedStyles = mapStyles(styles, doEval);
-  const testCards = useMemo(() => (content ? doEval(content) : []), [content, doEval]);
+  const testCards = useMemo(() => doEval(cardsBasedOnId(id)) ?? [], [doEval]);
 
   const isDisabled = doEval(disabled);
   return (
@@ -54,13 +62,28 @@ const StackedCard = ({
     border: '1px solid black',
     borderRadius: '4px',
   } as const;
+  console.log('isDisabled', isDisabled);
   if (isLast && !isDisabled) {
-    return <DraggableCard id={card.id} stackId={stackId} kind={card.kind} isSelected={false} styleOverrides={styles} />;
+    console.log('isLast', card);
+    return (
+      <DraggableCard
+        id={card.id}
+        name={card.name}
+        stackId={stackId}
+        kind={card.kind}
+        isSelected={false}
+        styleOverrides={styles}
+        onClick={() => {
+          console.log('Why');
+        }}
+      />
+    );
   } else {
     return (
       <InnerCard
         id={card.id}
         kind={card.kind}
+        name={card.name}
         isFloating={false}
         isSelected={false}
         onClick={() => {}}
