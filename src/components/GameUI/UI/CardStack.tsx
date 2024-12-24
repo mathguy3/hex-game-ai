@@ -17,14 +17,15 @@ const cardsBasedOnId = (id: string) => ({
   },
 });
 
-export const CardStack = ({ id, type, disabled, styles, content, properties }: CardStackUIModel) => {
-  const { isDragging } = useDragState();
+export const CardStack = ({ id, type, disabled, styles, content, properties, filter }: CardStackUIModel) => {
+  const { isDragging, activeCard } = useDragState();
   const { basicActionState } = useGameController();
   const { doEval } = useIf(basicActionState.gameState);
   const mappedStyles = mapStyles(styles, doEval);
   const testCards = useMemo(() => doEval(cardsBasedOnId(id)) ?? [], [doEval]);
 
   const isDisabled = doEval(disabled);
+  const matchesFilter = !filter || doEval(filter, { subject: activeCard });
   return (
     <Box sx={{ width: '150px', height: '190px', ...mappedStyles, border: '1px solid #ccc', borderRadius: '4px' }}>
       {testCards.map((card, index) => (
@@ -36,7 +37,9 @@ export const CardStack = ({ id, type, disabled, styles, content, properties }: C
           isLast={index === testCards.length - 1}
         />
       ))}
-      {isDragging && !isDisabled && <DroppableCard id={id + '-stackslot'} data={{ ...properties, id, type }} />}
+      {isDragging && !isDisabled && matchesFilter && (
+        <DroppableCard id={id + '-stackslot'} data={{ ...properties, id, type }} />
+      )}
     </Box>
   );
 };

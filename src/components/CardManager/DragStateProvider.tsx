@@ -1,10 +1,21 @@
 import { createContext, useContext, useState } from 'react';
+import { CardState } from '../../types/game';
 
-const DragStateContext = createContext<{ isDragging: boolean; setIsDragging: (value: boolean) => void }>(null);
+const DragStateContext = createContext<{
+  isDragging: boolean;
+  setIsDragging: (value: boolean) => void;
+  activeCard: CardState | null;
+  setActiveCard: (value: CardState | null) => void;
+}>(null);
 
 export const DragStateProvider = ({ children }: React.PropsWithChildren) => {
   const [isDragging, setIsDragging] = useState(false);
-  return <DragStateContext.Provider value={{ isDragging, setIsDragging }}>{children}</DragStateContext.Provider>;
+  const [activeCard, setActiveCard] = useState<CardState | null>(null);
+  return (
+    <DragStateContext.Provider value={{ isDragging, setIsDragging, activeCard, setActiveCard }}>
+      {children}
+    </DragStateContext.Provider>
+  );
 };
 export const useDragState = () => {
   const context = useContext(DragStateContext);

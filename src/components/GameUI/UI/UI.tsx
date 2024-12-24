@@ -40,6 +40,7 @@ export type ButtonUIModel = BaseUIModel & {
 
 export type CardStackUIModel = BaseUIModel & {
   type: typeof UIType.CardStack;
+  filter?: any;
   content?: string | any;
   disabled?: boolean | any;
 };
