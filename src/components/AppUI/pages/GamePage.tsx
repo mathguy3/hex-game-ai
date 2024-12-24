@@ -1,0 +1,53 @@
+import { useParams } from 'react-router-dom';
+
+import { Button } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useClient } from '../../../logic/client';
+import { GameControllerProvider } from '../../../logic/game-controller/GameControllerProvider';
+import { GameDefinitionProvider } from '../../../logic/game-controller/GameDefinitionProvider';
+import { GameSession } from '../../../server/games/gameManager';
+import { CardManager } from '../../CardManager/CardManager';
+import { DragStateProvider } from '../../CardManager/DragStateProvider';
+
+export const GamePage: React.FC = () => {
+  const navigate = useNavigate();
+  const { client } = useClient();
+  const { roomCode } = useParams();
+  const [gameSession, setGameSession] = useState<GameSession | null>(null);
+  const [myId, setMyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (roomCode) {
+      console.log('getGameState', roomCode);
+      client.getGameState({ roomCode }).then(({ gameSession, myId }) => {
+        setGameSession(gameSession);
+        setMyId(myId);
+      });
+    }
+  }, [roomCode]);
+
+  const handleBack = async () => {
+    if (roomCode) {
+      await client.leaveGame({ roomCode });
+    }
+    navigate('/pick');
+  };
+
+  if (!roomCode || !gameSession || !myId) return null;
+
+  return (
+    <>
+      <Button onClick={handleBack} sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1000 }} variant="contained">
+        Back to Games
+      </Button>
+      <GameDefinitionProvider game={gameSession}>
+        <GameControllerProvider meId={myId}>
+          <DragStateProvider>
+            <CardManager />
+          </DragStateProvider>
+        </GameControllerProvider>
+      </GameDefinitionProvider>
+    </>
+  );
+};

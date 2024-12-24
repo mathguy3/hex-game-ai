@@ -1,4 +1,5 @@
-import { ActionSubject } from '../components/logic/game-controller/sequencer';
+import { UIModel } from '../components/GameUI/UI/UI';
+import { ActionSubject } from '../logic/game-controller/sequencer';
 import { IF } from './actions/if';
 import { CardInteraction, HexInteraction, Interaction, Targeting, UIInteraction } from './actions/interactions';
 import { TileSet } from './actions/tiles';
@@ -10,19 +11,32 @@ type PlayerDefinition = {
   canBeNone?: boolean;
 };
 
-export type GameDefinition = {
-  name: string;
+type GameConfig = {
   description: string;
+  isPrivate?: boolean;
+  rotateTable?: boolean;
+  useHand?: boolean;
+};
+
+type Definitions = {
   units: Record<string, UnitDefinition>;
-  players: Record<string, PlayerDefinition>;
-  actions: Record<string, Sequence | Interaction>;
-  cards?: Record<string, CardDefinition>;
+  cards: Record<string, CardDefinition>;
   map: Record<string, HexItem>;
   sequencing: Sequence;
+  actions: Record<string, Sequence | Interaction>;
+};
+
+export type GameDefinition = {
+  name: string;
+  config: GameConfig;
+  initialState?: Record<string, any>;
+  players: Record<string, PlayerDefinition>;
+  definitions: Definitions;
+  ui?: UIModel;
 };
 
 export type CardDefinition = {
-  actions: Record<string, Sequence[]>;
+  actions?: Record<string, Sequence[]>;
   requirements?: {}[];
   properties?: Record<string, any>;
   targeting?: Targeting;
@@ -30,19 +44,19 @@ export type CardDefinition = {
 
 export type Sequence =
   | {
-    type: 'continuous';
-    actions: (Interaction | Sequence)[];
-  }
-  | { type: 'repeating'; breakOn: IF; actions: (Interaction | Sequence)[] }
+      type: 'continuous';
+      actions: (Interaction | Sequence)[];
+    }
+  | { type: 'repeating'; breakOn?: IF; actions: (Interaction | Sequence)[] }
   | {
-    type: 'options';
-    multi?: number;
-    interactions: {
-      card?: CardInteraction;
-      hex?: HexInteraction;
-      ui?: UIInteraction;
+      type: 'options';
+      multi?: number;
+      interactions: {
+        card?: CardInteraction;
+        hex?: HexInteraction;
+        ui?: UIInteraction;
+      };
     };
-  };
 
 // This data should not be available to everyone
 export type PlayerState = {
@@ -93,16 +107,16 @@ export type ActionContext = {
   previousContext?: ActionContext;
   currentIndex?: number;
   isComplete?: boolean;
-}
+};
 
 export type ActionHistory = {
   id: string;
   action: Interaction | Sequence;
   subjects?: ActionSubject[];
-}
+};
 
 export type GameState = {
-  gameId: string;
+  roomCode: string;
   hasStarted: boolean;
   players: Record<string, PlayerState | OtherPlayerState>;
   activeAction?: Interaction | Sequence;
@@ -111,6 +125,7 @@ export type GameState = {
   actionHistory: ActionHistory[];
   activeStep: string;
   activePlayerId: string;
+  cardStacks?: Record<string, CardState[]>;
 };
 
 export type LocalState = {

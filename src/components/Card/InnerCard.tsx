@@ -5,26 +5,32 @@ type InnerCardProps = {
   kind: string;
   isFloating?: boolean;
   isSelected?: boolean;
+  isDropped?: boolean;
   onClick?: () => void;
+  styleOverrides?: React.CSSProperties;
 };
+// was 225px, 285px
+const selectedSize = { width: '150px', height: '190px' };
+const unselectedSize = { width: '150px', height: '190px' };
 
-export const InnerCard = ({ id, kind, isFloating, isSelected, onClick }: InnerCardProps) => {
+export const InnerCard = ({ id, kind, isFloating, isSelected, isDropped, onClick, styleOverrides }: InnerCardProps) => {
   if (isFloating) {
     console.log(isSelected);
   }
   return (
     <Box
       position="relative"
-      width={isSelected ? '225px' : '150px'}
-      height={isSelected ? '285px' : '190px'}
+      width={isSelected ? selectedSize.width : unselectedSize.width}
+      height={isSelected ? selectedSize.height : unselectedSize.height}
       style={{ touchAction: 'none' }}
       onClick={onClick}
+      sx={{ ...styleOverrides }}
     >
       <Box
         position="absolute"
         top={isSelected ? '-20px' : '0px'}
-        width={isSelected ? '225px' : '150px'}
-        height={isSelected ? '285px' : '190px'}
+        width={isSelected ? selectedSize.width : unselectedSize.width}
+        height={isSelected ? selectedSize.height : unselectedSize.height}
         padding="8px"
         boxSizing="border-box"
         borderRadius="4px"

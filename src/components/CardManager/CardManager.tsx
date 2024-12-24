@@ -1,40 +1,46 @@
-import { DndContext, DragEndEvent, DragOverlay, useDroppable } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import IconExpandLess from '@mui/icons-material/ExpandLess';
 import IconExpandMore from '@mui/icons-material/ExpandMore';
 import { Box, Button, IconButton } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useGameController } from '../../logic/game-controller/GameControllerProvider';
+import { endInteraction } from '../../logic/game-controller/system-actions/end-action';
 import { CardState, PlayerState } from '../../types/game';
 import { useOutsideAlerter } from '../../utils/useOutsideAlerter';
 import { DraggableCard } from '../Card/DraggableCard';
 import { InnerCard } from '../Card/InnerCard';
-import { useGameController } from '../logic/game-controller/GameControllerProvider';
-import { previewCard } from '../logic/game-controller/cards/previewCard';
-import { endInteraction } from '../logic/game-controller/system-actions/end-action';
+import { HexMap } from '../GameUI/HexMap/HexMap';
+import { useDragState } from './DragStateProvider';
+import { DroppableCard } from './DroppableCard';
 
 export const CardManager = () => {
-  const { basicActionState, saveActionState } = useGameController();
+  const { isDragging, setIsDragging } = useDragState();
+  const { basicActionState, saveActionState, handlePlaceCard } = useGameController();
   const { gameState, localState } = basicActionState;
   const { cardManager } = localState;
   const [active, setActive] = useState(null);
   const [selected, setSelected] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  function handleDragStart(event) {
+  function handleDragStart(event: DragStartEvent) {
     setSelected(event.active.id);
     setActive({ id: event.active.id, kind: event.active.data.current.kind });
-    saveActionState.current(previewCard(basicActionState, event.active.id));
+    //saveActionState.current(previewCard(basicActionState, event.active.id + ''));
+    setIsDragging(true);
   }
 
   const playerHand = (gameState.players[localState.meId] as PlayerState).hand;
+  console.log(playerHand);
+  console.log(gameState.players, localState.meId);
   const [dropSlots, setDropSlots] = useState<(CardState | null)[]>(Array(cardManager.selectionSlots).fill(null));
   //Reset slots and open if state changes
   useEffect(() => {
     setIsOpen(false);
     setDropSlots(Array(cardManager.selectionSlots).fill(null));
   }, [cardManager.selectionSlots]);
-  const filteredHand = playerHand?.filter((x) => !dropSlots.some((y) => y?.id === x.id)) ?? [];
+  const filteredHand = playerHand?.filter((x) => !!x && !dropSlots.some((y) => y?.id === x.id)) ?? [];
 
   const handleUnselect = () => {
     setActive(null);
@@ -43,7 +49,20 @@ export const CardManager = () => {
 
   function handleDragEnd(event: DragEndEvent) {
     setActive(null);
+    setIsDragging(false);
     const { active, over } = event;
+    if (!over) {
+      return;
+    }
+    if (over.data.current.type === 'CardStack') {
+      // do a handlePlaceCard
+      handlePlaceCard.current(active.data.current.id, active.data.current.stackId, over.data.current.id);
+      console.log('CardPlace!', active.data.current, over.data.current);
+      // move the card to the other stack
+      // Need to do a 'set' action to move the card
+
+      return;
+    }
     if (typeof over?.id === 'string' && over.id.startsWith('slot')) {
       const droppedCard = playerHand.find((x) => x.id === active.id);
       const slotIndex = Number(over.id.replace('slot', ''));
@@ -98,7 +117,6 @@ export const CardManager = () => {
   };
   const containerHeight = isOpen ? openHeight : closedHeight;
   const handleSelect = () => {
-
     // TODO: Send 'action' instead
     let updatedState = {
       ...basicActionState,
@@ -120,6 +138,7 @@ export const CardManager = () => {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <HexMap />
       {cardManager.state === 'select' && isOpen && (
         <Box position="fixed" left={0} top={0} right={0} bottom={0} bgcolor="#00000055">
           <Box
@@ -175,7 +194,9 @@ export const CardManager = () => {
       </Box>
       {createPortal(
         <DragOverlay>
-          {active ? <InnerCard id={active.id} kind={active.kind} isFloating isSelected /> : null}
+          {active ? (
+            <InnerCard id={active.id} kind={active.kind} isFloating isSelected isDropped={!isDragging} />
+          ) : null}
         </DragOverlay>,
         document.body
       )}
@@ -185,24 +206,5 @@ export const CardManager = () => {
         </IconButton>
       </Box>
     </DndContext>
-  );
-};
-
-const DroppableCard = ({ id, onClick, children }: React.PropsWithChildren<{ id: string; onClick?: () => void }>) => {
-  const { setNodeRef, isOver } = useDroppable({ id });
-  return (
-    <Box
-      ref={setNodeRef}
-      top={'0px'}
-      width={'150px'}
-      height={'190px'}
-      boxSizing="border-box"
-      borderRadius="4px"
-      bgcolor={isOver ? '#ccc' : 'white'}
-      boxShadow={'0px 0px 10px 1px rgba(0,0,0,0.3);'}
-      onClick={onClick}
-    >
-      {children}
-    </Box>
   );
 };

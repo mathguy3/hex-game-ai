@@ -2,12 +2,12 @@ import Bun from 'bun';
 import { chat } from './chat/chat';
 import { createGame } from './games/createGame';
 import { gameManager } from './games/gameManager';
+import { getGameState } from './games/getGameState';
 import { handleAction } from './games/handleAction';
 import { joinGame } from './games/joinGame';
 import { leaveGame } from './games/leaveGame';
 import { listGames } from './games/listGames';
 import { getUser, id } from './user/id';
-
 
 const serverRoutes = {
   id,
@@ -16,23 +16,24 @@ const serverRoutes = {
   createGame,
   listGames,
   handleAction,
-  leaveGame
+  leaveGame,
+  getGameState,
 };
 
 // Helper type to check if a function has parameters
 type HasParams<T> = T extends (params: infer P) => any
   ? P extends { user: any }
-  ? keyof Omit<P, 'user'> extends never
-  ? false
-  : true
-  : false
+    ? keyof Omit<P, 'user'> extends never
+      ? false
+      : true
+    : false
   : false;
 
 // Modified ClientType to handle parameterless routes
 type ClientType<T> = T extends (params: any) => infer R
   ? HasParams<T> extends true
-  ? (params: Omit<Parameters<T>[0], 'user'>) => Promise<R>
-  : () => Promise<R>
+    ? (params: Omit<Parameters<T>[0], 'user'>) => Promise<R>
+    : () => Promise<R>
   : unknown;
 
 export type ServerRoutes = {
@@ -46,7 +47,7 @@ const server = Bun.serve({
   development: true,
   async fetch(req, server) {
     // Upgrade the request to WebSocket if it's a WebSocket request
-    if (req.headers.get("Upgrade") === "websocket") {
+    if (req.headers.get('Upgrade') === 'websocket') {
       const { response } = server.upgrade(req);
       return response;
     }
@@ -82,7 +83,7 @@ const server = Bun.serve({
       console.error('Server error:', error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
   },
@@ -91,7 +92,7 @@ const server = Bun.serve({
   },
   websocket: {
     open(ws) {
-      console.log("WebSocket connection opened", new Date().toISOString());
+      console.log('WebSocket connection opened', new Date().toISOString());
     },
     message(ws, message) {
       //console.log("WebSocket message received:", message);
@@ -106,13 +107,17 @@ const server = Bun.serve({
             }
             gameConnections.get(gameId)?.add(ws);
 
-            broadcastToGame(gameId, {
-              type: 'playerJoined',
+            broadcastToGame(
               gameId,
-              payload: {
-                playerId: data.playerId,
-              }
-            }, ws);
+              {
+                type: 'playerJoined',
+                gameId,
+                payload: {
+                  playerId: data.playerId,
+                },
+              },
+              ws
+            );
             break;
           }
 
@@ -122,17 +127,19 @@ const server = Bun.serve({
           }
 
           case 'getGameUpdate': {
-            const gameId = data.gameId;
-            const gameState = gameManager.getGameState(gameId, data.payload.userId);
-            ws.send(JSON.stringify({
-              type: 'gameUpdate',
-              gameId,
-              payload: {
-                gameState: gameState.gameState,
-                mapState: gameState.mapState,
-                localControl: gameState.localControl
-              }
-            }));
+            const roomCode = data.roomCode;
+            const gameState = gameManager.getGameState(roomCode, data.payload.userId);
+            ws.send(
+              JSON.stringify({
+                type: 'gameUpdate',
+                roomCode,
+                payload: {
+                  gameState: gameState.gameState,
+                  mapState: gameState.mapState,
+                  localControl: gameState.localControl,
+                },
+              })
+            );
             break;
           }
         }
@@ -141,10 +148,10 @@ const server = Bun.serve({
       }
     },
     close(ws) {
-      console.log("WebSocket connection closed", new Date().toISOString());
+      console.log('WebSocket connection closed', new Date().toISOString());
       removeFromAllGames(ws);
-    }
-  }
+    },
+  },
 });
 
 console.log(`Server running at ${server.url}`);

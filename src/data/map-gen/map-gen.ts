@@ -1,5 +1,5 @@
-import { rangeSimple } from '../../components/logic/tile-generators';
 import { originHex } from '../../configuration/constants';
+import { rangeSimple } from '../../logic/tile-generators';
 import { CoordinateKey, Coordinates, HexItem, MapState, Tile } from '../../types';
 import { UnitState } from '../../types/entities/unit/unit';
 import { UnitKind } from '../../types/kinds/units';
