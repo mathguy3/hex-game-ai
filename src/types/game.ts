@@ -33,6 +33,7 @@ export type GameDefinition = {
   players: Record<string, PlayerDefinition>;
   definitions: Definitions;
   ui?: UIModel;
+  winCondition?: IF;
 };
 
 export type CardDefinition = {
@@ -60,9 +61,9 @@ export type Sequence =
 
 // This data should not be available to everyone
 export type PlayerState = {
-  playerId?: string;
+  userId?: string;
+  playerId: string;
   name?: string;
-  teamId: string;
   properties?: Record<string, any>;
   hand?: CardState[];
   selected?: CardState[];
@@ -71,9 +72,9 @@ export type PlayerState = {
 };
 
 export type OtherPlayerState = {
-  playerId?: string;
+  userId?: string;
+  playerId: string;
   name?: string;
-  teamId: string;
   properties?: Record<string, any>;
   cardsInHand?: number;
   type: 'player' | 'ai';
@@ -84,6 +85,7 @@ export type CardState = {
   id: string;
   kind: string;
   properties: Record<string, any>;
+  isFaceDown?: boolean;
 };
 
 export type CardManagerState = {
@@ -118,6 +120,7 @@ export type ActionHistory = {
 export type GameState = {
   roomCode: string;
   hasStarted: boolean;
+  isComplete: boolean;
   players: Record<string, PlayerState | OtherPlayerState>;
   activeAction?: Interaction | Sequence;
   activeActions: Record<string, Sequence | Interaction>;
@@ -159,6 +162,7 @@ export type ActionState = {
   selectedHex: HexItem | undefined;
   selectedCard: CardState | undefined;
   activePlayer: PlayerState | OtherPlayerState;
+  uiState: Record<string, any>;
 };
 
 // This is all stuff that needs to come back from the api

@@ -23,12 +23,18 @@ export const GamePage: React.FC = () => {
   useEffect(() => {
     if (roomCode) {
       console.log('getGameState', roomCode);
-      client.getGameState({ roomCode }).then(({ gameSession, myId }) => {
-        setGameSession(gameSession);
-        setMyId(myId);
-      });
+      client
+        .getGameState({ roomCode })
+        .then(({ gameSession, myId }) => {
+          console.log('getGameState', gameSession, myId);
+          setGameSession(gameSession);
+          setMyId(myId);
+        })
+        .catch((e) => {
+          console.error(e);
+        });
     }
-  }, [roomCode]);
+  }, [roomCode, client]);
 
   const handleBack = async () => {
     if (roomCode) {
@@ -37,6 +43,7 @@ export const GamePage: React.FC = () => {
     navigate('/pick');
   };
 
+  console.log('GamePage', roomCode, gameSession, myId);
   if (!roomCode || !gameSession || !myId) return null;
 
   return (

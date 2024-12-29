@@ -10,8 +10,6 @@ export type BoardAction = {
   actions: (Action | SystemAction)[];
 };
 
-
-
 export type Targeting = {
   userSelect?: boolean;
   tiles: TileSet;
@@ -26,31 +24,31 @@ export type Action = {
 
 export type SystemAction = { type: 'system' } & (
   | {
-    kind: 'end-sequence';
-  }
+      kind: 'end-sequence';
+    }
   | {
-    kind: 'end-turn';
-  }
+      kind: 'end-turn';
+    }
   | {
-    kind: 'give-control';
-    target: string;
-  }
+      kind: 'give-control';
+      target: string;
+    }
   | {
-    kind: 'player-turn';
-    actions: (CardInteraction)[];
-  }
+      kind: 'player-turn';
+      actions: CardInteraction[];
+    }
 );
 
 export type CardInteraction =
   | {
-    type: 'card';
-    kind: 'select';
-    slots: number;
-  }
+      type: 'card';
+      kind: 'select';
+      slots: number;
+    }
   | {
-    type: 'card';
-    kind: 'play';
-  };
+      type: 'card';
+      kind: 'play';
+    };
 
 export type HexInteraction = {
   type: 'hex';
@@ -63,8 +61,9 @@ export type HexInteraction = {
 export type UIInteraction = {
   type: 'ui';
   kind: string;
+  id?: string;
   if?: IF;
-  actions: (string | Sequence | Interaction)[];
+  actions?: (string | Sequence | Interaction)[];
 };
 
 export type Interaction = HexInteraction | CardInteraction | UIInteraction | Action | SystemAction;

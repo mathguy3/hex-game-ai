@@ -12,6 +12,8 @@ const map = {
 
 export const simple = {
   requiredFields: [],
+  optionalFields: [],
+  alternateFields: [],
   isLeaf: true,
   startOp: (context: Context) => {
     const item = context.ifItem;

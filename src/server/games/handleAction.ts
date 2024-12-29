@@ -19,6 +19,7 @@ export const handleAction = (params: {
   request: ActionRequest;
 }): ActionResponse => {
   const { roomCode, user, localState, request } = params;
+  console.log('handleAction', params);
   if (!roomCode || !user) {
     throw new Error('Missing required parameters: roomCode and user are required');
   }

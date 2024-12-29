@@ -1,5 +1,6 @@
 import { Interaction } from '../../../../types/actions/interactions';
 import { ActionState, Sequence } from '../../../../types/game';
+import { doIf } from '../../../if/if-engine-3/doIf';
 import { ActionRequest } from '../doSequence';
 import { isInteractionSequence } from '../utils/isInteractionSequence';
 
@@ -25,11 +26,20 @@ export const sequence = (
     if (isInteractionSequence(action)) {
       context.isComplete = true;
     } else {
+      if (action.type == 'repeating' && action.breakOn) {
+        const shouldBreak = doIf({ ifItem: action.breakOn, model: { context: actionState.gameState } });
+        console.log('shouldBreak', shouldBreak, action.breakOn, actionState.gameState);
+        if (shouldBreak) {
+          context.isComplete = true;
+          return actionState;
+        }
+      }
       context.currentIndex = null;
-      //console.log('sequence complete', actionState.gameState.activePlayerId);
-      // I really want to be able to cycle through the activePlayerId, but I'm not sure how to do that here sure okay
-      actionState.gameState.activePlayerId = actionState.gameState.activePlayerId === 'team1' ? 'team2' : 'team1';
-      //console.log('sequence complete teams have changed??', actionState.gameState.activePlayerId);
+      const playerIds = Object.keys(actionState.gameState.players);
+      const currentPlayerId = actionState.gameState.activePlayerId;
+      const nextPlayerId = playerIds[(playerIds.indexOf(currentPlayerId) + 1) % playerIds.length];
+      console.log('sequence complete, selecting next player', actionState.gameState.activePlayerId, nextPlayerId);
+      actionState.gameState.activePlayerId = nextPlayerId;
     }
   }
 

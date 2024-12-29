@@ -1,9 +1,11 @@
 import { Box } from '@mui/material';
+import { CardState } from '../../types/game';
 
 type InnerCardProps = {
   id: string;
   kind: string;
   name?: string;
+  card?: CardState;
   isFloating?: boolean;
   isSelected?: boolean;
   isDropped?: boolean;
@@ -18,6 +20,7 @@ export const InnerCard = ({
   id,
   kind,
   name,
+  card,
   isFloating,
   isSelected,
   isDropped,
@@ -50,9 +53,11 @@ export const InnerCard = ({
         Id: {id} Kind: {kind}
       </Box>
       {/* Centered box with name please */}
-      <Box position="absolute" top="50%" left="50%" sx={{ transform: 'translate(-50%, -50%)' }}>
-        {name}
-      </Box>
+      {!card || !card.isFaceDown ? (
+        <Box position="absolute" top="50%" left="50%" sx={{ transform: 'translate(-50%, -50%)' }}>
+          {name}
+        </Box>
+      ) : null}
     </Box>
   );
 };

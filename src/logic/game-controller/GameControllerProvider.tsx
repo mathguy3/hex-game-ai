@@ -14,6 +14,7 @@ import { useGameDefinition } from './GameDefinitionProvider';
 import { ActionRequest } from './sequencer';
 import { moveToNextStep } from './sequencer/utils/moveToNextStep';
 import { useActionHandler } from './useActionHandler';
+import { doIf } from '../if/if-engine-3/doIf';
 
 type GameControllerCtx = {
   basicActionState: ActionState;
@@ -33,7 +34,7 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
   const [localState, setLocalState] = useState<LocalState>({
     meId,
     playerState: {
-      teamId: meId,
+      playerId: meId,
       status: 'active',
     },
     previewState: {},
@@ -50,6 +51,17 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
   const [mapState, setMapState] = useState<MapState>(selectedGameSession.mapState);
   const [localControl, setLocalControl] = useState<LocalControl>({ activeActions: {} });
 
+  const uiState = {};
+  const buildUiState = (ui: any) => {
+    //console.log('building ui', ui.id);
+    const children = ui.children || [];
+    for (const child of children) {
+      buildUiState(child);
+    }
+    uiState[ui.id] = ui;
+    //console.log('adding ui', ui.id);
+  };
+  buildUiState(selectedGame.ui);
   const basicActionState: ActionState = {
     mapState,
     gameState,
@@ -60,7 +72,15 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
     gameDefinition: selectedGame,
     localState,
     localControl,
+    uiState,
   };
+
+  useEffect(() => {
+    if (gameState.isComplete) {
+      alert('Game is complete');
+      console.log('do you win?');
+    }
+  }, [gameState.isComplete]);
 
   const { handleAction } = useActionHandler({
     client,
@@ -161,19 +181,21 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
         message = JSON.parse(event.data);
         //console.log('WebSocket message received:', event.data);
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error('Error parsing WebSocket message:', error, event);
         return;
       }
 
+      console.log('handleWebSocketMessage', message);
       if (message.type === 'gameUpdate' && message.roomCode === gameState.roomCode) {
         const updatedGameState = message.payload.gameState;
         const updatedMapState = message.payload.mapState;
         const updatedLocalControl = message.payload.localControl;
-        console.log('---- gameUpdate ---', updatedGameState.activeStep, updatedMapState['0.0.0'].contains);
+        //console.log('---- gameUpdate ---', updatedGameState.activeStep, updatedMapState['0.0.0'].contains);
         setGameState(updatedGameState);
         setMapState(updatedMapState);
         console.log('localControl', updatedLocalControl);
         setLocalControl(updatedLocalControl);
+
         // in 500ms kick of a continue
         const { nextStep } = moveToNextStep(
           {
@@ -183,7 +205,8 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
           },
           true
         );
-        const canContinue = nextStep != updatedGameState.activeStep;
+        console.log('nextStep', nextStep, updatedGameState.activeStep);
+        const canContinue = nextStep !== updatedGameState.activeStep;
         console.log(
           'game update finished for step',
           nextStep,
@@ -191,6 +214,8 @@ export const GameControllerProvider = ({ children, meId }: React.PropsWithChildr
           updatedGameState.activeAction?.type,
           canContinue
         );
+        console.log('isPlayerTurn', isPlayerTurn(updatedGameState, localState), canContinue);
+
         if (isPlayerTurn(updatedGameState, localState) && canContinue) {
           setTimeout(() => {
             handleAction.current({ playerId: localState.meId, type: 'continue' });

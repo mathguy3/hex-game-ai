@@ -101,17 +101,17 @@ const server = Bun.serve({
 
         switch (data.type) {
           case 'playerJoined': {
-            const gameId = data.gameId;
-            if (!gameConnections.has(gameId)) {
-              gameConnections.set(gameId, new Set());
+            const roomCode = data.roomCode;
+            if (!gameConnections.has(roomCode)) {
+              gameConnections.set(roomCode, new Set());
             }
-            gameConnections.get(gameId)?.add(ws);
+            gameConnections.get(roomCode)?.add(ws);
 
             broadcastToGame(
-              gameId,
+              roomCode,
               {
                 type: 'playerJoined',
-                gameId,
+                roomCode,
                 payload: {
                   playerId: data.playerId,
                 },
@@ -122,7 +122,7 @@ const server = Bun.serve({
           }
 
           case 'playerLeft': {
-            leaveGameWS(ws, data.gameId);
+            leaveGameWS(ws, data.roomCode);
             break;
           }
 
@@ -156,8 +156,8 @@ const server = Bun.serve({
 
 console.log(`Server running at ${server.url}`);
 
-export function broadcastToGame(gameId: string, message: any, exclude?: WebSocket) {
-  const connections = gameConnections.get(gameId);
+export function broadcastToGame(roomCode: string, message: any, exclude?: WebSocket) {
+  const connections = gameConnections.get(roomCode);
   if (!connections) return;
 
   const messageStr = JSON.stringify(message);
@@ -168,21 +168,21 @@ export function broadcastToGame(gameId: string, message: any, exclude?: WebSocke
   }
 }
 
-function leaveGameWS(ws: WebSocket, gameId: string) {
-  const connections = gameConnections.get(gameId);
+function leaveGameWS(ws: WebSocket, roomCode: string) {
+  const connections = gameConnections.get(roomCode);
   if (connections) {
     connections.delete(ws);
     if (connections.size === 0) {
-      gameConnections.delete(gameId);
+      gameConnections.delete(roomCode);
     }
   }
 }
 
 function removeFromAllGames(ws: WebSocket) {
-  for (const [gameId, connections] of gameConnections.entries()) {
+  for (const [roomCode, connections] of gameConnections.entries()) {
     if (connections.has(ws)) {
-      leaveGameWS(ws, gameId);
-      broadcastToGame(gameId, {
+      leaveGameWS(ws, roomCode);
+      broadcastToGame(roomCode, {
         type: 'playerLeft',
         // ... player data
       });

@@ -31,7 +31,7 @@ export const joinGame = ({ roomCode, user }): { gameSession: GameSession; myId: 
     }
 
     const gameSession = gameManager.getGameState(roomCode, user.id);
-    const myId = gameManager.getPlayerByPlayerId(roomCode, user.id).teamId;
+    const myId = gameManager.getPlayerByPlayerId(roomCode, user.id).playerId;
 
     return { gameSession, myId };
   } catch (error) {

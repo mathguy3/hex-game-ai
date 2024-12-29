@@ -15,7 +15,7 @@ import { useDragState } from './DragStateProvider';
 import { DroppableCard } from './DroppableCard';
 
 export const CardManager = ({ children }: { children: React.ReactNode }) => {
-  const { isDragging, setIsDragging } = useDragState();
+  const { isDragging, setIsDragging, setActiveCard } = useDragState();
   const { basicActionState, saveActionState, handlePlaceCard } = useGameController();
   const { gameState, localState, gameDefinition } = basicActionState;
   const { cardManager } = localState;
@@ -24,16 +24,17 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   function handleDragStart(event: DragStartEvent) {
-    console.log('handleDragStart', event.active.id);
+    //console.log('handleDragStart', event.active.id);
     setSelected(event.active.id);
     setActive({ id: event.active.id, kind: event.active.data.current.kind });
+    setActiveCard(event.active.data.current as CardState);
     //saveActionState.current(previewCard(basicActionState, event.active.id + ''));
     setIsDragging(true);
   }
 
   const playerHand = (gameState.players[localState.meId] as PlayerState).hand;
-  console.log(playerHand);
-  console.log(gameState.players, localState.meId);
+  //console.log(playerHand);
+  //console.log(gameState.players, localState.meId);
   const [dropSlots, setDropSlots] = useState<(CardState | null)[]>(Array(cardManager.selectionSlots).fill(null));
   //Reset slots and open if state changes
   useEffect(() => {
@@ -55,14 +56,20 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     if (over.data.current.type === 'CardStack') {
+      if (over.data.current.id == active.data.current.stackId) {
+        console.log('same stack', over.data.current, active.data.current.stackId);
+        return;
+      }
+      console.log('why does it go boom', active.data.current, over.data.current);
       // do a handlePlaceCard
       handlePlaceCard.current(active.data.current.id, active.data.current.stackId, over.data.current.id);
-      console.log('CardPlace!', active.data.current, over.data.current);
+      //console.log('CardPlace!', active.data.current, over.data.current);
       // move the card to the other stack
       // Need to do a 'set' action to move the card
 
       return;
     }
+    console.log('over', over);
     if (typeof over?.id === 'string' && over.id.startsWith('slot')) {
       const droppedCard = playerHand.find((x) => x.id === active.id);
       const slotIndex = Number(over.id.replace('slot', ''));

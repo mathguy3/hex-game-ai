@@ -36,6 +36,8 @@ export type ZoneUIModel = BaseUIModel & {
 export type ButtonUIModel = BaseUIModel & {
   type: typeof UIType.Button;
   content?: string | any;
+  action?: string | any;
+  disabled?: boolean | any;
 };
 
 export type CardStackUIModel = BaseUIModel & {

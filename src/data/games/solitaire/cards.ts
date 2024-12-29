@@ -1,4 +1,4 @@
-export const cards = {
+export const cards = Object.values({
   // Hearts
   h1: { id: 'h1', name: 'Ace', value: 1, properties: { suit: 'hearts' } },
   h2: { id: 'h2', name: '2', value: 2, properties: { suit: 'hearts' } },
@@ -58,4 +58,4 @@ export const cards = {
   s11: { id: 's11', name: 'Jack', value: 11, properties: { suit: 'spades' } },
   s12: { id: 's12', name: 'Queen', value: 12, properties: { suit: 'spades' } },
   s13: { id: 's13', name: 'King', value: 13, properties: { suit: 'spades' } },
-} as const;
+});

@@ -8,7 +8,6 @@ export const DroppableCard = ({
   children,
 }: React.PropsWithChildren<{ id: string; data?: any; onClick?: () => void }>) => {
   const { setNodeRef, isOver } = useDroppable({ id, data });
-  console.log(data);
   return (
     <Box
       ref={setNodeRef}

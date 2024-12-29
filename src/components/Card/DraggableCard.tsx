@@ -1,11 +1,13 @@
 import { Box } from '@mui/material';
 import { Draggable } from './Draggable';
 import { InnerCard } from './InnerCard';
+import { CardState } from '../../types/game';
 
 type DraggableCardProps = {
   id: string;
   stackId?: string;
   kind: string;
+  card?: CardState;
   name?: string;
   isFloating?: boolean;
   isSelected: boolean;
@@ -17,6 +19,7 @@ export const DraggableCard = ({
   id,
   stackId,
   kind,
+  card,
   name,
   isFloating,
   isSelected,
@@ -25,7 +28,7 @@ export const DraggableCard = ({
   styleOverrides,
 }: DraggableCardProps) => {
   return (
-    <Draggable id={id} data={{ id, kind, stackId }} disabled={disabled}>
+    <Draggable id={id} data={{ id, kind, stackId, ...card }} disabled={disabled}>
       <InnerCard
         id={id}
         kind={kind}

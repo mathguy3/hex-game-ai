@@ -44,7 +44,7 @@ export const moveToNextStep = (actionState: ActionState, readOnly?: boolean) => 
   }
 
   // Handle sequence progression
-  if ('actions' in activeAction) {
+  if (activeAction && 'actions' in activeAction) {
     const nextIndex = actionContext.currentIndex == null ? 0 : actionContext.currentIndex + 1;
 
     if (actionContext.isComplete) {

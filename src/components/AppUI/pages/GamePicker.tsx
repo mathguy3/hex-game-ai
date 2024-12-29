@@ -60,16 +60,16 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
         </Typography>
         <Stack spacing={2} height="content">
           {[solitaire, hexChess].map((gameType, idx) => (
-            <Card key={gameType.name + idx}>
-              <CardContent>
+            <Card key={gameType.name + idx} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+              <CardContent sx={{ pb: 0 }}>
                 <Typography variant="h6">{gameType.name}</Typography>
-                <Typography color="text.secondary" sx={{ mb: 2 }}>
-                  {gameType.config.description}
-                </Typography>
+                <Typography color="text.secondary">{gameType.config.description}</Typography>
+              </CardContent>
+              <CardActions>
                 <Button variant="contained" fullWidth onClick={() => onCreateGame(gameType)} disabled={loading}>
                   {loading ? 'Creating...' : `New ${gameType.name}`}
                 </Button>
-              </CardContent>
+              </CardActions>
             </Card>
           ))}
         </Stack>
@@ -88,8 +88,8 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
           {games.map((game) => {
             const playerCount = Object.values(game.gameState.players).filter((player) => player.playerId).length;
             return (
-              <Card key={game.id}>
-                <CardContent>
+              <Card key={game.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                <CardContent sx={{ pb: 0 }}>
                   <Typography variant="h6">Game {game.gameDefinition.name}</Typography>
                   <Typography color="text.secondary">
                     {game.gameDefinition.name} - {playerCount}/{game.maxPlayers} players

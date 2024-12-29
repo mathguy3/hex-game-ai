@@ -20,16 +20,40 @@ const cardsBasedOnId = (id: string) => ({
 export const CardStack = ({ id, type, disabled, styles, content, properties, filter }: CardStackUIModel) => {
   const { isDragging, activeCard } = useDragState();
   const { basicActionState } = useGameController();
-  const { doEval } = useIf(basicActionState.gameState);
+  const { doEval, doIf } = useIf(basicActionState.gameState);
   const mappedStyles = mapStyles(styles, doEval);
   const testCards = useMemo(() => doEval(cardsBasedOnId(id)) ?? [], [doEval]);
 
   const isDisabled = doEval(disabled);
-  const matchesFilter = !filter || doEval(filter, { subject: activeCard });
+  const matchesFilter = useMemo(
+    () => !filter || doIf(filter, { subject: activeCard, target: { id, type, properties, cards: testCards } }),
+    [filter, activeCard, id]
+  );
+
+  /*if (activeCard && id == 'finalStack1') {
+    console.log('-----------------');
+    console.log('activeCard', activeCard);
+    console.log('matchesFilter', matchesFilter);
+    console.log('testCards', testCards);
+    console.log('filter', filter);
+    console.log('-----------------');
+  }*/
+
   return (
-    <Box sx={{ width: '150px', height: '190px', ...mappedStyles, border: '1px solid #ccc', borderRadius: '4px' }}>
+    // add a soft yellow glow to the stack if matchesFilter is true
+    <Box
+      sx={{
+        width: '150px',
+        height: '190px',
+        ...mappedStyles,
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        boxShadow: isDragging && matchesFilter ? '0 0 10px rgba(255, 255, 0, 0.5)' : 'none',
+      }}
+    >
       {testCards.map((card, index) => (
         <StackedCard
+          key={card.id}
           isDisabled={isDisabled}
           stackId={id}
           card={card}
@@ -38,7 +62,7 @@ export const CardStack = ({ id, type, disabled, styles, content, properties, fil
         />
       ))}
       {isDragging && !isDisabled && matchesFilter && (
-        <DroppableCard id={id + '-stackslot'} data={{ ...properties, id, type }} />
+        <DroppableCard key={id + '-stackslot'} id={id + '-stackslot'} data={{ ...properties, id, type }} />
       )}
     </Box>
   );
@@ -65,15 +89,14 @@ const StackedCard = ({
     border: '1px solid black',
     borderRadius: '4px',
   } as const;
-  console.log('isDisabled', isDisabled);
   if (isLast && !isDisabled) {
-    console.log('isLast', card);
     return (
       <DraggableCard
         id={card.id}
         name={card.name}
         stackId={stackId}
         kind={card.kind}
+        card={card}
         isSelected={false}
         styleOverrides={styles}
         onClick={() => {

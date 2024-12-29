@@ -50,9 +50,11 @@ export const doSequence = (actionState: ActionState, request: ActionRequest) => 
   if (!isPlayerTurn(actionState.gameState, actionState.localState)) {
     return actionState;
   }
+
   actionState.autoContinue = false;
   // We don't move to the next step if we are interacting
   const { nextStep, nextAction } = moveToNextStep(actionState);
+  console.log('doSequence', actionState.gameState.activeStep, nextStep);
 
   if (nextStep == 'setup' && request.type !== 'start') {
     return actionState;
@@ -73,6 +75,12 @@ export const doSequence = (actionState: ActionState, request: ActionRequest) => 
 
   actionState = sequenceHandler(actionState, nextStep, nextAction, request);
 
+  console.log('doSequence', actionState.gameState.activeStep, nextStep, actionState.autoContinue);
+  console.log('nextStep is start', nextStep == 'start');
+  if (nextStep == 'start') {
+    // That means the game is over actually
+    return { ...actionState, gameState: { ...actionState.gameState, isComplete: true } };
+  }
   if (actionState.autoContinue) {
     return doSequence(actionState, { type: 'continue', playerId: request.playerId });
   } else {

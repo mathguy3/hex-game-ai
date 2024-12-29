@@ -9,11 +9,11 @@ export const start = (
   request: ActionRequest
 ) => {
   actionState.gameState.hasStarted = true;
-  actionState.gameState.activeAction = actionState.gameDefinition.sequencing;
+  actionState.gameState.activeAction = actionState.gameDefinition.definitions.sequencing;
   actionState.gameState.activeStep = 'start';
   actionState.gameState.actionContext = {
     id: 'start',
-    action: actionState.gameDefinition.sequencing,
+    action: actionState.gameDefinition.definitions.sequencing,
     previousContext: null,
   };
   return actionState;

@@ -1,4 +1,5 @@
 import { ActionRequest, doSequence } from '../../logic/game-controller/sequencer';
+import { SequencerContext } from '../../logic/if/if-engine-3/operations/types';
 import { WebSocketMessage } from '../../logic/websocket/WebSocketProvider';
 import { MapState } from '../../types';
 import {
@@ -18,6 +19,8 @@ export interface GameSession {
   isPrivate: boolean;
   gameDefinition: GameDefinition;
   gameState: GameState;
+  currentStep: SequencerContext;
+  activeSteps: Record<string, SequencerContext>;
   mapState: MapState;
   localControl: LocalControl;
   maxPlayers: number;
@@ -39,21 +42,18 @@ export class GameManager {
       gameState: {
         roomCode,
         hasStarted: false,
-        activePlayerId: 'team1',
+        isComplete: false,
+        // Will probably need end of game state or something
+        activePlayerId: 'player1',
         players: Object.fromEntries(
           Object.entries(players).map(([key, playerSlot], index) => [
             key,
             {
-              teamId: `team${index + 1}`,
+              userId: params.creatorId,
+              playerId: `player${index + 1}`,
               type: 'player',
               status: 'inactive',
-              hand: [
-                {
-                  id: '1',
-                  kind: 'ace',
-                  properties: {},
-                },
-              ],
+              hand: [],
             },
           ])
         ),
@@ -63,9 +63,20 @@ export class GameManager {
         activeStep: 'setup',
         cardStacks: {
           ...initialState,
-          otherCards: [],
         },
       },
+      currentStep: {
+        operationType: '',
+        path: '',
+        isComplete: false,
+        sequenceItem: params.gameDefinition.definitions.sequencing,
+        nextOperation: '',
+        bag: {
+          history: [],
+          activeContexts: {},
+        },
+      },
+      activeSteps: {},
       mapState: structuredClone(definitions.map),
       maxPlayers: 2,
       localControl: {
@@ -73,19 +84,11 @@ export class GameManager {
       },
     };
     //console.log(newGame.gameState.players);
-    newGame.gameState.players.team1 = {
-      playerId: params.creatorId,
+    newGame.gameState.players.player1 = {
+      ...newGame.gameState.players.player1,
+      userId: params.creatorId,
       name: params.creatorName,
-      teamId: 'team1',
-      type: 'player',
-      status: 'active',
-      hand: [
-        {
-          id: '1',
-          kind: 'ace',
-          properties: {},
-        },
-      ],
+      hand: [],
     };
 
     this.games[newGame.roomCode] = newGame;
@@ -105,21 +108,20 @@ export class GameManager {
     // Assign team based on join order (1 for first player, 2 for second)
     const team = filledPlayers.length + 1;
 
-    const teamId = `team${team}`;
-    game.gameState.players[teamId] = {
-      playerId: userId,
+    const playerId = `player${team}`;
+    game.gameState.players[playerId] = {
+      ...game.gameState.players[playerId],
+      userId,
+      playerId,
       name: playerName,
-      teamId,
-      type: 'player',
-      status: 'active',
     };
 
     // If this is the first player, make them active
     if (filledPlayers.length === 0) {
-      game.gameState.activePlayerId = teamId;
+      game.gameState.activePlayerId = playerId;
     }
 
-    return game.gameState.players[teamId];
+    return game.gameState.players[playerId];
   }
 
   // Get list of available games
@@ -131,8 +133,8 @@ export class GameManager {
   private mapPlayerInfo(gameState: GameState, userId: string): GameState {
     const mappedPlayers = {};
 
-    for (const [teamId, player] of Object.entries(gameState.players)) {
-      mappedPlayers[teamId] = this.getPlayerInfo(gameState.roomCode, userId, player.playerId);
+    for (const [playerId, player] of Object.entries(gameState.players)) {
+      mappedPlayers[playerId] = this.getPlayerInfo(gameState.roomCode, userId, player.playerId);
     }
 
     return {
@@ -177,7 +179,7 @@ export class GameManager {
       };
     }
 
-    var meId = this.getPlayerByPlayerId(roomCode, userId).teamId;
+    var meId = this.getPlayerByUserId(roomCode, userId).playerId;
     // Verify it's the player's turn
     if (game.gameState.activePlayerId !== meId && request.type !== 'continue') {
       console.log('Not your turn', game.gameState.activePlayerId, meId);
@@ -185,8 +187,19 @@ export class GameManager {
     }
 
     localState.meId = meId;
-    localState.playerState = this.getPlayerInfo(roomCode, userId, userId);
+    localState.playerState = this.getPlayerInfo(roomCode, userId, meId);
 
+    const uiState = {};
+    const buildUiState = (ui: any) => {
+      //console.log('building ui', ui.id);
+      const children = ui.children || [];
+      for (const child of children) {
+        buildUiState(child);
+      }
+      uiState[ui.id] = ui;
+      //console.log('adding ui', ui.id);
+    };
+    buildUiState(game.gameDefinition.ui);
     // Build action state
     const actionState: ActionState = {
       mapState: game.mapState,
@@ -198,6 +211,7 @@ export class GameManager {
       selectedCard: null,
       activePlayer: game.gameState.players[meId],
       localControl: game.localControl,
+      uiState,
     };
 
     // Execute the action sequence
@@ -245,9 +259,14 @@ export class GameManager {
   getPlayerInfo(roomCode: string, userId: string, playerId: string): PlayerState | OtherPlayerState {
     const game = this.games[roomCode];
     if (!game) throw new Error('Game not found ' + roomCode);
-    return userId != playerId
-      ? this.mapPlayerStateToOtherPlayerState(this.getPlayerByPlayerId(roomCode, playerId))
-      : this.getPlayerByPlayerId(roomCode, playerId);
+    const player = this.getPlayerByPlayerId(roomCode, playerId);
+    return userId != player.userId ? this.mapPlayerStateToOtherPlayerState(player) : player;
+  }
+
+  getPlayerByUserId(roomCode: string, userId: string): PlayerState | OtherPlayerState {
+    const game = this.games[roomCode];
+    if (!game) throw new Error('Game not found');
+    return Object.values(game.gameState.players).find((player) => player.userId === userId);
   }
 
   getPlayerByPlayerId(roomCode: string, playerId: string): PlayerState | OtherPlayerState {
@@ -261,7 +280,6 @@ export class GameManager {
     return {
       playerId: playerState.playerId,
       name: playerState.name,
-      teamId: playerState.teamId,
       type: playerState.type,
       cardsInHand: playerState.hand?.length,
       status: playerState.status,
@@ -279,8 +297,8 @@ export class GameManager {
     }
 
     // Remove from active players but keep their state in gameState.players
-    game.gameState.players[playerByPlayerId.teamId].playerId = null;
-    game.gameState.players[playerByPlayerId.teamId].name = null;
+    game.gameState.players[playerByPlayerId.playerId].playerId = null;
+    game.gameState.players[playerByPlayerId.playerId].name = null;
 
     // If no players left, consider cleaning up the game
     if (Object.keys(game.gameState.players).length === 0) {
@@ -307,15 +325,13 @@ export class GameManager {
     }
 
     // Re-add to active players with their original team
-    game.gameState.players[existingPlayerState.teamId] = {
+    game.gameState.players[existingPlayerState.playerId] = {
+      ...existingPlayerState,
       playerId,
       name: playerName,
-      teamId: existingPlayerState.teamId,
-      type: 'player',
-      status: 'active',
     };
 
-    return game.gameState.players[existingPlayerState.teamId];
+    return game.gameState.players[existingPlayerState.playerId];
   }
 
   // Start a game
