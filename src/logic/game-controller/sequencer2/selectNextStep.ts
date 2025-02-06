@@ -10,15 +10,14 @@ export const selectNextStep = (context: SequencerContext) => {
     sequenceIndex: 0,
     isComplete: false,
     nextOperation,
-  };
-  return {
-    ...updatedContext,
     bag: {
       ...context.bag,
       activeContexts: {
         ...context.bag.activeContexts,
-        [nextPath]: updatedContext,
+        [nextPath]: true,
       },
     },
   };
+  delete context.bag;
+  return updatedContext;
 };

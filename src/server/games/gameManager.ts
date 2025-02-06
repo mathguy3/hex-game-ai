@@ -13,17 +13,25 @@ import {
 } from '../../types/game';
 import { broadcastToGame } from '../startup';
 
-export interface GameSession {
-  id: string;
+export type PlayerConfig = {
+  isOpen: boolean;
+  isAi: boolean;
+  teamId?: string;
+};
+
+export type RoomConfig = {
   roomCode: string;
   isPrivate: boolean;
+  passwordHash?: string;
+  playerConfig: PlayerConfig[];
+};
+
+export interface GameSession {
+  id: string;
+  roomConfig: RoomConfig;
   gameDefinition: GameDefinition;
   gameState: GameState;
-  currentStep: SequencerContext;
-  activeSteps: Record<string, SequencerContext>;
-  mapState: MapState;
   localControl: LocalControl;
-  maxPlayers: number;
 }
 
 export class GameManager {
@@ -212,6 +220,7 @@ export class GameManager {
       activePlayer: game.gameState.players[meId],
       localControl: game.localControl,
       uiState,
+      sequenceState: game.currentStep,
     };
 
     // Execute the action sequence

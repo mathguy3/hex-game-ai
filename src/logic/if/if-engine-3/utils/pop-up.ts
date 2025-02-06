@@ -1,5 +1,3 @@
-import { Context } from '../operations/types';
-
 export const popUp = <T extends { previousContext?: T; nextOperation?: string; bag: any }>(context: T) => {
   return {
     ...context.previousContext,

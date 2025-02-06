@@ -43,6 +43,6 @@ export type SequencerContext = {
   bag: {
     history: string[];
     result?: any;
-    activeContexts: Record<string, SequencerContext>;
+    activeContexts: Record<string, boolean>;
   };
 };

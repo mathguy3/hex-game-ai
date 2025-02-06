@@ -1,9 +1,10 @@
 import { UIModel } from '../components/GameUI/UI/UI';
 import { ActionSubject } from '../logic/game-controller/sequencer';
+import { SequencerContext } from '../logic/if/if-engine-3/operations/types';
 import { IF } from './actions/if';
 import { CardInteraction, HexInteraction, Interaction, Targeting, UIInteraction } from './actions/interactions';
 import { TileSet } from './actions/tiles';
-import { UnitDefinition } from './entities/unit/unit';
+import { UnitDefinition, UnitState } from './entities/unit/unit';
 import { HexItem, MapState } from './map';
 
 type PlayerDefinition = {
@@ -119,16 +120,13 @@ export type ActionHistory = {
 
 export type GameState = {
   roomCode: string;
-  hasStarted: boolean;
-  isComplete: boolean;
   players: Record<string, PlayerState | OtherPlayerState>;
-  activeAction?: Interaction | Sequence;
-  activeActions: Record<string, Sequence | Interaction>;
-  actionContext: ActionContext;
-  actionHistory: ActionHistory[];
-  activeStep: string;
   activePlayerId: string;
-  cardStacks?: Record<string, CardState[]>;
+  model: {
+    maps: Record<string, MapState>;
+    cards: Record<string, CardState[]>;
+    tokens: Record<string, any>;
+  };
 };
 
 export type LocalState = {
@@ -148,26 +146,19 @@ export type LocalControl = {
 };
 
 export type ActionState = {
-  mapState: MapState;
   gameState: GameState;
+  sequenceState?: SequencerContext;
   localState: LocalState;
   localControl: LocalControl;
 
-  // don't return
-  autoContinue?: boolean;
-
   // Readonly
   gameDefinition: GameDefinition;
-  targetHex: HexItem;
-  selectedHex: HexItem | undefined;
-  selectedCard: CardState | undefined;
-  activePlayer: PlayerState | OtherPlayerState;
-  uiState: Record<string, any>;
-};
-
-// This is all stuff that needs to come back from the api
-export type SharedState = {
-  mapState: MapState;
-  gameState: GameState;
-  playerState: PlayerState; // me maybe doesn't come back from the api?
+  indexes: {
+    cards: Record<string, CardState[]>;
+    maps: Record<string, MapState>;
+    spaces: Record<string, HexItem>;
+    units: Record<string, UnitState>;
+    activePlayer: PlayerState | OtherPlayerState;
+    //subjects: ActionSubject[];
+  };
 };
