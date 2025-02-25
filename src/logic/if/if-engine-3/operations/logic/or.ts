@@ -1,6 +1,7 @@
 import { getOperation } from '../../getNextOperation';
 import { addPath } from '../../utils/addPath';
 import { Context } from '../types';
+import { getProcedure } from '../../getProcedure';
 
 export const or = {
   requiredFields: ['or'],
@@ -26,7 +27,7 @@ export const or = {
 
       nextOperation: operationType,
       modelItem: context.modelItem,
-      ifItem: firstItem,
+      ifItem: getProcedure(firstItem, context.procedures),
     };
   },
   revisitOp: (context: Context) => {
@@ -44,7 +45,7 @@ export const or = {
       ...context,
       localBag: { ...context.localBag, result: context.localBag.result || context.bag.result },
       nextOperation: operationType,
-      ifItem: nextItem,
+      ifItem: getProcedure(nextItem, context.procedures),
     };
   },
 };

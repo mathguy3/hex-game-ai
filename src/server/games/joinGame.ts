@@ -1,5 +1,6 @@
+import { User } from '../user/id';
 import { MapState } from '../../types';
-import { GameState, LocalState, PlayerState } from '../../types/game';
+import { GameState, LocalState } from '../../types/game';
 import { gameManager, GameSession } from './gameManager';
 
 export interface JoinGameResponse {
@@ -15,25 +16,18 @@ export interface JoinGameResponse {
   localState: LocalState;
 }
 
-export const joinGame = ({ roomCode, user }): { gameSession: GameSession; myId: string } => {
+export const joinGame = (params: { roomCode: string; user: User }): { gameSession: GameSession } => {
+  const { roomCode, user } = params;
   if (!gameManager.hasGame(roomCode)) {
     throw new Error('Game not found');
   }
 
   try {
-    // Try to rejoin first in case they're reconnecting
-    let playerState: PlayerState;
-    try {
-      playerState = gameManager.rejoinGame(roomCode, user.id, user.name);
-    } catch {
-      // If rejoin fails, add as new player
-      playerState = gameManager.addPlayer(roomCode, user.id, user.name);
-    }
+    gameManager.joinGame(roomCode, user.userId, user.userName);
 
-    const gameSession = gameManager.getGameState(roomCode, user.id);
-    const myId = gameManager.getPlayerByPlayerId(roomCode, user.id).playerId;
+    const gameSession = gameManager.getGameState(roomCode, user.userId);
 
-    return { gameSession, myId };
+    return { gameSession };
   } catch (error) {
     console.error('Failed to join game:', error);
     throw error;

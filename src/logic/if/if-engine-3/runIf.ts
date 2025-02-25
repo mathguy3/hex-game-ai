@@ -10,6 +10,7 @@ export const runIf = (context: Context) => {
   do {
     const nextOperation = currentContext.nextOperation;
     //console.log('starting', currentContext.path, nextOperation ? '-> ' + nextOperation : '<--');
+    //console.log('currentContext', currentContext);
     // Going down the tree
     if (nextOperation) {
       const operation = operationsObject[nextOperation];
@@ -25,7 +26,7 @@ export const runIf = (context: Context) => {
       }
 
       const operation = operationsObject[currentContext.operationType];
-      //console.log("revisiting", currentContext.path, currentContext.operationType, operation)
+      //console.log('revisiting run', currentContext.path, currentContext.operationType, operation);
       if (operation.revisitOp) {
         currentContext = operation.revisitOp(currentContext);
       }

@@ -180,8 +180,8 @@ const winCondition = {
 };
 
 export const solitaire: GameDefinition = {
-  name: 'Solitaire',
   config: {
+    name: 'Solitaire',
     rotateTable: true,
     description: 'A simple card game',
   },

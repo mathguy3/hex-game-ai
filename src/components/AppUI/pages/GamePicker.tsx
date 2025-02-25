@@ -4,6 +4,8 @@ import { hexChess, solitaire } from '../../../data';
 import { useClient } from '../../../logic/client/ClientProvider';
 import { GameSession } from '../../../server/games/gameManager';
 import { GameDefinition } from '../../../types/game';
+import { gloomhaven } from '../../../data/games/gloomhaven/gloomhaven';
+import { useNavigate } from 'react-router-dom';
 
 interface GamePickerProps {
   onCreateGame: (gameDefinition: GameDefinition) => void;
@@ -12,15 +14,19 @@ interface GamePickerProps {
 }
 
 export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProps) => {
-  const { client } = useClient();
-  const [games, setGames] = useState<GameSession[]>([]);
+  const { client, user } = useClient();
+  const navigate = useNavigate();
+  const [yourGames, setYourGames] = useState<GameSession[]>([]);
+  const [otherGames, setOtherGames] = useState<GameSession[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const { games } = await client.listGames();
-        setGames(games ?? []);
+        console.log('fetchGames', user);
+        const { yourGames, otherGames } = await client.listGames();
+        setYourGames(yourGames ?? []);
+        setOtherGames(otherGames ?? []);
         setError(null);
       } catch (err) {
         setError('Failed to load games');
@@ -40,12 +46,12 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
       spacing={4}
       sx={{
         height: '100vh',
-        maxWidth: '1200px',
-        margin: 'auto',
-        paddingTop: 4,
+        width: '100vw',
+        paddingTop: 8,
+        paddingX: 4,
       }}
     >
-      <Box
+      <Stack
         sx={{
           flex: 1,
           borderRight: '1px solid',
@@ -58,23 +64,91 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
         <Typography variant="h5" gutterBottom>
           Create New Game
         </Typography>
-        <Stack spacing={2} height="content">
-          {[solitaire, hexChess].map((gameType, idx) => (
-            <Card key={gameType.name + idx} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-              <CardContent sx={{ pb: 0 }}>
-                <Typography variant="h6">{gameType.name}</Typography>
-                <Typography color="text.secondary">{gameType.config.description}</Typography>
-              </CardContent>
-              <CardActions>
-                <Button variant="contained" fullWidth onClick={() => onCreateGame(gameType)} disabled={loading}>
-                  {loading ? 'Creating...' : `New ${gameType.name}`}
+        <Stack height="content" border="1px solid" borderColor="divider" borderRadius={2}>
+          {[solitaire, hexChess, gloomhaven].map((gameType, idx) => (
+            <Stack
+              key={gameType.config.name + idx}
+              sx={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                border: '1px solid',
+                borderColor: 'divider',
+                padding: 1,
+              }}
+            >
+              <Box>
+                <Typography>{gameType.config.name}</Typography>
+                <Typography color="text.secondary" fontSize={16}>
+                  {gameType.config.description}
+                </Typography>
+              </Box>
+              <Box>
+                <Button variant="contained" fullWidth onClick={() => onCreateGame(gameType as any)} disabled={loading}>
+                  {loading ? 'Creating...' : `New ${gameType.config.name}`}
                 </Button>
-              </CardActions>
-            </Card>
+              </Box>
+            </Stack>
           ))}
         </Stack>
-      </Box>
-      <Box sx={{ flex: 1, height: '100vh', overflowY: 'auto', paddingBottom: 4 }}>
+      </Stack>
+      <Stack sx={{ flex: 1, height: '100vh', overflowY: 'auto', paddingBottom: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Your Games
+        </Typography>
+        <Stack spacing={2}>
+          {error && (
+            <Typography color="error" align="center">
+              {error}
+            </Typography>
+          )}
+
+          {yourGames.map((game) => {
+            //const playerCount = Object.values(game.gameState.players).filter((player) => player.playerId).length;
+            return (
+              <Stack
+                key={game.roomCode}
+                sx={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  padding: 1,
+                }}
+              >
+                <Box>
+                  <Typography>Game {game.gameDefinition.config.name}</Typography>
+                  {/* <Typography color="text.secondary">
+                    {game.gameDefinition.name} - {playerCount}/{game.maxPlayers} players
+                  </Typography> */}
+                </Box>
+                <Box>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => navigate(`/room/${game.roomCode}`)}
+                    //disabled={loading || playerCount >= game.maxPlayers}
+                    fullWidth
+                  >
+                    {loading ? 'Joining...' : 'Play Game'}
+                  </Button>
+                </Box>
+              </Stack>
+            );
+          })}
+          {yourGames.length === 0 && !error && (
+            <Card sx={{ bgcolor: 'action.hover' }}>
+              <CardContent>
+                <Typography color="text.secondary" align="center">
+                  No games available
+                </Typography>
+              </CardContent>
+            </Card>
+          )}
+        </Stack>
+      </Stack>
+      <Stack sx={{ flex: 1, height: '100vh', overflowY: 'auto', paddingBottom: 4 }}>
         <Typography variant="h5" gutterBottom>
           Available Games
         </Typography>
@@ -85,22 +159,22 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
             </Typography>
           )}
 
-          {games.map((game) => {
-            const playerCount = Object.values(game.gameState.players).filter((player) => player.playerId).length;
+          {otherGames.map((game) => {
+            //const playerCount = Object.values(game.gameState.players).filter((player) => player.playerId).length;
             return (
-              <Card key={game.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+              <Card key={game.roomCode} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                 <CardContent sx={{ pb: 0 }}>
-                  <Typography variant="h6">Game {game.gameDefinition.name}</Typography>
-                  <Typography color="text.secondary">
+                  <Typography variant="h6">Game {game.gameDefinition.config.name}</Typography>
+                  {/* <Typography color="text.secondary">
                     {game.gameDefinition.name} - {playerCount}/{game.maxPlayers} players
-                  </Typography>
+                  </Typography> */}
                 </CardContent>
                 <CardActions>
                   <Button
                     size="small"
                     variant="contained"
                     onClick={() => onJoinGame(game)}
-                    disabled={loading || playerCount >= game.maxPlayers}
+                    //disabled={loading || playerCount >= game.maxPlayers}
                     fullWidth
                   >
                     {loading ? 'Joining...' : 'Join Game'}
@@ -109,7 +183,7 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
               </Card>
             );
           })}
-          {games.length === 0 && !error && (
+          {otherGames.length === 0 && !error && (
             <Card sx={{ bgcolor: 'action.hover' }}>
               <CardContent>
                 <Typography color="text.secondary" align="center">
@@ -119,7 +193,7 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
             </Card>
           )}
         </Stack>
-      </Box>
+      </Stack>
     </Stack>
   );
 };

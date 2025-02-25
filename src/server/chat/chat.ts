@@ -1,4 +1,5 @@
-import { User, userRecord } from '../user/id';
+import { User } from '../user/id';
+import { gameManager } from '../games/gameManager';
 
 export type ChatMessage = {
   userId: string;
@@ -23,9 +24,9 @@ export const chat = ({ gameId, user, message }: { gameId: string; user: User; me
     const current = chatLog[gameId];
     chatLog[gameId] = {
       ...current,
-      messages: [...current.messages, { userId: user.id, message }],
+      messages: [...current.messages, { userId: user.userId, message }],
     };
   }
   //console.log('Returning chat', gameId, message, chatLog);
-  return { chatLog: chatLog[gameId], users: userRecord };
+  return { chatLog: chatLog[gameId], users: gameManager.getUsers() };
 };

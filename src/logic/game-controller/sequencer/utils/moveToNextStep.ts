@@ -1,6 +1,6 @@
 import { ActionState } from '../../../../types/game';
 import { isAction } from './isAction';
-import { isOptions } from './isOptions';
+import { isOption } from './isOption';
 import { resolveAction } from './resolveAction';
 
 export const moveToNextStep = (actionState: ActionState, readOnly?: boolean) => {

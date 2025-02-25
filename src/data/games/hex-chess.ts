@@ -16,7 +16,7 @@ const isMyTeam = {
         properties: {
           team: {
             value: {
-              context: { activePlayerId: IFStringValue },
+              context: { activeId: IFStringValue },
             },
           },
         },
@@ -28,15 +28,15 @@ const isMyTeam = {
 const currentPlayerHasWon = {
   context: {
     players: {
-      key: { context: { activePlayerId: IFStringValue } },
+      key: { context: { activeId: IFStringValue } },
       value: { properties: {} },
     },
   },
 };
 
 export const hexChess: GameDefinition = {
-  name: 'Hex Chess',
   config: {
+    name: 'Hex Chess',
     description: 'A strategic board game',
     rotateTable: true,
   },

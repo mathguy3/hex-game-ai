@@ -1,26 +1,43 @@
-import { Interaction } from '../../../../types/actions/interactions';
-import { ActionState, Sequence } from '../../../../types/game';
-import { evalSet } from '../../../if/if-engine/eval-set';
-import { asArray } from '../../../util/asArray';
-import { getModel } from '../../getModel';
+import { ServerSession } from '../../../../server/games/gameManager';
+import { doSet } from '../../../if/if-engine-3/doSet';
 import { ActionRequest } from '../doSequence';
-import { isAction } from '../utils/isAction';
 
-export const action = (
-  actionState: ActionState,
-  stepId: string,
-  action: Sequence | Interaction,
-  request: ActionRequest
-): ActionState => {
-  if (!isAction(action)) {
-    throw new Error('Invalid action');
-  }
-  if ('set' in action) {
-    const sets = asArray(action.set);
-    for (const set of sets) {
-      evalSet(set, getModel(actionState));
+export const action = {
+  startOp: (serverSession: ServerSession, request: ActionRequest) => {
+    const actions = serverSession.sequenceState.sequenceItem.actions;
+    //console.log('data', serverSession.gameSession.gameState.data);
+    for (const action of actions) {
+      ///console.log('action', action);
+      console.log('action', serverSession.gameSession.gameState, serverSession.sequenceState.bag);
+      if (serverSession.sequenceState.bag.reference) {
+        console.log('Taking action with this reference', serverSession.sequenceState.bag.reference);
+      }
+      serverSession.gameSession.gameState = doSet({
+        ifItem: action,
+        model: {
+          context: serverSession.gameSession.gameState as any,
+          ...(serverSession.sequenceState.bag.reference || {}),
+        },
+        procedures: serverSession.gameSession.gameDefinition.definitions.procedures,
+      })?.context as any;
     }
-    // Handle events?
-  }
-  return actionState;
+    console.log('dataq', serverSession.gameSession.gameState.data);
+
+    serverSession.gameSession.gameState.activeStep = serverSession.sequenceState.path + '.action';
+
+    serverSession.sequenceState = {
+      previousContext: serverSession.sequenceState,
+      path: serverSession.sequenceState.path + '.action',
+      operationType: 'action',
+      isComplete: false,
+      autoContinue: true,
+      sequenceItem: serverSession.sequenceState.sequenceItem,
+      bag: serverSession.sequenceState.bag,
+    };
+    return serverSession;
+  },
+  continueOp: (serverSession: ServerSession, request: ActionRequest) => {
+    serverSession.sequenceState.isComplete = true;
+    return serverSession;
+  },
 };

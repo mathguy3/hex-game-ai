@@ -17,13 +17,14 @@ export const simple = {
   isLeaf: true,
   startOp: (context: Context) => {
     const item = context.ifItem;
-    if (typeof item !== 'string' && typeof item !== 'number' && typeof item !== 'boolean') {
+    if (typeof item !== 'string' && typeof item !== 'number' && typeof item !== 'boolean' && item !== null) {
       throw new Error('Simple operation requires a simple type' + JSON.stringify(item));
     }
     context.bag.result = item;
     let path = addPath(context.path, context.bag.result);
     if (map[context.ifItem]) {
       context.bag.result = context.modelItem;
+      //console.log('simple result', context.bag.result);
       path = addPath(context.path, context.ifItem);
     }
     //console.log('simple complete', context.path, context.modelItem, context.bag.result);

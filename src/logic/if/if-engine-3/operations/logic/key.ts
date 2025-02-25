@@ -1,6 +1,7 @@
 import { getOperation } from '../../getNextOperation';
 import { addPath } from '../../utils/addPath';
 import { Context } from '../types';
+import { getProcedure } from '../../getProcedure';
 
 export const key = {
   requiredFields: ['key', 'value'],
@@ -17,7 +18,7 @@ export const key = {
       previousContext: context,
       path: addPath(context.path, 'key'),
       modelItem: context.modelItem,
-      ifItem: ifNext,
+      ifItem: getProcedure(ifNext, context.procedures),
       bag: context.bag,
       operationType: 'key',
       nextOperation: operationType,
@@ -43,7 +44,7 @@ export const key = {
     return {
       ...context,
       type: context.previousContext.type,
-      ifItem: ifNext,
+      ifItem: getProcedure(ifNext, context.procedures),
       modelItem: context.modelItem[nextKey],
       nextOperation: operationType,
       localBag: { key: nextKey },

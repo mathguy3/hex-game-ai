@@ -19,3 +19,4 @@ export { lessThanEqual } from './math/lessThanEqual';
 export { multiply } from './math/multiply';
 export { subtract } from './math/subtract';
 export { shuffle } from './array/shuffle';
+export { min } from './array/min';

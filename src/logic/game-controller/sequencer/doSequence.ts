@@ -1,31 +1,32 @@
-import { ActionState } from '../../../types/game';
+import { ServerSession } from '../../../server/games/gameManager';
 import { isPlayerTurn } from '../../util/isPlayerTurn';
-import { when } from '../../util/when';
 import * as handlers from './sequences';
-import { isAction } from './utils/isAction';
-import { isOptions } from './utils/isOptions';
-import { moveToNextStep } from './utils/moveToNextStep';
 
 type ActionTarget = { id: string } & (
   | {
       type: 'card';
     }
   | {
-      type: 'hex';
-      kind?: string;
+      type: 'space';
+    }
+  | {
+      type: 'token';
     }
   | {
       type: 'ui';
     }
 );
 
-export type ActionSubject = { id: string; targets?: ActionTarget[] } & (
+export type ActionSubject = { id: string; from?: string; targets?: ActionSubject[] } & (
   | {
-      type: 'card';
-      stackId: string;
+      type: 'space';
     }
   | {
-      type: 'hex';
+      type: 'token';
+    }
+  | {
+      type: 'card';
+      action?: string;
     }
   | {
       type: 'ui';
@@ -33,57 +34,92 @@ export type ActionSubject = { id: string; targets?: ActionTarget[] } & (
     }
 );
 
-export type ActionRequest = { playerId: string } & (
+export type InteractActionRequest = { type: 'interact'; kind: string; playerId: string } & {
+  subjects: ActionSubject[];
+};
+
+export type ActionRequest = { playerId: string; kind?: string } & (
   | {
       type: 'continue';
     }
-  | {
-      type: 'interact';
-      subjects: ActionSubject[];
-    }
+  | InteractActionRequest
   | {
       type: 'start';
     }
+  | {
+      type: 'ackAnnounce';
+    }
 );
 
-export const doSequence = (actionState: ActionState, request: ActionRequest) => {
-  if (!isPlayerTurn(actionState.gameState, actionState.localState)) {
-    return actionState;
+export const doSequence = (game: ServerSession, request: ActionRequest, broadcast: () => void) => {
+  if (!isPlayerTurn(game.gameSession.gameState, request)) {
+    console.log('not your turn', game.gameSession.gameState.activeId, request.playerId);
+    return game;
+  }
+  const { gameSession, sequenceState } = game;
+  const { gameState } = gameSession;
+  const nextOperation = sequenceState.nextOperation;
+  console.log(
+    'starting',
+    sequenceState.sequenceItem.name,
+    sequenceState.path,
+    nextOperation ? '-> ' + nextOperation : '<--'
+  );
+  if (nextOperation == 'start' && request.type !== 'start') {
+    return game;
   }
 
-  actionState.autoContinue = false;
-  // We don't move to the next step if we are interacting
-  const { nextStep, nextAction } = moveToNextStep(actionState);
-  console.log('doSequence', actionState.gameState.activeStep, nextStep);
-
-  if (nextStep == 'setup' && request.type !== 'start') {
-    return actionState;
+  if (nextOperation == 'interact' && request.type !== 'interact') {
+    return game;
   }
 
-  const handlerType: keyof typeof handlers = when([
-    ['interact', request.type === 'interact'],
-    ['start', request.type === 'start'],
-    ['action', isAction(nextAction)],
-    ['options', isOptions(nextAction)],
-    ['sequence'], // fallback case
-  ]);
-
-  //console.log("taking step", nextStep, handlerType);
-
-  // Need to make sure subject and target are setup first
-  const sequenceHandler = handlers[handlerType];
-
-  actionState = sequenceHandler(actionState, nextStep, nextAction, request);
-
-  console.log('doSequence', actionState.gameState.activeStep, nextStep, actionState.autoContinue);
-  console.log('nextStep is start', nextStep == 'start');
-  if (nextStep == 'start') {
-    // That means the game is over actually
-    return { ...actionState, gameState: { ...actionState.gameState, isComplete: true } };
+  if (nextOperation == 'ackAnnounce' && request.type !== 'ackAnnounce') {
+    return game;
   }
-  if (actionState.autoContinue) {
-    return doSequence(actionState, { type: 'continue', playerId: request.playerId });
+
+  if (nextOperation) {
+    // Need to make sure subject and target are setup first
+    const sequenceHandler = handlers[nextOperation];
+
+    if (!sequenceHandler) {
+      console.log('No sequence handler found for', nextOperation);
+      return game;
+    }
+
+    game = sequenceHandler.startOp(game, request);
+    game.activeContexts[sequenceState.path] = game.sequenceState;
   } else {
-    return actionState;
+    const operation = handlers[sequenceState.operationType];
+    console.log('revisiting seq', sequenceState.path, sequenceState.operationType, operation);
+
+    if (operation.continueOp) {
+      game = operation.continueOp(game, request);
+    }
+
+    if (game.sequenceState.isComplete) {
+      delete game.activeContexts[sequenceState.path];
+      game.sequenceState = {
+        ...game.sequenceState.previousContext,
+        nextOperation: undefined,
+        autoContinue: true,
+        bag: game.sequenceState.bag,
+      };
+    }
+    gameSession.gameState.activeStep = game.sequenceState.path;
+  }
+
+  if (nextOperation == 'start') {
+    // That means the game is over actually
+    console.log('game over');
+    return { ...game, gameState: { ...gameState, isComplete: true } };
+  }
+  if (game.sequenceState.autoContinue) {
+    console.log('auto continuing');
+    if (game.sequenceState.withBroadcast) {
+      broadcast();
+    }
+    return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+  } else {
+    return game;
   }
 };

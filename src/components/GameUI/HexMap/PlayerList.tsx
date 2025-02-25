@@ -1,27 +1,37 @@
 import { List, ListItem, Typography } from '@mui/material';
 import { memo } from 'react';
-import { GameState } from '../../../types/game';
+import { GameDefinition, GameState } from '../../../types/game';
 
 const PlayerList = memo(
-  ({ players, activePlayerId, meId }: { players: GameState['players']; activePlayerId: string; meId: string }) => {
-    console.log('players', players);
+  ({
+    seatConfig,
+    seats,
+    activeId,
+    meId,
+  }: {
+    seatConfig: GameDefinition['definitions']['seats'];
+    seats: GameState['seats'];
+    activeId: string;
+    meId: string;
+  }) => {
+    console.log('seats', seats, activeId, meId);
     return (
       <>
-        <Typography variant="subtitle2">Players - {activePlayerId}</Typography>
-        <List dense>
-          {Object.values(players).map((player) => {
-            if (!player) return null;
+        <Typography variant="subtitle2">Players - {activeId}</Typography>
+        <List dense sx={{ p: 0 }}>
+          {Object.entries(seatConfig).map(([id, config], index) => {
+            const seat = seats[id];
             return (
               <ListItem
-                key={player.playerId}
+                key={id + seat.userName + index}
                 sx={{
-                  color: player.playerId === activePlayerId ? 'primary.main' : 'text.primary',
+                  color: id === activeId ? 'primary.main' : 'text.primary',
                 }}
               >
-                {` - ${player.name ?? '{}'} `}
+                {` - ${seat.userName ?? 'Open'} `}
                 {/*'(' + player.teamId + ')'}*/}
-                {player.playerId === meId && ' (me)'}
-                {player.playerId === activePlayerId && ' (active)'}
+                {seat.userId === meId && ' (me)'}
+                {seat.isActive && ' (active)'}
               </ListItem>
             );
           })}

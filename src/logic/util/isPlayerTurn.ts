@@ -1,5 +1,6 @@
-import { GameState, LocalState } from '../../types/game';
+import { GameState } from '../../types/game';
+import { ActionRequest } from '../game-controller/sequencer/doSequence';
 
-export const isPlayerTurn = (gameState: GameState, localState: LocalState) => {
-  return gameState.activePlayerId === localState.meId;
+export const isPlayerTurn = (gameState: GameState, request: ActionRequest) => {
+  return gameState.activeId === request.playerId;
 };

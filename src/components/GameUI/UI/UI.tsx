@@ -1,13 +1,15 @@
-import { Button } from './Button';
-import { CardStack } from './CardStack';
-import { TokenStack } from './TokenStack';
-import { Zone } from './Zone';
+import { HexMap } from './components/HexMap';
+import { Button } from './components/Button';
+import { CardStack } from './components/CardStack';
+import { TokenStack } from './components/TokenStack';
+import { Zone } from './components/Zone';
 
 export const UIType = {
-  Zone: 'Zone',
-  Button: 'Button',
-  CardStack: 'CardStack',
-  TokenStack: 'TokenStack',
+  Zone: 'zone',
+  Button: 'button',
+  CardStack: 'cardStack',
+  TokenStack: 'tokenStack',
+  HexMap: 'hexMap',
 } as const;
 type BaseUIModel = {
   id: string;
@@ -53,15 +55,34 @@ export type TokenStackUIModel = BaseUIModel & {
   disabled?: boolean | any;
 };
 
-export type UIModel = ZoneUIModel | ButtonUIModel | CardStackUIModel | TokenStackUIModel;
+export type HexMapUIModel = BaseUIModel & {
+  type: typeof UIType.HexMap;
+  spaces?: {
+    [key: string]: any;
+  };
+};
+
+export type UIModel =
+  | { zone: ZoneUIModel }
+  | { button: ButtonUIModel }
+  | { cardStack: CardStackUIModel }
+  | { tokenStack: TokenStackUIModel }
+  | { hexMap: HexMapUIModel };
 
 export const UI = (model: UIModel) => {
-  const UIComponent = UIComponentMap[model.type];
-  return <UIComponent {...(model as any)} />;
+  const modelType = getType(model);
+  const UIComponent = UIComponentMap[modelType];
+  return <UIComponent {...(model[modelType] as any)} />;
 };
 export const UIComponentMap = {
   [UIType.Zone]: Zone,
   [UIType.Button]: Button,
   [UIType.CardStack]: CardStack,
   [UIType.TokenStack]: TokenStack,
+  [UIType.HexMap]: HexMap,
 };
+
+function getType(model: any) {
+  const keys = Object.keys(model);
+  return keys[0];
+}

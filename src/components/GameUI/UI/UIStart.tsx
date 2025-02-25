@@ -1,8 +1,8 @@
-import { useGameController } from '../../../logic/game-controller/GameControllerProvider';
+import { useGameSession } from '../../../logic/game-controller/context/GameSessionProvider';
 import { UI } from './UI';
 
 export const UIStart = () => {
-  const { basicActionState } = useGameController();
-  const { gameDefinition } = basicActionState;
+  const { gameSession } = useGameSession();
+  const { gameDefinition } = gameSession;
   return <UI {...gameDefinition.ui} />;
 };

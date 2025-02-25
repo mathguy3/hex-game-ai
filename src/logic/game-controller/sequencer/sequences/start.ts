@@ -1,20 +1,29 @@
-import { Interaction } from '../../../../types/actions/interactions';
-import { ActionState, Sequence } from '../../../../types/game';
+import { ServerSession } from '../../../../server/games/gameManager';
 import { ActionRequest } from '../doSequence';
 
-export const start = (
-  actionState: ActionState,
-  stepId: string,
-  action: Sequence | Interaction,
-  request: ActionRequest
-) => {
-  actionState.gameState.hasStarted = true;
-  actionState.gameState.activeAction = actionState.gameDefinition.definitions.sequencing;
-  actionState.gameState.activeStep = 'start';
-  actionState.gameState.actionContext = {
-    id: 'start',
-    action: actionState.gameDefinition.definitions.sequencing,
-    previousContext: null,
-  };
-  return actionState;
+export const start = {
+  startOp: (serverSession: ServerSession, request: ActionRequest) => {
+    if (request.type !== 'start') {
+      throw new Error('Request is not a start');
+    }
+
+    serverSession.gameSession.gameState.hasStarted = true;
+    serverSession.gameSession.gameState.activeStep = 'start';
+    const nextOperation = Object.keys(serverSession.sequenceState.sequenceItem)[0];
+    serverSession.sequenceState = {
+      previousContext: serverSession.sequenceState,
+      path: 'start',
+      operationType: 'start',
+      nextOperation,
+      isComplete: false,
+      autoContinue: true,
+      sequenceItem: serverSession.sequenceState.sequenceItem[nextOperation],
+      bag: serverSession.sequenceState.bag,
+    };
+    return serverSession;
+  },
+  continueOp: (serverSession: ServerSession, request: ActionRequest) => {
+    serverSession.sequenceState.isComplete = true;
+    return serverSession;
+  },
 };

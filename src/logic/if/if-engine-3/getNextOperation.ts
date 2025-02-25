@@ -7,7 +7,7 @@ export const getNextOperation = (context: Context) => {
 };
 
 export const getOperation = (ifItem: Context['ifItem']) => {
-  const fields = Object.keys(ifItem);
+  const fields = ifItem === null ? [] : Object.keys(ifItem);
   const simpleType = isSimpleType(ifItem);
 
   const operationType = simpleType
@@ -31,5 +31,5 @@ export const getOperation = (ifItem: Context['ifItem']) => {
 };
 
 const isSimpleType = (type: Context['ifItem']) => {
-  return ['string', 'number', 'boolean'].includes(typeof type);
+  return ['string', 'number', 'boolean'].includes(typeof type) || type === null;
 };

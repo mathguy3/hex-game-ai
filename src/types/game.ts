@@ -4,15 +4,17 @@ import { SequencerContext } from '../logic/if/if-engine-3/operations/types';
 import { IF } from './actions/if';
 import { CardInteraction, HexInteraction, Interaction, Targeting, UIInteraction } from './actions/interactions';
 import { TileSet } from './actions/tiles';
-import { UnitDefinition, UnitState } from './entities/unit/unit';
+import { TokenDefinition, UnitState } from './entities/unit/unit';
 import { HexItem, MapState } from './map';
 
-type PlayerDefinition = {
-  canBeAI?: boolean;
-  canBeNone?: boolean;
+export type SeatDefinition = {
+  isOpen?: boolean;
+  isAi?: boolean;
+  teamId?: string;
 };
 
-type GameConfig = {
+export type GameConfig = {
+  name: string;
   description: string;
   isPrivate?: boolean;
   rotateTable?: boolean;
@@ -20,18 +22,16 @@ type GameConfig = {
 };
 
 type Definitions = {
-  units: Record<string, UnitDefinition>;
+  seats: Record<string, SeatDefinition>;
+  procedures: Record<string, any>;
   cards: Record<string, CardDefinition>;
-  map: Record<string, HexItem>;
-  sequencing: Sequence;
-  actions: Record<string, Sequence | Interaction>;
+  tokens?: Record<string, TokenDefinition>;
+  sequence: Sequence;
 };
 
 export type GameDefinition = {
-  name: string;
   config: GameConfig;
-  initialState?: Record<string, any>;
-  players: Record<string, PlayerDefinition>;
+  data?: Record<string, any>;
   definitions: Definitions;
   ui?: UIModel;
   winCondition?: IF;
@@ -51,7 +51,7 @@ export type Sequence =
     }
   | { type: 'repeating'; breakOn?: IF; actions: (Interaction | Sequence)[] }
   | {
-      type: 'options';
+      type: 'option';
       multi?: number;
       interactions: {
         card?: CardInteraction;
@@ -67,7 +67,7 @@ export type PlayerState = {
   name?: string;
   properties?: Record<string, any>;
   hand?: CardState[];
-  selected?: CardState[];
+  selectedCards?: CardState[];
   type?: 'player' | 'ai';
   status: 'active' | 'inactive';
 };
@@ -87,6 +87,8 @@ export type CardState = {
   kind: string;
   properties: Record<string, any>;
   isFaceDown?: boolean;
+  actions?: Record<string, any>;
+  image?: string;
 };
 
 export type CardManagerState = {
@@ -119,14 +121,19 @@ export type ActionHistory = {
 };
 
 export type GameState = {
-  roomCode: string;
-  players: Record<string, PlayerState | OtherPlayerState>;
-  activePlayerId: string;
-  model: {
-    maps: Record<string, MapState>;
-    cards: Record<string, CardState[]>;
-    tokens: Record<string, any>;
-  };
+  hasStarted: boolean;
+  activeId: string;
+  seats: Record<
+    string,
+    {
+      id: string;
+      userId?: string;
+      userName?: string;
+      isActive: boolean;
+    }
+  >;
+  data: Record<string, any>;
+  activeStep: string;
 };
 
 export type LocalState = {
@@ -142,18 +149,20 @@ export type LocalState = {
 };
 
 export type LocalControl = {
-  activeActions: Record<string, TileSet>;
+  //activeActions: Record<string, TileSet>;
+  activeOptions: Record<string, any>[];
+  activeAnnounce?: { to: string; message: string };
 };
 
 export type ActionState = {
   gameState: GameState;
-  sequenceState?: SequencerContext;
-  localState: LocalState;
+  sequenceState: SequencerContext;
+  localState?: LocalState;
   localControl: LocalControl;
 
   // Readonly
   gameDefinition: GameDefinition;
-  indexes: {
+  indexes?: {
     cards: Record<string, CardState[]>;
     maps: Record<string, MapState>;
     spaces: Record<string, HexItem>;

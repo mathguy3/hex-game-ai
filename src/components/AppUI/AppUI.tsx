@@ -1,15 +1,13 @@
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
-import { ClientProvider } from '../../logic/client/ClientProvider';
-import { WebSocketProvider } from '../../logic/websocket/WebSocketProvider';
-import { ConfigurePage } from './pages/ConfigurePage';
 import { GamePage } from './pages/GamePage';
 import { GamePickerPage } from './pages/GamePickerPage';
 import { MainMenu } from './pages/MainMenu';
+import { Layout } from './Layout';
 
 const appRoutes = [
   {
     path: '/',
-    element: <Outlet />,
+    element: <Layout />,
     children: [
       {
         index: true,
@@ -29,20 +27,10 @@ const appRoutes = [
           },
         ],
       },
-      {
-        path: '/configure',
-        element: <ConfigurePage />,
-      },
     ],
   },
 ];
 
 export const AppUI = () => {
-  return (
-    <ClientProvider>
-      <WebSocketProvider>
-        <RouterProvider router={createBrowserRouter(appRoutes)} />
-      </WebSocketProvider>
-    </ClientProvider>
-  );
+  return <RouterProvider router={createBrowserRouter(appRoutes)} />;
 };

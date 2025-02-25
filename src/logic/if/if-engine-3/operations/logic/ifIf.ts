@@ -1,7 +1,7 @@
 import { getOperation } from '../../getNextOperation';
 import { addPath } from '../../utils/addPath';
 import { Context } from '../types';
-
+import { getProcedure } from '../../getProcedure';
 export const ifIf = {
   requiredFields: ['if', 'then'],
   alternateFields: [],
@@ -17,7 +17,7 @@ export const ifIf = {
       previousContext: context,
       path: addPath(context.path, 'if'),
       modelItem: context.modelItem,
-      ifItem: ifNext,
+      ifItem: getProcedure(ifNext, context.procedures),
       bag: context.bag,
       operationType: 'if',
       nextOperation: operationType,
@@ -41,7 +41,7 @@ export const ifIf = {
 
     return {
       ...context,
-      ifItem: nextIfItem,
+      ifItem: getProcedure(nextIfItem, context.procedures),
       nextOperation: operationType,
       localBag: { ...context.localBag, ifResult: context.bag.result },
     };

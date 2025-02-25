@@ -1,6 +1,7 @@
 import { getOperation } from '../../getNextOperation';
 import { addPath } from '../../utils/addPath';
 import { Context } from '../types';
+import { getProcedure } from '../../getProcedure';
 
 export const not = {
   requiredFields: ['not'],
@@ -24,7 +25,7 @@ export const not = {
 
       nextOperation: operationType,
       modelItem: context.modelItem,
-      ifItem: notItem,
+      ifItem: getProcedure(notItem, context.procedures),
     };
   },
   revisitOp: (context: Context) => {

@@ -1,13 +1,12 @@
 import { Box } from '@mui/material';
 import { useMemo } from 'react';
-import { useGameController } from '../../../logic/game-controller/GameControllerProvider';
-import { useIf } from '../../../logic/if/if-engine-3/useIf';
-import { DraggableCard } from '../../Card/DraggableCard';
-import { InnerCard } from '../../Card/InnerCard';
-import { useDragState } from '../../CardManager/DragStateProvider';
-import { DroppableCard } from '../../CardManager/DroppableCard';
-import { CardStackUIModel } from './UI';
-import { mapStyles } from './utils/mapStyles';
+import { useIf } from '../../../../logic/if/if-engine-3/useIf';
+import { DraggableCard } from '../../../Card/DraggableCard';
+import { InnerCard } from '../../../Card/InnerCard';
+import { useDragState } from '../../../CardManager/DragStateProvider';
+import { DroppableCard } from '../../../CardManager/DroppableCard';
+import { CardStackUIModel } from '../UI';
+import { mapStyles } from '../utils/mapStyles';
 
 const cardsBasedOnId = (id: string) => ({
   context: {
@@ -19,16 +18,11 @@ const cardsBasedOnId = (id: string) => ({
 
 export const CardStack = ({ id, type, disabled, styles, content, properties, filter }: CardStackUIModel) => {
   const { isDragging, activeCard } = useDragState();
-  const { basicActionState } = useGameController();
-  const { doEval, doIf } = useIf(basicActionState.gameState);
-  const mappedStyles = mapStyles(styles, doEval);
-  const testCards = useMemo(() => doEval(cardsBasedOnId(id)) ?? [], [doEval]);
+  const mappedStyles = { ...styles };
+  const testCards = useMemo(() => [], []);
 
-  const isDisabled = doEval(disabled);
-  const matchesFilter = useMemo(
-    () => !filter || doIf(filter, { subject: activeCard, target: { id, type, properties, cards: testCards } }),
-    [filter, activeCard, id]
-  );
+  const isDisabled = disabled;
+  const matchesFilter = useMemo(() => !filter || filter, [filter]);
 
   /*if (activeCard && id == 'finalStack1') {
     console.log('-----------------');

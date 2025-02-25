@@ -2,26 +2,47 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/
 import { horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable';
 import IconExpandLess from '@mui/icons-material/ExpandLess';
 import IconExpandMore from '@mui/icons-material/ExpandMore';
-import { Box, Button, IconButton } from '@mui/material';
+import { Box, Button, IconButton, Stack } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useGameController } from '../../logic/game-controller/GameControllerProvider';
-import { endInteraction } from '../../logic/game-controller/system-actions/end-action';
 import { CardState, PlayerState } from '../../types/game';
 import { useOutsideAlerter } from '../../utils/useOutsideAlerter';
 import { DraggableCard } from '../Card/DraggableCard';
+
 import { InnerCard } from '../Card/InnerCard';
 import { useDragState } from './DragStateProvider';
 import { DroppableCard } from './DroppableCard';
+import { useGameSession } from '../../logic/game-controller/context/GameSessionProvider';
+import { useClient } from '../../logic/client/ClientProvider';
 
 export const CardManager = ({ children }: { children: React.ReactNode }) => {
+  const { client, user } = useClient();
   const { isDragging, setIsDragging, setActiveCard } = useDragState();
-  const { basicActionState, saveActionState, handlePlaceCard } = useGameController();
-  const { gameState, localState, gameDefinition } = basicActionState;
-  const { cardManager } = localState;
+  const { gameSession } = useGameSession();
+  const { gameState, localControl, gameDefinition } = gameSession;
+  const { activeOptions } = localControl ?? {};
   const [active, setActive] = useState(null);
   const [selected, setSelected] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const seatId = Object.values(gameSession.gameState.seats).find((x) => x.userId === user.userId)?.id;
+
+  const firstCardOption = activeOptions?.find((x) => x.card);
+  const firstCardOptionType = firstCardOption?.card?.select ? 'select' : 'play';
+  const state = firstCardOption ? firstCardOptionType : 'view';
+
+  const selectionSlots = (firstCardOptionType === 'play' ? 1 : firstCardOption?.card?.select?.count) ?? 0;
+  const playerState = gameState.data[seatId] as PlayerState;
+  const playSourceType = firstCardOption?.card?.play?.from ?? firstCardOption?.card?.select?.from;
+  const playSource = playSourceType === 'selectedCards' ? playerState.selectedCards : playerState.hand;
+  console.log('playSource', playerState);
+  const [dropSlots, setDropSlots] = useState<(CardState | null)[]>(Array(selectionSlots).fill(null));
+  const filteredHand = playSource?.filter((x) => !!x && !dropSlots.some((y) => y?.id === x.id)) ?? [];
+
+  //Reset slots and open if state changes
+  useEffect(() => {
+    setIsOpen(false);
+    setDropSlots(Array(selectionSlots).fill(null));
+  }, [selectionSlots]);
 
   function handleDragStart(event: DragStartEvent) {
     //console.log('handleDragStart', event.active.id);
@@ -31,17 +52,6 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
     //saveActionState.current(previewCard(basicActionState, event.active.id + ''));
     setIsDragging(true);
   }
-
-  const playerHand = (gameState.players[localState.meId] as PlayerState).hand;
-  //console.log(playerHand);
-  //console.log(gameState.players, localState.meId);
-  const [dropSlots, setDropSlots] = useState<(CardState | null)[]>(Array(cardManager.selectionSlots).fill(null));
-  //Reset slots and open if state changes
-  useEffect(() => {
-    setIsOpen(false);
-    setDropSlots(Array(cardManager.selectionSlots).fill(null));
-  }, [cardManager.selectionSlots]);
-  const filteredHand = playerHand?.filter((x) => !!x && !dropSlots.some((y) => y?.id === x.id)) ?? [];
 
   const handleUnselect = () => {
     setActive(null);
@@ -55,6 +65,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
     if (!over) {
       return;
     }
+    console.log('handleDragEnd', active, over);
     if (over.data.current.type === 'CardStack') {
       if (over.data.current.id == active.data.current.stackId) {
         console.log('same stack', over.data.current, active.data.current.stackId);
@@ -71,7 +82,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
     }
     console.log('over', over);
     if (typeof over?.id === 'string' && over.id.startsWith('slot')) {
-      const droppedCard = playerHand.find((x) => x.id === active.id);
+      const droppedCard = playSource.find((x) => x.id === active.id);
       const slotIndex = Number(over.id.replace('slot', ''));
       setDropSlots(dropSlots.toSpliced(slotIndex, 1, droppedCard));
       handleUnselect();
@@ -79,7 +90,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
     }
 
     if (active.id !== over?.id) {
-      let ph = [...playerHand];
+      let ph = [...playSource];
       const oldIndex = ph.findIndex((x) => x.id === active.id);
       const newIndex = ph.findIndex((x) => x.id === over?.id);
       const oldValue = ph[oldIndex];
@@ -112,7 +123,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
 
   const focusRef = useRef(null);
   useOutsideAlerter(focusRef, () => {
-    if (cardManager.state === 'view' && isOpen) {
+    if (state === 'view' && isOpen) {
       setIsOpen(false);
       handleUnselect();
     }
@@ -124,29 +135,33 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
   };
   const containerHeight = isOpen ? openHeight : closedHeight;
   const handleSelect = () => {
-    // TODO: Send 'action' instead
-    let updatedState = {
-      ...basicActionState,
-      gameState: {
-        ...gameState,
-        players: {
-          ...gameState.players,
-          [localState.meId]: {
-            ...gameState.players[localState.meId],
-            selected: playerHand.filter((x) => dropSlots.some((y) => y.id === x.id)),
-          },
-        },
-      },
-    };
-    updatedState = endInteraction(updatedState);
-    saveActionState.current(updatedState);
-    setDropSlots(Array(cardManager.selectionSlots).fill(null));
+    // interact
+    client.interact({
+      kind: 'selectCards',
+      subjects: dropSlots.map((x) => ({ id: x?.id, type: 'card' })),
+      roomCode: gameSession.roomCode,
+    });
+    setDropSlots(Array(selectionSlots).fill(null));
+    setIsOpen(false);
   };
+
+  const handlePlay = (key: string, value: any) => {
+    console.log('handlePlay', key, value);
+    client.interact({
+      kind: 'playCard',
+      subjects: [{ id: dropSlots[0].id, type: 'card', action: key }],
+      roomCode: gameSession.roomCode,
+    });
+    setDropSlots(Array(selectionSlots).fill(null));
+    setIsOpen(false);
+  };
+
+  console.log('card state', dropSlots[0]);
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       {children}
-      {cardManager.state === 'select' && isOpen && (
+      {(state === 'select' || state === 'play') && isOpen && (
         <Box position="fixed" left={0} top={0} right={0} bottom={0} bgcolor="#00000055">
           <Box
             position="absolute"
@@ -159,14 +174,37 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
             gap={4}
           >
             {dropSlots.map((card, index) => (
-              <DroppableCard id={'slot' + index} key={index} onClick={() => removeSelected(card)}>
+              <DroppableCard
+                id={'slot' + index}
+                key={index}
+                data={{ type: 'select', id: 'slot' + index }}
+                onClick={() => removeSelected(card)}
+              >
                 {card ? <InnerCard id={card.id} kind={card.kind} /> : undefined}
               </DroppableCard>
             ))}
             <Box>
-              <Button variant="contained" disabled={dropSlots.some((x) => x === null)} onClick={handleSelect}>
-                {'Select'}
-              </Button>
+              {state === 'select' && (
+                <Button variant="contained" disabled={dropSlots.some((x) => x === null)} onClick={handleSelect}>
+                  {'Select'}
+                </Button>
+              )}
+              {state === 'play' && !dropSlots[0] && (
+                <Button variant="contained" disabled={true}>
+                  {'Play'}
+                </Button>
+              )}
+              {state === 'play' && dropSlots[0] && (
+                <Stack gap={2}>
+                  {Object.entries((dropSlots[0] as any).actions).map(([key, value]) => {
+                    return (
+                      <Button variant="contained" onClick={() => handlePlay(key, value)}>
+                        {key}
+                      </Button>
+                    );
+                  })}
+                </Stack>
+              )}
             </Box>
           </Box>
         </Box>
@@ -175,14 +213,14 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
         <>
           <Box
             component="ol"
-            display="flex"
-            flexDirection="row"
-            gap={2}
             position="fixed"
             bottom={0}
             left={0}
             right={0}
             top={`calc(100% - ${containerHeight}px)`}
+            display="flex"
+            flexDirection="row"
+            gap={2}
             bgcolor="#5f5f5f"
             padding="8px"
             margin={0}

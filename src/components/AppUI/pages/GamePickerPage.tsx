@@ -1,7 +1,7 @@
-import { Alert, Button } from '@mui/material';
+import { Alert, Button, Stack, Typography } from '@mui/material';
 
 import { Snackbar } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClient } from '../../../logic/client';
 import { GameSession } from '../../../server/games/gameManager';
@@ -9,21 +9,34 @@ import { GameDefinition } from '../../../types/game';
 import { GamePicker } from './GamePicker';
 
 export const GamePickerPage: React.FC = () => {
-  const { client } = useClient();
+  const { client, user } = useClient();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [activeUsers, setActiveUsers] = useState<{ userId: string; userName: string }[]>([]);
+
+  useEffect(() => {
+    const fetchActiveUsers = async () => {
+      const response = await client.listUsers();
+      if (response.users) {
+        setActiveUsers(response.users.filter((otherUser) => otherUser.userId !== user.userId));
+      }
+    };
+    fetchActiveUsers();
+    const interval = setInterval(fetchActiveUsers, 5000);
+    return () => clearInterval(interval);
+  }, [client]);
 
   const handleCreateGame = async (game: GameDefinition) => {
     setLoading(true);
     setError(null);
 
     try {
-      const newGame = await client.createGame({
+      const newGameSession = await client.createGame({
         gameDefinition: game,
       });
 
-      navigate(`/room/${newGame.roomCode}`);
+      navigate(`/room/${newGameSession.roomCode}`);
     } catch (error) {
       console.error('Failed to create game:', error);
       setError('Failed to create game. Please try again.');
@@ -74,10 +87,20 @@ export const GamePickerPage: React.FC = () => {
 
   return (
     <>
-      <Button onClick={handleBack} sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1000 }} variant="contained">
-        Back to Main Menu
+      <Button
+        onClick={handleBack}
+        sx={{ position: 'absolute', top: 16, left: 16, zIndex: 1000 }}
+        variant="contained"
+        size="small"
+      >
+        {'< Back to Main Menu'}
       </Button>
       <GamePicker onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} loading={loading} />
+      <Stack sx={{ position: 'absolute', top: 35, right: 10, zIndex: 1000, textAlign: 'right' }}>
+        {activeUsers.map((user) => (
+          <Typography key={user.userId}>{user.userName}</Typography>
+        ))}
+      </Stack>
       <Snackbar
         open={!!error}
         autoHideDuration={6000}

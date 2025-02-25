@@ -1,6 +1,7 @@
 import { getOperation } from '../../getNextOperation';
 import { addPath } from '../../utils/addPath';
 import { Context } from '../types';
+import { getProcedure } from '../../getProcedure';
 
 export const and = {
   requiredFields: ['and'],
@@ -18,7 +19,7 @@ export const and = {
     const nextPath = addPath(context.path, 'and');
     return {
       previousContext: context,
-      type: 'if',
+      type: context.type,
       operationType: 'and',
       bag: context.bag,
       path: nextPath,
@@ -26,13 +27,10 @@ export const and = {
 
       nextOperation: operationType,
       modelItem: context.modelItem,
-      ifItem: firstItem,
+      ifItem: getProcedure(firstItem, context.procedures),
     };
   },
   revisitOp: (context: Context) => {
-    if (context.previousContext.type == 'set') {
-      throw new Error('And operation cannot be used for a set operation');
-    }
     if (context.localBag.index == context.localBag.andItems.length - 1) {
       context.bag.result = context.bag.result && context.localBag.result;
       return { ...context, isComplete: true };
@@ -43,7 +41,7 @@ export const and = {
       ...context,
       localBag: { ...context.localBag, result: context.localBag.result && context.bag.result },
       nextOperation: operationType,
-      ifItem: nextItem,
+      ifItem: getProcedure(nextItem, context.procedures),
     };
   },
 };

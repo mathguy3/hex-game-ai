@@ -1,15 +1,13 @@
 import { ActionRequest, doSequence } from '../../logic/game-controller/sequencer';
 import { SequencerContext } from '../../logic/if/if-engine-3/operations/types';
 import { WebSocketMessage } from '../../logic/websocket/WebSocketProvider';
-import { MapState } from '../../types';
 import {
-  ActionState,
   GameDefinition,
   GameState,
   LocalControl,
-  LocalState,
   OtherPlayerState,
   PlayerState,
+  SeatDefinition,
 } from '../../types/game';
 import { broadcastToGame } from '../startup';
 
@@ -20,135 +18,169 @@ export type PlayerConfig = {
 };
 
 export type RoomConfig = {
-  roomCode: string;
   isPrivate: boolean;
   passwordHash?: string;
-  playerConfig: PlayerConfig[];
+  seats: Record<string, SeatDefinition>;
 };
 
+export interface ServerSession {
+  roomCode: string;
+  gameSession: GameSession;
+  sequenceState: SequencerContext;
+  activeContexts: Record<string, SequencerContext>;
+}
+
 export interface GameSession {
-  id: string;
+  roomCode: string;
   roomConfig: RoomConfig;
   gameDefinition: GameDefinition;
   gameState: GameState;
-  localControl: LocalControl;
+  localControl?: LocalControl;
 }
 
 export class GameManager {
-  private games: Record<string, GameSession> = {};
+  private games: Record<string, ServerSession> = {};
+  private users: Record<string, { userId: string; userName: string; state: string }> = {};
+
+  addUser(userId: string, userName: string) {
+    this.users[userId] = { userId, userName, state: 'disconnected' };
+  }
+
+  removeUser(userId: string) {
+    delete this.users[userId];
+  }
+
+  setUserState(userId: string, state: string) {
+    this.users[userId].state = state;
+  }
+
+  getUser(userId: string) {
+    return this.users[userId];
+  }
+
+  getUsers() {
+    return this.users;
+  }
 
   // Create a new game session
   createGame(params: { gameDefinition: GameDefinition; creatorId: string; creatorName: string }): GameSession {
-    const gameId = crypto.randomUUID();
-    const { definitions, players, initialState } = params.gameDefinition;
+    const { definitions, data } = params.gameDefinition;
     const roomCode = crypto.randomUUID().slice(0, 6).toUpperCase();
     const newGame: GameSession = {
-      id: gameId,
+      roomConfig: {
+        isPrivate: false,
+        seats: definitions.seats,
+      },
       roomCode,
-      isPrivate: false,
       gameDefinition: params.gameDefinition,
       gameState: {
-        roomCode,
+        data,
+        seats: {
+          ...Object.fromEntries(
+            Object.entries(definitions.seats).map(([key, _]) => [key, { id: key, isActive: false }])
+          ),
+          player1: {
+            id: 'player1',
+            userId: params.creatorId,
+            userName: params.creatorName,
+            isActive: true,
+          },
+        },
+        activeId: 'player1',
         hasStarted: false,
-        isComplete: false,
-        // Will probably need end of game state or something
-        activePlayerId: 'player1',
-        players: Object.fromEntries(
-          Object.entries(players).map(([key, playerSlot], index) => [
-            key,
-            {
-              userId: params.creatorId,
-              playerId: `player${index + 1}`,
-              type: 'player',
-              status: 'inactive',
-              hand: [],
-            },
-          ])
-        ),
-        activeActions: {},
-        actionContext: null,
-        actionHistory: [],
-        activeStep: 'setup',
-        cardStacks: {
-          ...initialState,
-        },
+        activeStep: 'not started',
       },
-      currentStep: {
-        operationType: '',
-        path: '',
-        isComplete: false,
-        sequenceItem: params.gameDefinition.definitions.sequencing,
-        nextOperation: '',
-        bag: {
-          history: [],
-          activeContexts: {},
-        },
-      },
-      activeSteps: {},
-      mapState: structuredClone(definitions.map),
-      maxPlayers: 2,
-      localControl: {
-        activeActions: {},
-      },
-    };
-    //console.log(newGame.gameState.players);
-    newGame.gameState.players.player1 = {
-      ...newGame.gameState.players.player1,
-      userId: params.creatorId,
-      name: params.creatorName,
-      hand: [],
     };
 
-    this.games[newGame.roomCode] = newGame;
+    this.games[newGame.roomCode] = {
+      roomCode: newGame.roomCode,
+      gameSession: newGame,
+      sequenceState: {
+        path: '',
+        operationType: '',
+        isComplete: false,
+        autoContinue: true,
+        nextOperation: 'start',
+        sequenceItem: definitions.sequence,
+        bag: {
+          history: [],
+        },
+      },
+      activeContexts: {},
+    };
+
     return newGame;
   }
 
   // Add a player to a game
-  addPlayer(roomCode: string, userId: string, playerName: string): PlayerState {
+  joinGame(roomCode: string, userId: string, playerName: string): GameSession {
     const game = this.games[roomCode];
+    console.log('joinGame', roomCode, userId, playerName);
     if (!game) throw new Error('Game not found');
 
-    const filledPlayers = Object.values(game.gameState.players).filter((player) => player.playerId);
-    if (filledPlayers.length >= game.maxPlayers) {
+    const firstOpenSeat = Object.entries(game.gameSession.gameState.seats).find(([playerId, seat]) => !seat.userId);
+    console.log('firstOpenSeat', firstOpenSeat);
+    if (!firstOpenSeat) {
       throw new Error('Game is full');
     }
 
-    // Assign team based on join order (1 for first player, 2 for second)
-    const team = filledPlayers.length + 1;
-
-    const playerId = `player${team}`;
-    game.gameState.players[playerId] = {
-      ...game.gameState.players[playerId],
+    const filledPlayers = Object.values(game.gameSession.gameState.seats).filter((seat) => seat.userId);
+    console.log('filledPlayers', filledPlayers);
+    game.gameSession.gameState.seats[firstOpenSeat[0]] = {
+      ...game.gameSession.gameState.seats[firstOpenSeat[0]],
       userId,
-      playerId,
-      name: playerName,
+      userName: playerName,
+      isActive: true,
     };
-
+    console.log('game.gameSession.gameState.seats', game.gameSession.gameState.seats);
     // If this is the first player, make them active
     if (filledPlayers.length === 0) {
-      game.gameState.activePlayerId = playerId;
+      console.log('first player', firstOpenSeat[0]);
+      game.gameSession.gameState.activeId = firstOpenSeat[0];
     }
 
-    return game.gameState.players[playerId];
+    this.broadcastState(roomCode);
+
+    return game.gameSession;
+  }
+
+  connectToRoom(roomCode: string, userId: string) {
+    const game = this.games[roomCode];
+    if (!game) throw new Error('Game not found');
+    Object.values(game.gameSession.gameState.seats).forEach((seat) => {
+      if (seat.userId === userId) {
+        seat.isActive = true;
+      }
+    });
+    this.broadcastState(roomCode);
+  }
+
+  disconnectFromRoom(roomCode: string, userId: string) {
+    const game = this.games[roomCode];
+    if (!game) throw new Error('Game not found');
+    Object.values(game.gameSession.gameState.seats).forEach((seat) => {
+      if (seat.userId === userId) {
+        seat.isActive = false;
+      }
+    });
+    this.broadcastState(roomCode);
   }
 
   // Get list of available games
-  listGames(): Array<GameSession> {
-    return Object.values(this.games).filter((game) => !game.isPrivate);
-  }
-
-  // Map player info for all players from perspective of requesting user
-  private mapPlayerInfo(gameState: GameState, userId: string): GameState {
-    const mappedPlayers = {};
-
-    for (const [playerId, player] of Object.entries(gameState.players)) {
-      mappedPlayers[playerId] = this.getPlayerInfo(gameState.roomCode, userId, player.playerId);
-    }
-
-    return {
-      ...gameState,
-      players: mappedPlayers,
-    };
+  listGames(userId: string): { yourGames: GameSession[]; otherGames: GameSession[] } {
+    const yourGames = Object.values(this.games)
+      .filter((game) => Object.values(game.gameSession.gameState.seats).some((player) => player.userId === userId))
+      .map((game) => game.gameSession);
+    const otherGames = Object.values(this.games)
+      .filter(
+        (game) =>
+          !game.gameSession.roomConfig.isPrivate &&
+          !Object.values(game.gameSession.gameState.seats).some((player) => player.userId === userId)
+      )
+      .map((game) => game.gameSession);
+    //console.log('yourGames', yourGames);
+    //console.log('otherGames', otherGames);
+    return { yourGames, otherGames };
   }
 
   // Get detailed game state with mapped player info
@@ -157,8 +189,8 @@ export class GameManager {
     if (!game) throw new Error('Game not found');
 
     return {
-      ...game,
-      gameState: this.mapPlayerInfo(game.gameState, userId),
+      ...game.gameSession,
+      /// gameState: this.mapPlayerInfo(game.gameState, userId),
     };
   }
 
@@ -166,92 +198,58 @@ export class GameManager {
   handleAction(
     roomCode: string,
     userId: string,
-    localState: LocalState,
     request: ActionRequest
   ): {
     gameState: GameState;
-    mapState: MapState;
-    localState: LocalState;
     localControl: LocalControl;
   } {
     const game = this.games[roomCode];
     if (!game) throw new Error('Game not found');
 
+    const { gameState, localControl } = game.gameSession;
+
     // Check if game has started (unless it's a start game action)
-    if (!game.gameState.hasStarted && request.type !== 'start') {
+    if (!gameState.hasStarted && request.type !== 'start') {
       return {
-        gameState: this.mapPlayerInfo(game.gameState, userId),
-        mapState: game.mapState,
-        localState,
-        localControl: game.localControl,
+        gameState: gameState, //this.mapPlayerInfo(game.gameState, userId),
+        localControl: localControl,
       };
     }
 
-    var meId = this.getPlayerByUserId(roomCode, userId).playerId;
-    // Verify it's the player's turn
-    if (game.gameState.activePlayerId !== meId && request.type !== 'continue') {
-      console.log('Not your turn', game.gameState.activePlayerId, meId);
+    var meId = this.getPlayerIdForRoom(roomCode, userId);
+
+    if (gameState.activeId !== meId && request.type !== 'continue') {
+      console.log('Not your turn', gameState.activeId, meId);
       throw new Error('Not your turn');
     }
 
-    localState.meId = meId;
-    localState.playerState = this.getPlayerInfo(roomCode, userId, meId);
-
-    const uiState = {};
-    const buildUiState = (ui: any) => {
-      //console.log('building ui', ui.id);
-      const children = ui.children || [];
-      for (const child of children) {
-        buildUiState(child);
-      }
-      uiState[ui.id] = ui;
-      //console.log('adding ui', ui.id);
-    };
-    buildUiState(game.gameDefinition.ui);
-    // Build action state
-    const actionState: ActionState = {
-      mapState: game.mapState,
-      gameState: game.gameState,
-      localState,
-      gameDefinition: game.gameDefinition,
-      targetHex: null,
-      selectedHex: null,
-      selectedCard: null,
-      activePlayer: game.gameState.players[meId],
-      localControl: game.localControl,
-      uiState,
-      sequenceState: game.currentStep,
-    };
-
+    console.log('doSequence', request);
     // Execute the action sequence
-    const newState = doSequence(actionState, request);
-
-    // If this was a start action and it succeeded, mark game as started
-    if (request.type === 'start' && newState.gameState.activeStep === 'play') {
-      this.startGame(roomCode);
-    }
-
-    game.gameState = newState.gameState;
-    game.mapState = newState.mapState;
+    const updatedServerSession = doSequence(game, request, () => this.broadcastState(roomCode));
+    console.log('path', updatedServerSession.sequenceState.path);
 
     // Broadcast update to all players
+    // This needs to broadcast individually to each player and map the player info
+    this.broadcastState(roomCode);
+
+    // Map player info before returning
+    return {
+      gameState: updatedServerSession.gameSession.gameState, //this.mapPlayerInfo(newState.gameState, userId),
+      localControl: updatedServerSession.gameSession.localControl,
+    };
+  }
+
+  broadcastState(roomCode: string) {
+    const game = this.games[roomCode];
+    if (!game) throw new Error('Game not found');
     this.broadcast(roomCode, {
       type: 'gameUpdate',
       roomCode,
       payload: {
-        gameState: this.mapPlayerInfo(newState.gameState, userId),
-        mapState: newState.mapState,
-        localControl: newState.localControl,
+        gameState: game.gameSession.gameState, //this.mapPlayerInfo(newState.gameState, userId),
+        localControl: game.gameSession.localControl,
       },
     });
-
-    // Map player info before returning
-    return {
-      gameState: this.mapPlayerInfo(game.gameState, userId),
-      mapState: game.mapState,
-      localState: newState.localState,
-      localControl: newState.localControl,
-    };
   }
 
   // Remove a game
@@ -272,16 +270,22 @@ export class GameManager {
     return userId != player.userId ? this.mapPlayerStateToOtherPlayerState(player) : player;
   }
 
+  getPlayerIdForRoom(roomCode: string, userId: string): string {
+    const game = this.games[roomCode];
+    if (!game) throw new Error('Game not found ' + roomCode);
+    return Object.entries(game.gameSession.gameState.seats).find(([playerId, player]) => player.userId === userId)?.[0];
+  }
+
   getPlayerByUserId(roomCode: string, userId: string): PlayerState | OtherPlayerState {
     const game = this.games[roomCode];
     if (!game) throw new Error('Game not found');
-    return Object.values(game.gameState.players).find((player) => player.userId === userId);
+    return Object.values(game.gameState.seats).find((player) => player.userId === userId);
   }
 
   getPlayerByPlayerId(roomCode: string, playerId: string): PlayerState | OtherPlayerState {
     const game = this.games[roomCode];
     if (!game) throw new Error('Game not found');
-    return Object.values(game.gameState.players).find((player) => player.playerId === playerId);
+    return Object.values(game.gameState.seats).find((player) => player.playerId === playerId);
   }
 
   mapPlayerStateToOtherPlayerState(playerState: PlayerState): OtherPlayerState {
@@ -341,25 +345,6 @@ export class GameManager {
     };
 
     return game.gameState.players[existingPlayerState.playerId];
-  }
-
-  // Start a game
-  startGame(roomCode: string): void {
-    const game = this.games[roomCode];
-    if (!game) throw new Error('Game not found');
-
-    // Check if game is already started
-    if (game.gameState.hasStarted) {
-      throw new Error('Game already started');
-    }
-
-    // Start the game
-    game.gameState = {
-      ...game.gameState,
-      hasStarted: true,
-      activeStep: 'start',
-      activePlayerId: 'team1', // First player starts
-    };
   }
 
   // Add a helper method to check if a game has started

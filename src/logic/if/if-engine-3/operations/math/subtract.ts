@@ -25,6 +25,7 @@ export const subtract = {
     }
 
     if (typeof context.modelItem !== 'number' || typeof context.bag.result !== 'number') {
+      console.log('Subtract operation can only be used on numbers', context.modelItem, context.bag.result);
       throw new Error('Subtract operation can only be used on numbers');
     }
 

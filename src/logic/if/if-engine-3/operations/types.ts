@@ -9,6 +9,7 @@ export type Operation = {
 };
 
 export type Context = {
+  procedures?: Record<string, any>;
   previousContext?: Context;
   type: 'if' | 'eval' | 'set';
   operationType: string;
@@ -36,13 +37,12 @@ export type SequencerContext = {
 
   sequenceIndex?: number;
   isComplete: boolean;
+  autoContinue?: boolean;
+  withBroadcast?: boolean;
+  localBag?: Record<string, any>;
 
   nextOperation?: string;
   sequenceItem: any;
 
-  bag: {
-    history: string[];
-    result?: any;
-    activeContexts: Record<string, boolean>;
-  };
+  bag: any;
 };

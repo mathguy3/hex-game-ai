@@ -30,6 +30,8 @@ export const InnerCard = ({
   if (isFloating) {
     console.log(isSelected);
   }
+  const image = card?.image ? card.image : `cards/${kind}.png`;
+  console.log('image', image);
   return (
     <Box
       position="relative"
@@ -44,13 +46,12 @@ export const InnerCard = ({
         top={isSelected ? '-20px' : '0px'}
         width={isSelected ? selectedSize.width : unselectedSize.width}
         height={isSelected ? selectedSize.height : unselectedSize.height}
-        padding="8px"
         boxSizing="border-box"
         borderRadius="4px"
         bgcolor="white"
         boxShadow={isSelected ? '0px 0px 10px 2px rgba(255,238,46,1);' : undefined}
       >
-        Id: {id} Kind: {kind}
+        {image && <img src={require(`../../images/${image}`)} width="100%" height="100%" alt={name} />}
       </Box>
       {/* Centered box with name please */}
       {!card || !card.isFaceDown ? (

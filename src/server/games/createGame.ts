@@ -4,8 +4,8 @@ import { gameManager, GameSession } from './gameManager';
 interface CreateGameParams {
   gameDefinition: GameDefinition;
   user: {
-    id: string;
-    name: string;
+    userId: string;
+    userName: string;
   };
 }
 
@@ -17,8 +17,8 @@ export const createGame = async (params: CreateGameParams): Promise<GameSession>
 
     const game = gameManager.createGame({
       gameDefinition: params.gameDefinition,
-      creatorId: params.user.id,
-      creatorName: params.user.name,
+      creatorId: params.user.userId,
+      creatorName: params.user.userName,
     });
 
     return game;

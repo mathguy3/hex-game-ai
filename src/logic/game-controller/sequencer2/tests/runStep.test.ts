@@ -6,7 +6,7 @@ const otherState = {
   gameState: {
     roomCode: 'test',
     players: {},
-    activePlayerId: 'test',
+    activeId: 'test',
     model: {
       maps: {},
       cards: {},
