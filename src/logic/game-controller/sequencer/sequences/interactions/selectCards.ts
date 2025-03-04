@@ -1,15 +1,20 @@
-import { InteractActionRequest } from '../..';
+import { ActionRequest, InteractActionRequest } from '../..';
 import { ServerSession } from '../../../../../server/games/gameManager';
 import { PlayerState } from '../../../../../types/game';
+import { nextIndex } from '../indexer/nextIndex';
+import { setIndex } from '../indexer/setIndex';
 
 export const selectCards = {
-  resolve: (serverSession: ServerSession, option: any, request: InteractActionRequest) => {
+  startOp: (serverSession: ServerSession, continueRequest: InteractActionRequest) => {
+    const { interactRequest: request } = serverSession.sequenceState.localBag;
     const gameState = serverSession.gameSession.gameState;
+    const option = serverSession.sequenceState.nextSequenceItem;
+    console.log(request);
     // Request.subjects length should equal option.card.select?.count
-    if (request.subjects.length !== option.card.select?.count) {
+    if (request.subjects.length !== option.select?.count) {
       throw new Error('Invalid number of subjects');
     }
-    if (option.card.select?.from === 'hand') {
+    if (option.select?.from === 'hand') {
       // For each subject, find the card in the hand and move it to the selectedCards array
       const playerState = gameState.data[request.playerId] as PlayerState;
       const selectedCards = [];
@@ -26,19 +31,22 @@ export const selectCards = {
       playerState.selectedCards = selectedCards;
     }
 
-    const nextPath = serverSession.sequenceState.path + '.interact';
+    const nextPath = serverSession.sequenceState.path + '.selectCards';
     serverSession.gameSession.gameState.activeStep = nextPath;
     serverSession.gameSession.localControl = null;
 
-    serverSession.sequenceState = {
+    serverSession.sequenceState = setIndex({
       previousContext: serverSession.sequenceState,
       path: nextPath,
-      operationType: 'interact',
+      operationType: 'selectCards',
       isComplete: true,
       autoContinue: true,
-      sequenceItem: serverSession.sequenceState.sequenceItem,
       bag: serverSession.sequenceState.bag,
-    };
+    });
+    return serverSession;
+  },
+  continueOp: (serverSession: ServerSession, request: ActionRequest) => {
+    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
     return serverSession;
   },
 };

@@ -1,8 +1,9 @@
 import { List, ListItem, Typography } from '@mui/material';
 import { memo } from 'react';
 import { GameDefinition, GameState } from '../../../types/game';
+import CircleIcon from '@mui/icons-material/Circle';
 
-const PlayerList = memo(
+export const PlayerList = memo(
   ({
     seatConfig,
     seats,
@@ -14,31 +15,37 @@ const PlayerList = memo(
     activeId: string;
     meId: string;
   }) => {
-    console.log('seats', seats, activeId, meId);
     return (
-      <>
-        <Typography variant="subtitle2">Players - {activeId}</Typography>
-        <List dense sx={{ p: 0 }}>
-          {Object.entries(seatConfig).map(([id, config], index) => {
+      <List dense sx={{ p: 0 }}>
+        {Object.entries(seatConfig)
+          .filter((x) => x[1].isConfigurable !== false)
+          .map(([id, config], index) => {
             const seat = seats[id];
             return (
               <ListItem
                 key={id + seat.userName + index}
                 sx={{
                   color: id === activeId ? 'primary.main' : 'text.primary',
+                  pl: 0,
                 }}
               >
-                {` - ${seat.userName ?? 'Open'} `}
+                <CircleIcon
+                  sx={{
+                    top: 2,
+                    position: 'relative',
+                    width: 10,
+                    height: 10,
+                    mr: 0.75,
+                    color: seat.isActive ? '#00ff00' : '#dd0000',
+                  }}
+                />
+                {`${seat.userName ?? 'Open'} `}
                 {/*'(' + player.teamId + ')'}*/}
                 {seat.userId === meId && ' (me)'}
-                {seat.isActive && ' (active)'}
               </ListItem>
             );
           })}
-        </List>
-      </>
+      </List>
     );
   }
 );
-
-export default PlayerList;

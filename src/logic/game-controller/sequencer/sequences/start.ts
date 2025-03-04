@@ -9,7 +9,7 @@ export const start = {
 
     serverSession.gameSession.gameState.hasStarted = true;
     serverSession.gameSession.gameState.activeStep = 'start';
-    const nextOperation = Object.keys(serverSession.sequenceState.sequenceItem)[0];
+    const nextOperation = Object.keys(serverSession.sequenceState.nextSequenceItem)[0];
     serverSession.sequenceState = {
       previousContext: serverSession.sequenceState,
       path: 'start',
@@ -17,13 +17,16 @@ export const start = {
       nextOperation,
       isComplete: false,
       autoContinue: true,
-      sequenceItem: serverSession.sequenceState.sequenceItem[nextOperation],
+      nextSequenceItem: serverSession.sequenceState.nextSequenceItem[nextOperation],
       bag: serverSession.sequenceState.bag,
     };
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
     serverSession.sequenceState.isComplete = true;
+    serverSession.sequenceState.isGameOver = true;
+    serverSession.sequenceState.autoContinue = false;
+    serverSession.gameSession.gameState.activeStep = 'end';
     return serverSession;
   },
 };

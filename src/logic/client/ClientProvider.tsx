@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ServerRoutes } from '../../server/startup';
 import { User } from '../../server/user/id';
 import { uuid } from '../../utils/uuid';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, IconButton, TextField } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import EditIcon from '@mui/icons-material/Edit';
 
 type ClientCtx = {
   client: Omit<ServerRoutes, 'id'>;
@@ -27,6 +28,9 @@ export const ClientProvider = ({ children }: React.PropsWithChildren) => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('loading');
+  const [editName, setEditName] = useState(false);
+  const [editingName, setEditingName] = useState(user?.userName);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!sessionId) {
@@ -79,9 +83,21 @@ export const ClientProvider = ({ children }: React.PropsWithChildren) => {
       continueGame: handler('continueGame'),
       interact: handler('interact'),
       ackAnnounce: handler('ackAnnounce'),
+      updateName: handler('updateName'),
     }),
     [sessionId]
   );
+
+  const handleUpdateName = async (name: string) => {
+    if (!name) {
+      setEditName(false);
+      return;
+    }
+    await client.updateName({ name });
+    setEditName(false);
+    setUser({ ...user, userName: name });
+  };
+
   return (
     <ClientContext.Provider value={{ client, user }}>
       <Box position="fixed" right={10} top={10}>
@@ -95,7 +111,39 @@ export const ClientProvider = ({ children }: React.PropsWithChildren) => {
             {'Could not connect to server'} <ErrorOutlineIcon color="error" />
           </Box>
         )}
-        {status === 'idle' && <Box>{user?.userName}</Box>}
+        {status === 'idle' && (
+          <Box display="flex" alignItems="center" gap={1}>
+            {editName ? (
+              <TextField
+                ref={inputRef}
+                size="small"
+                sx={{ width: 115, '& .MuiInputBase-input': { height: '16px', width: '110px' } }}
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleUpdateName(editingName);
+                  }
+                }}
+                onBlur={() => handleUpdateName(editingName)}
+              />
+            ) : (
+              <>
+                {user?.userName}
+                <IconButton
+                  onClick={() => {
+                    setEditName(true);
+                    setEditingName(user?.userName);
+                    inputRef.current?.select();
+                  }}
+                  size="small"
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </>
+            )}
+          </Box>
+        )}
       </Box>
       {children}
     </ClientContext.Provider>

@@ -96,9 +96,11 @@ export const GamePickerPage: React.FC = () => {
         {'< Back to Main Menu'}
       </Button>
       <GamePicker onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} loading={loading} />
-      <Stack sx={{ position: 'absolute', top: 35, right: 10, zIndex: 1000, textAlign: 'right' }}>
+      <Stack sx={{ position: 'absolute', top: 45, right: 10, zIndex: 1000, textAlign: 'right' }}>
         {activeUsers.map((user) => (
-          <Typography key={user.userId}>{user.userName}</Typography>
+          <Typography key={user.userId} variant="body2" color="text.secondary">
+            {user.userName}
+          </Typography>
         ))}
       </Stack>
       <Snackbar

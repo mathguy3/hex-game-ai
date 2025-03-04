@@ -24,7 +24,6 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
 
   const firstBoardOption = activeOptions?.find((x) => x.token ?? x.space);
 
-  console.log('firstBoardOption', firstBoardOption);
   useEffect(() => {
     setSelectedHex(null);
     setTargetState({});
@@ -44,7 +43,7 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
         gameSession.gameDefinition.definitions.procedures,
         query
       );
-      console.log('queryTiles', queryTiles);
+      //console.log('queryTiles', queryTiles);
       let preview = Object.entries(queryTiles).reduce((acc, x) => {
         acc[x[1].id] = {
           type: type ?? 'select',
@@ -52,13 +51,13 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
         return acc;
       }, {});
 
-      console.log('target preview', subjectSpace, preview, target);
+      //console.log('target preview', subjectSpace, preview, target);
       if (subjectSpace && preview[subjectSpace.id] && target) {
         const firstTarget = Object.entries(target)[0];
 
-        console.log('starting target preview');
+        //console.log('starting target preview');
         const targetPreview = previewOption(firstTarget[1], subjectSpace, targetSpace, 'target');
-        console.log('targetPreview', targetPreview);
+        //console.log('targetPreview', targetPreview);
         preview = { ...preview, ...targetPreview };
       }
       return preview;
@@ -80,7 +79,7 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
       const isTarget = optionPreview[hex.id]?.type === 'target';
       const isTargeted = optionPreview[hex.id]?.type === 'targeted';
       if (isTarget || isTargeted) {
-        console.log('targeting', hex);
+        //console.log('targeting', hex);
         if (targetState[hex.id]) {
           setTargetState({ ...targetState, [hex.id]: null });
           setOptionPreview({ ...optionPreview, [hex.id]: { type: 'target' } });
@@ -89,12 +88,12 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
           setOptionPreview({ ...optionPreview, [hex.id]: { type: 'targeted' } });
         }
       } else {
-        console.log('selecting', hex);
+        //console.log('selecting', hex);
         setTargetState({});
         setOptionPreview({});
         setSelectedHex(hex);
       }
-      console.log('selectedHex', selectedHex);
+      //console.log('selectedHex', selectedHex);
     },
     [targetState, optionPreview]
   );
@@ -112,15 +111,18 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
         })),
       },
     ];
-    console.log('submitAction', subjects);
+    //console.log('submitAction', subjects);
     client.interact({
       kind: 'space',
       roomCode: gameSession.roomCode,
       subjects,
     });
+    setTargetState({});
+    setOptionPreview({});
+    setSelectedHex(null);
   }, [targetState]);
 
-  console.log('optionPreview', optionPreview);
+  //console.log('optionPreview', optionPreview);
 
   return (
     <MapSelectionContext.Provider

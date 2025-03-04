@@ -20,7 +20,7 @@ export const useTouchTap = (onTap: () => void) => {
 
         // If movement was minimal (less than 10px), consider it a tap
         if (deltaX < 10 && deltaY < 10) {
-          console.log('tap');
+          //console.log('tap');
           onTap?.();
         }
       }

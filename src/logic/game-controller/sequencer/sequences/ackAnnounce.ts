@@ -14,7 +14,7 @@ export const ackAnnounce = {
       autoContinue: true,
       withBroadcast: true,
       bag: sequenceState.bag,
-      sequenceItem: sequenceState.sequenceItem,
+      nextSequenceItem: sequenceState.nextSequenceItem,
     };
     return game;
   },

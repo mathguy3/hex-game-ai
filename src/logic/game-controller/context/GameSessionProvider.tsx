@@ -2,11 +2,11 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { GameSession } from '../../../server/games/gameManager';
 import { useClient } from '../../client/ClientProvider';
 import { useNavigate } from 'react-router-dom';
-import { off } from 'process';
 import { useWebSocket, WebSocketMessage } from '../../websocket/WebSocketProvider';
 
 type GameSessionCtx = {
   gameSession: GameSession | null;
+  transitions: Record<string, any>;
 };
 
 const GameSessionContext = createContext<GameSessionCtx>(null);
@@ -15,6 +15,7 @@ export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChild
   const navigate = useNavigate();
   const { client, user } = useClient();
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
+  const [transitions, setTransitions] = useState<Record<string, any>>({});
 
   useEffect(() => {
     async function init() {
@@ -46,7 +47,16 @@ export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChild
 
       if (message.type === 'gameUpdate' && message.roomCode === gameSession.roomCode) {
         console.log('gameUpdate', message.payload);
-        setGameSession({ ...gameSession, ...message.payload });
+        if (message.payload.localControl?.transitions) {
+          console.log('transitions', message.payload.localControl.transitions);
+          setTransitions(message.payload.localControl.transitions);
+          setTimeout(() => {
+            setTransitions({});
+            setGameSession({ ...gameSession, ...message.payload });
+          }, 750);
+        } else {
+          setGameSession({ ...gameSession, ...message.payload });
+        }
       }
     };
     // Add WebSocket listener
@@ -86,7 +96,7 @@ export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChild
 
   if (!gameSession) return null;
 
-  return <GameSessionContext.Provider value={{ gameSession }}>{children}</GameSessionContext.Provider>;
+  return <GameSessionContext.Provider value={{ gameSession, transitions }}>{children}</GameSessionContext.Provider>;
 };
 
 export const useGameSession = () => useContext(GameSessionContext);

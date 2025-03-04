@@ -1,90 +1,59 @@
 import { ServerSession } from '../../../../server/games/gameManager';
+import { doIf } from '../../../if/if-engine-3/doIf';
 import { ActionRequest } from '../doSequence';
+import { nextIndex } from './indexer/nextIndex';
+import { setIndex } from './indexer/setIndex';
 
 export const round = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
-    // There might be a phases, or a turn, or.. another round?
-
-    const roundItem = serverSession.sequenceState.sequenceItem;
-    const nextGroup = roundItem.phases ?? roundItem.turns;
-    const firstItem = nextGroup[0];
-    const nextOperation = Object.keys(firstItem)[0];
-    if (!nextOperation) {
-      throw new Error('No next operation found');
-    }
-
     const nextPath = serverSession.sequenceState.path + '.round';
     serverSession.gameSession.gameState.activeStep = nextPath;
-    console.log('starting round', serverSession.gameSession.gameState.activeId);
-    serverSession.sequenceState = {
+    serverSession.sequenceState = setIndex({
       previousContext: serverSession.sequenceState,
       path: nextPath,
       operationType: 'round',
-      nextOperation,
       isComplete: false,
-      sequenceItem: nextGroup[0][nextOperation],
       localBag: {
-        index: 0,
+        roundNumber: 0,
         initialPlayerId: serverSession.gameSession.gameState.activeId,
       },
       autoContinue: true,
       withBroadcast: true,
       bag: serverSession.sequenceState.bag,
-    };
+    });
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    console.log('state', serverSession.gameSession.gameState);
-    // There might be a phases, or a turn, or.. another round?
-    // Repeat will be important here
-    const roundItem = serverSession.sequenceState.previousContext.sequenceItem;
-    const nextGroup = roundItem.phases ?? roundItem.turns ?? roundItem.actions;
-    const nextIndex = serverSession.sequenceState.localBag.index + 1;
-    if (nextIndex >= nextGroup.length) {
-      if (roundItem.repeat) {
-        const initialIndex = 0;
-        serverSession.sequenceState.localBag.index = initialIndex;
-        console.log('repeating round', serverSession.sequenceState.localBag);
-        serverSession.gameSession.gameState.activeId = serverSession.sequenceState.localBag.initialPlayerId;
-        const firstItem = nextGroup[initialIndex];
-        const nextOperation = Object.keys(firstItem)[0];
-        serverSession.sequenceState = {
-          ...serverSession.sequenceState,
-          nextOperation,
-          sequenceItem: firstItem[nextOperation],
-          localBag: {
-            ...serverSession.sequenceState.localBag,
-            index: initialIndex,
+    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
+    //console.log('continueOp round', serverSession.sequenceState);
+
+    if (serverSession.sequenceState.isComplete && serverSession.sequenceState.previousContext.nextSequenceItem.repeat) {
+      const breakIf = serverSession.sequenceState.previousContext.nextSequenceItem.breakIf;
+      if (breakIf) {
+        const breakIfResult = doIf({
+          ifItem: breakIf,
+          model: {
+            context: serverSession.gameSession.gameState,
+            ...(serverSession.sequenceState.bag.references || {}),
           },
-        };
-        return serverSession;
+          procedures: serverSession.gameSession.gameDefinition.definitions.procedures,
+        });
+        console.log('breakIfResult', breakIfResult);
+        if (breakIfResult) {
+          return serverSession;
+        }
       }
-      serverSession.sequenceState.isComplete = true;
-      return serverSession;
+      serverSession.gameSession.gameState.activeId = serverSession.sequenceState.localBag.initialPlayerId;
+
+      serverSession.sequenceState = setIndex({
+        ...serverSession.sequenceState,
+        isComplete: false,
+        localBag: {
+          ...serverSession.sequenceState.localBag,
+          roundNumber: serverSession.sequenceState.localBag.roundNumber + 1,
+        },
+      });
     }
-
-    const nextItem = nextGroup[nextIndex];
-
-    const nextOperation = Object.keys(nextItem)[0];
-    //if the next item isn't a built in operation.... maybe we just need to make it an 'action' type
-    if (!nextOperation) {
-      return serverSession;
-    }
-
-    if (!nextOperation) {
-      throw new Error('No next operation found');
-    }
-
-    serverSession.gameSession.gameState.activeStep = serverSession.sequenceState.path;
-    serverSession.sequenceState = {
-      ...serverSession.sequenceState,
-      nextOperation,
-      sequenceItem: nextItem[nextOperation],
-      localBag: {
-        ...serverSession.sequenceState.localBag,
-        index: nextIndex,
-      },
-    };
 
     return serverSession;
   },

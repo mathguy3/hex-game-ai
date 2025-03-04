@@ -62,6 +62,11 @@ export class GameManager {
     return this.users;
   }
 
+  updateName(userId: string, name: string) {
+    this.users[userId].userName = name;
+    return this.users[userId];
+  }
+
   // Create a new game session
   createGame(params: { gameDefinition: GameDefinition; creatorId: string; creatorName: string }): GameSession {
     const { definitions, data } = params.gameDefinition;
@@ -74,6 +79,7 @@ export class GameManager {
       roomCode,
       gameDefinition: params.gameDefinition,
       gameState: {
+        history: [],
         data,
         seats: {
           ...Object.fromEntries(
@@ -89,6 +95,7 @@ export class GameManager {
         activeId: 'player1',
         hasStarted: false,
         activeStep: 'not started',
+        isComplete: false,
       },
     };
 
@@ -101,7 +108,7 @@ export class GameManager {
         isComplete: false,
         autoContinue: true,
         nextOperation: 'start',
-        sequenceItem: definitions.sequence,
+        nextSequenceItem: definitions.sequence,
         bag: {
           history: [],
         },
@@ -218,7 +225,7 @@ export class GameManager {
 
     var meId = this.getPlayerIdForRoom(roomCode, userId);
 
-    if (gameState.activeId !== meId && request.type !== 'continue') {
+    if (gameState.activeId !== meId && request.type !== 'continue' && request.type !== 'ackAnnounce') {
       console.log('Not your turn', gameState.activeId, meId);
       throw new Error('Not your turn');
     }
@@ -262,109 +269,10 @@ export class GameManager {
     return !!this.games[roomCode];
   }
 
-  // Get player info for a game
-  getPlayerInfo(roomCode: string, userId: string, playerId: string): PlayerState | OtherPlayerState {
-    const game = this.games[roomCode];
-    if (!game) throw new Error('Game not found ' + roomCode);
-    const player = this.getPlayerByPlayerId(roomCode, playerId);
-    return userId != player.userId ? this.mapPlayerStateToOtherPlayerState(player) : player;
-  }
-
   getPlayerIdForRoom(roomCode: string, userId: string): string {
     const game = this.games[roomCode];
     if (!game) throw new Error('Game not found ' + roomCode);
     return Object.entries(game.gameSession.gameState.seats).find(([playerId, player]) => player.userId === userId)?.[0];
-  }
-
-  getPlayerByUserId(roomCode: string, userId: string): PlayerState | OtherPlayerState {
-    const game = this.games[roomCode];
-    if (!game) throw new Error('Game not found');
-    return Object.values(game.gameState.seats).find((player) => player.userId === userId);
-  }
-
-  getPlayerByPlayerId(roomCode: string, playerId: string): PlayerState | OtherPlayerState {
-    const game = this.games[roomCode];
-    if (!game) throw new Error('Game not found');
-    return Object.values(game.gameState.seats).find((player) => player.playerId === playerId);
-  }
-
-  mapPlayerStateToOtherPlayerState(playerState: PlayerState): OtherPlayerState {
-    if (!playerState) return null;
-    return {
-      playerId: playerState.playerId,
-      name: playerState.name,
-      type: playerState.type,
-      cardsInHand: playerState.hand?.length,
-      status: playerState.status,
-    };
-  }
-
-  // Remove a player from a game but preserve their state
-  removePlayer(roomCode: string, playerId: string): void {
-    const game = this.games[roomCode];
-    if (!game) throw new Error('Game not found');
-    const playerByPlayerId = Object.values(game.gameState.players).find((player) => player.playerId === playerId);
-    // Check if player is in the game
-    if (!playerByPlayerId) {
-      throw new Error('Player not in game');
-    }
-
-    // Remove from active players but keep their state in gameState.players
-    game.gameState.players[playerByPlayerId.playerId].playerId = null;
-    game.gameState.players[playerByPlayerId.playerId].name = null;
-
-    // If no players left, consider cleaning up the game
-    if (Object.keys(game.gameState.players).length === 0) {
-      // Optional: Add a timeout to remove the game if no one rejoins
-      setTimeout(() => {
-        const currentGame = this.games[roomCode];
-        if (currentGame && Object.keys(currentGame.gameState.players).length === 0) {
-          this.removeGame(roomCode);
-        }
-      }, 1000 * 60 * 30); // 30 minutes
-    }
-  }
-
-  // Add a helper method to rejoin a game
-  rejoinGame(roomCode: string, playerId: string, playerName: string): PlayerState {
-    const game = this.games[roomCode];
-    if (!game) throw new Error('Game not found');
-
-    // Find the player's existing state by checking all players
-    const existingPlayerState = Object.values(game.gameState.players).find((player) => player.playerId === playerId);
-
-    if (!existingPlayerState) {
-      throw new Error('No existing player state found');
-    }
-
-    // Re-add to active players with their original team
-    game.gameState.players[existingPlayerState.playerId] = {
-      ...existingPlayerState,
-      playerId,
-      name: playerName,
-    };
-
-    return game.gameState.players[existingPlayerState.playerId];
-  }
-
-  // Add a helper method to check if a game has started
-  isGameStarted(roomCode: string): boolean {
-    const game = this.games[roomCode];
-    if (!game) throw new Error('Game not found');
-    return game.gameState.hasStarted;
-  }
-
-  leaveGame(gameId: string, userId: string): void {
-    const game = this.games[gameId];
-    if (!game) throw new Error('Game not found');
-
-    // Remove player from the game
-    this.removePlayer(gameId, userId);
-
-    // If game hasn't started and no players left, remove the game
-    if (!game.gameState.hasStarted && Object.keys(game.gameState.players).length === 0) {
-      this.removeGame(gameId);
-    }
   }
 
   private broadcast(roomCode: string, message: WebSocketMessage) {

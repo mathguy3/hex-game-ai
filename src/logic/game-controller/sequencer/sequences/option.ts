@@ -12,14 +12,14 @@ export const option = {
       operationType: 'option',
       nextOperation: 'interact',
       isComplete: false,
-      sequenceItem: serverSession.sequenceState.sequenceItem,
+      nextSequenceItem: serverSession.sequenceState.nextSequenceItem,
       bag: serverSession.sequenceState.bag,
     };
 
-    console.log('option', serverSession.sequenceState.sequenceItem);
+    //console.log('option', serverSession.sequenceState.nextSequenceItem);
 
     serverSession.gameSession.localControl = {
-      activeOptions: serverSession.sequenceState.sequenceItem.options,
+      activeOptions: serverSession.sequenceState.nextSequenceItem.options,
     };
 
     // activate options
@@ -38,7 +38,7 @@ export const option = {
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    console.log('continueOp option', serverSession.sequenceState.path);
+    //console.log('continueOp option', serverSession.sequenceState.path);
     serverSession.sequenceState.isComplete = true;
     return serverSession;
   },

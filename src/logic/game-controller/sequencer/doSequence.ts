@@ -1,4 +1,5 @@
 import { ServerSession } from '../../../server/games/gameManager';
+import { doIf } from '../../if/if-engine-3/doIf';
 import { isPlayerTurn } from '../../util/isPlayerTurn';
 import * as handlers from './sequences';
 
@@ -59,12 +60,7 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
   const { gameSession, sequenceState } = game;
   const { gameState } = gameSession;
   const nextOperation = sequenceState.nextOperation;
-  console.log(
-    'starting',
-    sequenceState.sequenceItem.name,
-    sequenceState.path,
-    nextOperation ? '-> ' + nextOperation : '<--'
-  );
+  console.log('starting', sequenceState.path, nextOperation ? '-> ' + nextOperation : '<--');
   if (nextOperation == 'start' && request.type !== 'start') {
     return game;
   }
@@ -78,8 +74,29 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
   }
 
   if (nextOperation) {
+    //console.log('nextOperation', nextOperation);
+    if (sequenceState.nextSequenceItem.if) {
+      const { if: ifCondition } = sequenceState.nextSequenceItem;
+      //console.log('if condition', ifCondition, sequenceState.bag.references);
+      const result = doIf({
+        ifItem: ifCondition,
+        model: {
+          context: game.gameSession.gameState,
+          ...sequenceState.bag.references,
+        },
+        procedures: game.gameSession.gameDefinition.definitions.procedures,
+      });
+      //console.log('if result', result);
+      if (!result) {
+        console.log('skipping', sequenceState.path + '-> ' + nextOperation);
+        sequenceState.nextOperation = undefined;
+        sequenceState.nextSequenceItem = undefined;
+        return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+      }
+    }
     // Need to make sure subject and target are setup first
-    const sequenceHandler = handlers[nextOperation];
+    const optionWithInteract = nextOperation.includes('interact') ? request.type : nextOperation;
+    const sequenceHandler = handlers[optionWithInteract];
 
     if (!sequenceHandler) {
       console.log('No sequence handler found for', nextOperation);
@@ -88,7 +105,16 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
 
     game = sequenceHandler.startOp(game, request);
     game.activeContexts[sequenceState.path] = game.sequenceState;
+    gameSession.gameState.activeStep = game.sequenceState.path;
+    gameSession.gameState.history.push(game.sequenceState.path);
   } else {
+    if (sequenceState.path == 'start') {
+      console.log('END OF GAME', sequenceState.isGameOver);
+      game.gameSession.gameState.isComplete = true;
+      broadcast();
+      return game;
+    }
+    //console.log('no next operation', sequenceState.path);
     const operation = handlers[sequenceState.operationType];
     console.log('revisiting seq', sequenceState.path, sequenceState.operationType, operation);
 
@@ -106,6 +132,7 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
       };
     }
     gameSession.gameState.activeStep = game.sequenceState.path;
+    gameSession.gameState.history.push(game.sequenceState.path);
   }
 
   if (nextOperation == 'start') {

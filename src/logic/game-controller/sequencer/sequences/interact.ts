@@ -1,36 +1,46 @@
 import { ServerSession } from '../../../../server/games/gameManager';
 import { ActionRequest, InteractActionRequest } from '../doSequence';
-import { selectCards } from './interactions/selectCards';
-import { playCard } from './interactions/playCard';
-import { space } from './interactions/space';
-const interactionHandlers = {
-  selectCards,
-  playCard,
-  space,
-};
 
 export const interact = {
   startOp: (serverSession: ServerSession, request: InteractActionRequest) => {
     if (request.type !== 'interact') {
       throw new Error('wrong request type, should be interact');
     }
-    const interactionHandler = interactionHandlers[request.kind];
 
-    console.log('interact', serverSession.sequenceState.sequenceItem);
+    //console.log('interact', serverSession.sequenceState.nextSequenceItem);
 
-    const option = serverSession.sequenceState.sequenceItem.options.find(
-      (x) =>
-        Object.keys(x)[0] === (request.kind === 'selectCards' || request.kind === 'playCard' ? 'card' : request.kind)
-    );
+    const optionKey = request.kind === 'selectCards' || request.kind === 'playCard' ? 'card' : request.kind;
+    const option = serverSession.sequenceState.nextSequenceItem.options.find((x) => Object.keys(x)[0] === optionKey);
 
-    if (!interactionHandler) {
-      throw new Error(`No handler found for subject type: ${request.kind}`);
+    const nextPath = serverSession.sequenceState.path + '.interact';
+    serverSession.gameSession.gameState.activeStep = nextPath;
+    serverSession.gameSession.localControl = null;
+
+    const nextOperation = request.kind;
+    if (!nextOperation) {
+      throw new Error('No next operation found');
     }
+    const nextSequenceItem = option[optionKey];
 
-    return interactionHandler.resolve(serverSession, option, request);
+    serverSession.sequenceState = {
+      previousContext: serverSession.sequenceState,
+      path: nextPath,
+      operationType: 'interact',
+      isComplete: false,
+      nextOperation,
+      nextSequenceItem,
+      autoContinue: true,
+      localBag: {
+        interactRequest: request,
+      },
+      bag: serverSession.sequenceState.bag,
+    };
+
+    return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
     serverSession.sequenceState.isComplete = true;
+
     return serverSession;
   },
 };

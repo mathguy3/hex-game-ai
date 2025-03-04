@@ -12,13 +12,13 @@ export const announce = {
       isComplete: true,
       bag: serverSession.sequenceState.bag,
       nextOperation: 'ackAnnounce',
-      sequenceItem: serverSession.sequenceState.sequenceItem,
+      nextSequenceItem: serverSession.sequenceState.nextSequenceItem,
     };
     serverSession.gameSession.localControl = {
       activeOptions: [],
       activeAnnounce: {
-        to: serverSession.sequenceState.sequenceItem.to,
-        message: serverSession.sequenceState.sequenceItem.message,
+        to: serverSession.sequenceState.nextSequenceItem.to,
+        message: serverSession.sequenceState.nextSequenceItem.message,
       },
     };
     return serverSession;

@@ -1,6 +1,6 @@
 import { useParams, Navigate } from 'react-router-dom';
 
-import { Button, Stack } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useClient } from '../../../logic/client';
 import { CardManager } from '../../CardManager/CardManager';
@@ -10,6 +10,7 @@ import { UIStart } from '../../GameUI/UI/UIStart';
 import { GameSessionProvider } from '../../../logic/game-controller/context/GameSessionProvider';
 import { MapSelectionProvider } from '../../../logic/game-controller/context/MapSelectionProvider';
 import { AnnounceHandler } from '../../../logic/game-controller/context/AnnounceHandler';
+import { WinCondition } from '../../../logic/game-controller/context/WinCondition';
 
 export const GamePage: React.FC = () => {
   const navigate = useNavigate();
@@ -46,8 +47,10 @@ export const GamePage: React.FC = () => {
           Continue Game
         </Button>
       </Stack>
+
       <GameSessionProvider roomCode={roomCode}>
         <AnnounceHandler />
+        <WinCondition />
         <MapSelectionProvider>
           <DragStateProvider>
             <CardManager>

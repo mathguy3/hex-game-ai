@@ -8,7 +8,7 @@ export const field = {
   startOp: (context: Context) => {
     const keys = Object.keys(context.ifItem);
     if (keys.length !== 1) {
-      console.log('field', context, keys);
+      //console.log('field', context, keys);
       throw new Error('Field operation requires exactly one field');
     }
     const updatedContext = selectNext(context);

@@ -29,7 +29,7 @@ export const equals = {
       //console.log('equals set', context.previousContext.previousContext, field, context.bag.result);
       context.previousContext.previousContext.modelItem[field] = context.bag.result;
     } else {
-      //console.log('equals', context, context.bag.result);
+      console.log('equals', context.modelItem, context.bag.result);
       context.bag.result = context.modelItem == context.bag.result;
     }
     return { ...context, isComplete: true };

@@ -12,7 +12,7 @@ import { startGame } from './games/startGame';
 import { continueGame } from './games/continueGame';
 import { interact } from './games/interact';
 import { ackAnnounce } from './games/ackAnnounce';
-
+import { updateName } from './games/updateName';
 const serverRoutes = {
   id,
   chat,
@@ -27,6 +27,7 @@ const serverRoutes = {
   interact,
   listUsers,
   ackAnnounce,
+  updateName,
 };
 
 function listUsers() {

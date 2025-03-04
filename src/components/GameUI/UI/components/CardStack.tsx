@@ -6,7 +6,7 @@ import { InnerCard } from '../../../Card/InnerCard';
 import { useDragState } from '../../../CardManager/DragStateProvider';
 import { DroppableCard } from '../../../CardManager/DroppableCard';
 import { CardStackUIModel } from '../UI';
-import { mapStyles } from '../utils/mapStyles';
+import { useGameSession } from '../../../../logic/game-controller/context/GameSessionProvider';
 
 const cardsBasedOnId = (id: string) => ({
   context: {
@@ -18,8 +18,14 @@ const cardsBasedOnId = (id: string) => ({
 
 export const CardStack = ({ id, type, disabled, styles, content, properties, filter }: CardStackUIModel) => {
   const { isDragging, activeCard } = useDragState();
+  const { gameSession } = useGameSession();
+  const { doEval } = useIf(gameSession?.gameState);
   const mappedStyles = { ...styles };
-  const testCards = useMemo(() => [], []);
+  const cards = useMemo(() => {
+    const contentCards = content ? doEval(content) : [];
+    const finalCards = contentCards || doEval(cardsBasedOnId(id));
+    return finalCards;
+  }, [content]);
 
   const isDisabled = disabled;
   const matchesFilter = useMemo(() => !filter || filter, [filter]);
@@ -45,14 +51,14 @@ export const CardStack = ({ id, type, disabled, styles, content, properties, fil
         boxShadow: isDragging && matchesFilter ? '0 0 10px rgba(255, 255, 0, 0.5)' : 'none',
       }}
     >
-      {testCards.map((card, index) => (
+      {cards.map((card, index) => (
         <StackedCard
           key={card.id}
           isDisabled={isDisabled}
           stackId={id}
           card={card}
           index={index}
-          isLast={index === testCards.length - 1}
+          isLast={index === cards.length - 1}
         />
       ))}
       {isDragging && !isDisabled && matchesFilter && (

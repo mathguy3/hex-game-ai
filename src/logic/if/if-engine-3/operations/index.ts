@@ -20,3 +20,6 @@ export { multiply } from './math/multiply';
 export { subtract } from './math/subtract';
 export { shuffle } from './array/shuffle';
 export { min } from './array/min';
+export { spaces } from './indexes/spaces';
+export { filter } from './array/filter';
+export { sort } from './array/sort';

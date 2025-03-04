@@ -2,16 +2,17 @@ import { Box, Button } from '@mui/material';
 import { MapInteractionCSS } from 'react-map-interaction';
 import { isDev } from '../../configuration/constants';
 import { useDragState } from '../CardManager/DragStateProvider';
-import PlayerList from './HexMap/PlayerList';
+import { PlayerList } from './HexMap/PlayerList';
 import { useGameSession } from '../../logic/game-controller/context/GameSessionProvider';
 import { useClient } from '../../logic/client';
+import { GameHistory } from './HexMap/GameHistory';
 
 export const TableFrame = ({ children }: React.PropsWithChildren) => {
   const { isDragging } = useDragState();
   const { user } = useClient();
   const { gameSession } = useGameSession();
   const { gameState, gameDefinition } = gameSession;
-  const ui = (gameDefinition.ui as any).zone;
+  const ui = (gameDefinition.ui.shared as any).zone;
   //console.log(gameDefinition.ui);
 
   const primaryWidth = ui.styles?.width ?? 1;
@@ -39,7 +40,7 @@ export const TableFrame = ({ children }: React.PropsWithChildren) => {
         </Box>
       )*/}
 
-      {isDev && (
+      <>
         <Box position="absolute" top="20px" right="10px" zIndex={1000}>
           {/*Object.values(localState.selectionState).map((x) => (
             <SelectionInfo key={x.key} item={x} />
@@ -53,7 +54,6 @@ export const TableFrame = ({ children }: React.PropsWithChildren) => {
               borderRadius: 1,
             }}
           >
-            <Box>{gameState.activeStep}</Box>
             <PlayerList
               seatConfig={gameDefinition.definitions.seats}
               seats={gameState.seats}
@@ -62,7 +62,20 @@ export const TableFrame = ({ children }: React.PropsWithChildren) => {
             />
           </Box>
         </Box>
-      )}
+        <Box position="absolute" bottom="20px" right="10px" zIndex={1}>
+          <Box
+            sx={{
+              bgcolor: 'background.paper',
+              p: 1,
+              mt: 2,
+              border: '1px solid grey',
+              borderRadius: 1,
+            }}
+          >
+            <GameHistory history={gameState.history} />
+          </Box>
+        </Box>
+      </>
       <MapInteractionCSS
         minScale={0.1}
         maxScale={10}

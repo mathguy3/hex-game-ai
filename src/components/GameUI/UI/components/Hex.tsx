@@ -20,6 +20,7 @@ type HexProps = {
   isSelected: boolean;
   preview: Record<string, any>;
   onClick: () => void;
+  transition: any;
 };
 
 const previewColor = {
@@ -29,7 +30,7 @@ const previewColor = {
   targeted: 'red',
 };
 
-export const Hex = React.memo(({ id, coordinates, data, isSelected, preview, onClick }: HexProps) => {
+export const Hex = React.memo(({ id, coordinates, data, isSelected, preview, onClick, transition }: HexProps) => {
   const { left, top } = offsetFromCoordinates(coordinates);
 
   const { handleTouchStart, handleTouchEnd, handleTouchCancel } = useTouchTap(onClick);
@@ -42,6 +43,29 @@ export const Hex = React.memo(({ id, coordinates, data, isSelected, preview, onC
   if (data?.slot) {
     //console.log('properties', data?.slot?.properties);
   }
+
+  let transitionOffset = { left: 0, top: 0 };
+  let transitionOpacity = 1;
+  if (transition) {
+    if (transition.to.store === 'supply') {
+      transitionOpacity = 0;
+      transitionOffset = { left: 0, top: -100 };
+    } else {
+      console.log('hex transitions', id, transition);
+      const isTransitionItem = data[transition.from.link];
+      console.log('isTransitionItem', isTransitionItem);
+      const toCoordinates = transition.toItem.coordinates;
+      const fromCoordinates = transition.fromItem.coordinates;
+      const transitionVector = {
+        q: toCoordinates.q - fromCoordinates.q,
+        r: toCoordinates.r - fromCoordinates.r,
+        s: toCoordinates.s - fromCoordinates.s,
+      };
+      console.log('transitionVector', transitionVector);
+      transitionOffset = offsetFromCoordinates(transitionVector);
+      console.log('transitionOffset', transitionOffset);
+    }
+  }
   return (
     <Box
       position="absolute"
@@ -53,7 +77,7 @@ export const Hex = React.memo(({ id, coordinates, data, isSelected, preview, onC
       alignItems="center"
       justifyContent="center"
       onClick={() => {
-        console.log('onClick direct', id);
+        //console.log('onClick direct', id);
         onClick();
       }}
       onTouchStart={handleTouchStart}
@@ -67,7 +91,21 @@ export const Hex = React.memo(({ id, coordinates, data, isSelected, preview, onC
           {data?.slot?.properties.health}
         </Box>
       </Box>
-      {data?.slot && <Box zIndex={2}>{tokenIcon[data.slot.kind] ?? NoPhotographyIcon}</Box>}
+      {data?.slot && (
+        <Box
+          zIndex={2}
+          sx={
+            transition
+              ? {
+                  transition: 'all 0.75s ease-in-out',
+                  transform: `translate(${transitionOffset.left}px, ${transitionOffset.top}px)`,
+                }
+              : {}
+          }
+        >
+          {tokenIcon[data.slot.kind] ?? NoPhotographyIcon}
+        </Box>
+      )}
     </Box>
   );
 });

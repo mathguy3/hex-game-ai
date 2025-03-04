@@ -7,8 +7,8 @@ export const getNextOperation = (context: Context) => {
 };
 
 export const getOperation = (ifItem: Context['ifItem']) => {
-  const fields = ifItem === null ? [] : Object.keys(ifItem);
   const simpleType = isSimpleType(ifItem);
+  const fields = simpleType ? [] : Object.keys(ifItem);
 
   const operationType = simpleType
     ? 'simple'

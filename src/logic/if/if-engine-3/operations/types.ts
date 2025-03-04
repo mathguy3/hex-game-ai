@@ -37,12 +37,13 @@ export type SequencerContext = {
 
   sequenceIndex?: number;
   isComplete: boolean;
+  isGameOver?: boolean;
   autoContinue?: boolean;
   withBroadcast?: boolean;
   localBag?: Record<string, any>;
 
   nextOperation?: string;
-  sequenceItem: any;
+  nextSequenceItem: any;
 
   bag: any;
 };

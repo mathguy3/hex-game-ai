@@ -11,6 +11,7 @@ export type SeatDefinition = {
   isOpen?: boolean;
   isAi?: boolean;
   teamId?: string;
+  isConfigurable?: boolean;
 };
 
 export type GameConfig = {
@@ -27,14 +28,14 @@ type Definitions = {
   cards: Record<string, CardDefinition>;
   tokens?: Record<string, TokenDefinition>;
   sequence: Sequence;
+  winCondition?: IF;
 };
 
 export type GameDefinition = {
   config: GameConfig;
   data?: Record<string, any>;
   definitions: Definitions;
-  ui?: UIModel;
-  winCondition?: IF;
+  ui?: { shared: UIModel; player: UIModel };
 };
 
 export type CardDefinition = {
@@ -122,6 +123,7 @@ export type ActionHistory = {
 
 export type GameState = {
   hasStarted: boolean;
+  isComplete: boolean;
   activeId: string;
   seats: Record<
     string,
@@ -134,6 +136,7 @@ export type GameState = {
   >;
   data: Record<string, any>;
   activeStep: string;
+  history: string[];
 };
 
 export type LocalState = {
@@ -152,6 +155,7 @@ export type LocalControl = {
   //activeActions: Record<string, TileSet>;
   activeOptions: Record<string, any>[];
   activeAnnounce?: { to: string; message: string };
+  transitions?: Record<string, any>;
 };
 
 export type ActionState = {

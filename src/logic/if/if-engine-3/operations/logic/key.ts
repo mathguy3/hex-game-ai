@@ -14,8 +14,8 @@ export const key = {
     const ifNext = context.ifItem.key;
     const operationType = getOperation(ifNext).operationType;
     return {
-      type: 'eval',
       previousContext: context,
+      type: 'eval',
       path: addPath(context.path, 'key'),
       modelItem: context.modelItem,
       ifItem: getProcedure(ifNext, context.procedures),
@@ -26,7 +26,6 @@ export const key = {
   },
   revisitOp: (context: Context) => {
     if (context.localBag?.key !== undefined) {
-      // console.log('key complete', context.localBag.key);
       return {
         ...context,
         isComplete: true,
@@ -36,7 +35,6 @@ export const key = {
     if (context.bag.result === undefined) {
       throw new Error('Key statement requires a string result to work');
     }
-    // console.log('revisiting key', context.path, context.bag.result);
     const nextKey = context.bag.result;
     const ifNext = context.previousContext.ifItem.value;
     const { operationType } = getOperation(ifNext);

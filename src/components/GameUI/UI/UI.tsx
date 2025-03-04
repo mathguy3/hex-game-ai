@@ -3,6 +3,7 @@ import { Button } from './components/Button';
 import { CardStack } from './components/CardStack';
 import { TokenStack } from './components/TokenStack';
 import { Zone } from './components/Zone';
+import { Text } from './components/Text';
 
 export const UIType = {
   Zone: 'zone',
@@ -10,6 +11,7 @@ export const UIType = {
   CardStack: 'cardStack',
   TokenStack: 'tokenStack',
   HexMap: 'hexMap',
+  Text: 'text',
 } as const;
 type BaseUIModel = {
   id: string;
@@ -62,12 +64,18 @@ export type HexMapUIModel = BaseUIModel & {
   };
 };
 
+export type TextUIModel = BaseUIModel & {
+  type: typeof UIType.Text;
+  content?: string | any;
+};
+
 export type UIModel =
   | { zone: ZoneUIModel }
   | { button: ButtonUIModel }
   | { cardStack: CardStackUIModel }
   | { tokenStack: TokenStackUIModel }
-  | { hexMap: HexMapUIModel };
+  | { hexMap: HexMapUIModel }
+  | { text: TextUIModel };
 
 export const UI = (model: UIModel) => {
   const modelType = getType(model);
@@ -80,6 +88,7 @@ export const UIComponentMap = {
   [UIType.CardStack]: CardStack,
   [UIType.TokenStack]: TokenStack,
   [UIType.HexMap]: HexMap,
+  [UIType.Text]: Text,
 };
 
 function getType(model: any) {

@@ -14,6 +14,7 @@ import { useDragState } from './DragStateProvider';
 import { DroppableCard } from './DroppableCard';
 import { useGameSession } from '../../logic/game-controller/context/GameSessionProvider';
 import { useClient } from '../../logic/client/ClientProvider';
+import { isUserActive } from '../../logic/util/isUserActive';
 
 export const CardManager = ({ children }: { children: React.ReactNode }) => {
   const { client, user } = useClient();
@@ -25,6 +26,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
   const [selected, setSelected] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const seatId = Object.values(gameSession.gameState.seats).find((x) => x.userId === user.userId)?.id;
+  const isActive = isUserActive(gameSession, user.userId);
 
   const firstCardOption = activeOptions?.find((x) => x.card);
   const firstCardOptionType = firstCardOption?.card?.select ? 'select' : 'play';
@@ -161,7 +163,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       {children}
-      {(state === 'select' || state === 'play') && isOpen && (
+      {(state === 'select' || state === 'play') && isActive && isOpen && (
         <Box position="fixed" left={0} top={0} right={0} bottom={0} bgcolor="#00000055">
           <Box
             position="absolute"
