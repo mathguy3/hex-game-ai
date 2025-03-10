@@ -2,28 +2,31 @@ import { procedures } from './procedures';
 import { basic } from './cards';
 import BlinkBlade from '../../../images/backgrounds/blinkblade-board.png';
 import { attackCard } from './cards/attack/attackCard';
+import blinkblade from '../../../images/tokens/blinkblade.png';
+import enemy from '../../../images/tokens/enemy.png';
+import { board } from './board';
 
-const basicModifiers = [
-  attackCard('attackMinusTwo', -2),
-  attackCard('attackMinusOne', -1),
-  attackCard('attackMinusOne', -1),
-  attackCard('attackMinusOne', -1),
-  attackCard('attackMinusOne', -1),
-  attackCard('attackMinusOne', -1),
-  attackCard('attackPlusOne', 1),
-  attackCard('attackPlusOne', 1),
-  attackCard('attackPlusOne', 1),
-  attackCard('attackPlusOne', 1),
-  attackCard('attackPlusOne', 1),
-  attackCard('attackPlusTwo', 2),
-  attackCard('attackZero', 0),
-  attackCard('attackZero', 0),
-  attackCard('attackZero', 0),
-  attackCard('attackZero', 0),
-  attackCard('attackZero', 0),
-  attackCard('attackZero', 0),
-  attackCard('attackTimesTwo', 0, 2),
-  attackCard('attackMiss', 0, 0),
+const makeBasicModifiers = (prefix?: string) => [
+  { id: `${prefix}MinusTwo`, ...attackCard('minusTwo', -2) },
+  { id: `${prefix}MinusOne1`, ...attackCard('minusOne', -1) },
+  { id: `${prefix}MinusOne2`, ...attackCard('minusOne', -1) },
+  { id: `${prefix}MinusOne3`, ...attackCard('minusOne', -1) },
+  { id: `${prefix}MinusOne4`, ...attackCard('minusOne', -1) },
+  { id: `${prefix}MinusOne5`, ...attackCard('minusOne', -1) },
+  { id: `${prefix}PlusOne1`, ...attackCard('plusOne', 1) },
+  { id: `${prefix}PlusOne2`, ...attackCard('plusOne', 1) },
+  { id: `${prefix}PlusOne3`, ...attackCard('plusOne', 1) },
+  { id: `${prefix}PlusOne4`, ...attackCard('plusOne', 1) },
+  { id: `${prefix}PlusOne5`, ...attackCard('plusOne', 1) },
+  { id: `${prefix}PlusTwo`, ...attackCard('plusTwo', 2) },
+  { id: `${prefix}Zero1`, ...attackCard('zero', 0) },
+  { id: `${prefix}Zero2`, ...attackCard('zero', 0) },
+  { id: `${prefix}Zero3`, ...attackCard('zero', 0) },
+  { id: `${prefix}Zero4`, ...attackCard('zero', 0) },
+  { id: `${prefix}Zero5`, ...attackCard('zero', 0) },
+  { id: `${prefix}Zero6`, ...attackCard('zero', 0) },
+  { id: `${prefix}TimesTwo`, ...attackCard('timesTwo', 0, 2) },
+  { id: `${prefix}Miss`, ...attackCard('miss', 0, 0) },
 ];
 
 export const gloomhaven = {
@@ -44,13 +47,13 @@ export const gloomhaven = {
     procedures,
     cards: {
       basic,
-      attackMinusTwo: attackCard('attackMinusTwo', -2),
-      attackMinusOne: attackCard('attackMinusOne', -1),
-      attackPlusOne: attackCard('attackPlusOne', 1),
-      attackPlusTwo: attackCard('attackPlusTwo', 2),
-      attackZero: attackCard('attackZero', 0),
-      attackTimesTwo: attackCard('attackTimesTwo', 0, 2),
-      attackMiss: attackCard('attackMiss', 0, 0),
+      minusTwo: attackCard('minusTwo', -2),
+      minusOne: attackCard('minusOne', -1),
+      plusOne: attackCard('plusOne', 1),
+      plusTwo: attackCard('plusTwo', 2),
+      zero: attackCard('zero', 0),
+      timesTwo: attackCard('timesTwo', 0, 2),
+      miss: attackCard('miss', 0, 0),
     },
     sequence: {
       round: {
@@ -58,9 +61,11 @@ export const gloomhaven = {
         breakIf: {
           spaces: {
             filter: {
-              properties: {
-                isEnemy: {
-                  equals: true,
+              character: {
+                properties: {
+                  isEnemy: {
+                    equals: true,
+                  },
                 },
               },
             },
@@ -72,142 +77,27 @@ export const gloomhaven = {
           },
         },
         phases: [
+          '%shuffleModifiers',
           {
             announce: {
               to: 'all',
               message: 'Round Start',
-              if: {
-                context: {
-                  activeId: {
-                    equals: 'player2',
-                  },
-                },
-              },
+              if: 'isPlayerAction',
             },
           },
-          {
-            turn: {
-              name: 'Select Card',
-              allPlayers: true,
-              async: true,
-              actions: [
-                {
-                  announce: {
-                    to: 'active',
-                    message: 'Select 2 cards',
-                  },
-                },
-                {
-                  option: {
-                    options: [
-                      {
-                        card: {
-                          select: {
-                            count: 2,
-                            from: 'hand',
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-                {
-                  action: {
-                    actions: [
-                      {
-                        context: {
-                          data: {
-                            key: {
-                              context: {
-                                activeId: '$String',
-                              },
-                            },
-                            value: {
-                              properties: {
-                                initiative: {
-                                  equals: {
-                                    context: {
-                                      data: {
-                                        key: {
-                                          context: {
-                                            activeId: '$String',
-                                          },
-                                        },
-                                        value: {
-                                          selectedCards: {
-                                            min: {
-                                              properties: {
-                                                initiative: '$Number',
-                                              },
-                                            },
-                                          },
-                                        },
-                                      },
-                                    },
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-          {
-            turn: {
-              name: 'Play Card',
-              allPlayers: true,
-              rotate: true,
-              order: {
-                properties: {
-                  initiative: '$Number',
-                },
-              },
-              actions: [
-                {
-                  option: {
-                    options: [
-                      {
-                        card: {
-                          play: {
-                            from: 'selectedCards',
-                            remove: true,
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-                {
-                  option: {
-                    options: [
-                      {
-                        card: {
-                          play: {
-                            from: 'selectedCards',
-                            remove: true,
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
+          '%playerSelectCards',
+          '%playerTurn',
         ],
       },
     },
     winCondition: {
       spaces: {
         filter: {
-          properties: {
-            isEnemy: {
-              equals: true,
+          character: {
+            properties: {
+              isEnemy: {
+                equals: true,
+              },
             },
           },
         },
@@ -220,267 +110,10 @@ export const gloomhaven = {
     },
   },
   data: {
-    board: {
-      // Center
-      '0.0.0': {
-        id: '0.0.0',
-        coordinates: { q: 0, r: 0, s: 0 },
-        slot: { type: 'token', kind: 'enemy', properties: { isEnemy: true, health: 2 } },
-      },
-
-      // Ring 1
-      '0.1.-1': {
-        id: '0.1.-1',
-        coordinates: { q: 0, r: 1, s: -1 },
-      },
-      '1.0.-1': {
-        id: '1.0.-1',
-        coordinates: { q: 1, r: 0, s: -1 },
-      },
-      '1.-1.0': {
-        id: '1.-1.0',
-        coordinates: { q: 1, r: -1, s: 0 },
-      },
-      '0.-1.1': {
-        id: '0.-1.1',
-        coordinates: { q: 0, r: -1, s: 1 },
-      },
-      '-1.0.1': {
-        id: '-1.0.1',
-        coordinates: { q: -1, r: 0, s: 1 },
-      },
-      '-1.1.0': {
-        id: '-1.1.0',
-        coordinates: { q: -1, r: 1, s: 0 },
-      },
-
-      // Ring 2
-      '0.2.-2': {
-        id: '0.2.-2',
-        coordinates: { q: 0, r: 2, s: -2 },
-      },
-      '1.1.-2': {
-        id: '1.1.-2',
-        coordinates: { q: 1, r: 1, s: -2 },
-      },
-      '2.0.-2': {
-        id: '2.0.-2',
-        coordinates: { q: 2, r: 0, s: -2 },
-      },
-      '2.-1.-1': {
-        id: '2.-1.-1',
-        coordinates: { q: 2, r: -1, s: -1 },
-      },
-      '2.-2.0': {
-        id: '2.-2.0',
-        coordinates: { q: 2, r: -2, s: 0 },
-      },
-      '1.-2.1': {
-        id: '1.-2.1',
-        coordinates: { q: 1, r: -2, s: 1 },
-      },
-      '0.-2.2': {
-        id: '0.-2.2',
-        coordinates: { q: 0, r: -2, s: 2 },
-      },
-      '-1.-1.2': {
-        id: '-1.-1.2',
-        coordinates: { q: -1, r: -1, s: 2 },
-      },
-      '-2.0.2': {
-        id: '-2.0.2',
-        coordinates: { q: -2, r: 0, s: 2 },
-      },
-      '-2.1.1': {
-        id: '-2.1.1',
-        coordinates: { q: -2, r: 1, s: 1 },
-      },
-      '-2.2.0': {
-        id: '-2.2.0',
-        coordinates: { q: -2, r: 2, s: 0 },
-      },
-      '-1.2.-1': {
-        id: '-1.2.-1',
-        coordinates: { q: -1, r: 2, s: -1 },
-      },
-
-      // Ring 3
-      '0.3.-3': {
-        id: '0.3.-3',
-        coordinates: { q: 0, r: 3, s: -3 },
-        slot: { type: 'token', kind: 'blinkblade', properties: { playerId: 'player2', health: 10 } },
-      },
-      '1.2.-3': {
-        id: '1.2.-3',
-        coordinates: { q: 1, r: 2, s: -3 },
-        slot: { type: 'token', kind: 'blinkblade', properties: { playerId: 'player1', health: 10 } },
-      },
-      '2.1.-3': {
-        id: '2.1.-3',
-        coordinates: { q: 2, r: 1, s: -3 },
-        slot: { type: 'token', kind: 'blinkblade', properties: { playerId: 'player3', health: 10 } },
-      },
-      '3.0.-3': {
-        id: '3.0.-3',
-        coordinates: { q: 3, r: 0, s: -3 },
-      },
-      '3.-1.-2': {
-        id: '3.-1.-2',
-        coordinates: { q: 3, r: -1, s: -2 },
-      },
-      '3.-2.-1': {
-        id: '3.-2.-1',
-        coordinates: { q: 3, r: -2, s: -1 },
-      },
-      '3.-3.0': {
-        id: '3.-3.0',
-        coordinates: { q: 3, r: -3, s: 0 },
-      },
-      '2.-3.1': {
-        id: '2.-3.1',
-        coordinates: { q: 2, r: -3, s: 1 },
-      },
-      '1.-3.2': {
-        id: '1.-3.2',
-        coordinates: { q: 1, r: -3, s: 2 },
-      },
-      '0.-3.3': {
-        id: '0.-3.3',
-        coordinates: { q: 0, r: -3, s: 3 },
-      },
-      '-1.-2.3': {
-        id: '-1.-2.3',
-        coordinates: { q: -1, r: -2, s: 3 },
-      },
-      '-2.-1.3': {
-        id: '-2.-1.3',
-        coordinates: { q: -2, r: -1, s: 3 },
-      },
-      '-3.0.3': {
-        id: '-3.0.3',
-        coordinates: { q: -3, r: 0, s: 3 },
-      },
-      '-3.1.2': {
-        id: '-3.1.2',
-        coordinates: { q: -3, r: 1, s: 2 },
-      },
-      '-3.2.1': {
-        id: '-3.2.1',
-        coordinates: { q: -3, r: 2, s: 1 },
-      },
-      '-3.3.0': {
-        id: '-3.3.0',
-        coordinates: { q: -3, r: 3, s: 0 },
-      },
-      '-2.3.-1': {
-        id: '-2.3.-1',
-        coordinates: { q: -2, r: 3, s: -1 },
-      },
-      '-1.3.-2': {
-        id: '-1.3.-2',
-        coordinates: { q: -1, r: 3, s: -2 },
-      },
-
-      // Ring 4
-      '0.4.-4': {
-        id: '0.4.-4',
-        coordinates: { q: 0, r: 4, s: -4 },
-      },
-      '1.3.-4': {
-        id: '1.3.-4',
-        coordinates: { q: 1, r: 3, s: -4 },
-      },
-      '2.2.-4': {
-        id: '2.2.-4',
-        coordinates: { q: 2, r: 2, s: -4 },
-      },
-      '3.1.-4': {
-        id: '3.1.-4',
-        coordinates: { q: 3, r: 1, s: -4 },
-      },
-      '4.0.-4': {
-        id: '4.0.-4',
-        coordinates: { q: 4, r: 0, s: -4 },
-      },
-      '4.-1.-3': {
-        id: '4.-1.-3',
-        coordinates: { q: 4, r: -1, s: -3 },
-      },
-      '4.-2.-2': {
-        id: '4.-2.-2',
-        coordinates: { q: 4, r: -2, s: -2 },
-      },
-      '4.-3.-1': {
-        id: '4.-3.-1',
-        coordinates: { q: 4, r: -3, s: -1 },
-      },
-      '4.-4.0': {
-        id: '4.-4.0',
-        coordinates: { q: 4, r: -4, s: 0 },
-      },
-      '3.-4.1': {
-        id: '3.-4.1',
-        coordinates: { q: 3, r: -4, s: 1 },
-      },
-      '2.-4.2': {
-        id: '2.-4.2',
-        coordinates: { q: 2, r: -4, s: 2 },
-      },
-      '1.-4.3': {
-        id: '1.-4.3',
-        coordinates: { q: 1, r: -4, s: 3 },
-      },
-      '0.-4.4': {
-        id: '0.-4.4',
-        coordinates: { q: 0, r: -4, s: 4 },
-      },
-      '-1.-3.4': {
-        id: '-1.-3.4',
-        coordinates: { q: -1, r: -3, s: 4 },
-      },
-      '-2.-2.4': {
-        id: '-2.-2.4',
-        coordinates: { q: -2, r: -2, s: 4 },
-      },
-      '-3.-1.4': {
-        id: '-3.-1.4',
-        coordinates: { q: -3, r: -1, s: 4 },
-      },
-      '-4.0.4': {
-        id: '-4.0.4',
-        coordinates: { q: -4, r: 0, s: 4 },
-      },
-      '-4.1.3': {
-        id: '-4.1.3',
-        coordinates: { q: -4, r: 1, s: 3 },
-      },
-      '-4.2.2': {
-        id: '-4.2.2',
-        coordinates: { q: -4, r: 2, s: 2 },
-      },
-      '-4.3.1': {
-        id: '-4.3.1',
-        coordinates: { q: -4, r: 3, s: 1 },
-      },
-      '-4.4.0': {
-        id: '-4.4.0',
-        coordinates: { q: -4, r: 4, s: 0 },
-      },
-      '-3.4.-1': {
-        id: '-3.4.-1',
-        coordinates: { q: -3, r: 4, s: -1 },
-      },
-      '-2.4.-2': {
-        id: '-2.4.-2',
-        coordinates: { q: -2, r: 4, s: -2 },
-      },
-      '-1.4.-3': {
-        id: '-1.4.-3',
-        coordinates: { q: -1, r: 4, s: -3 },
-      },
-    },
+    board,
     player1: {
       name: 'Blinkblade1',
+      isPlayer: true,
       hand: [
         { id: 'first', ...basic, properties: { initiative: 1 } },
         { id: 'second', ...basic, properties: { initiative: 2 } },
@@ -490,13 +123,14 @@ export const gloomhaven = {
         { id: 'sixth', ...basic, properties: { initiative: 6 } },
       ],
       modifierDiscard: [],
-      modifiers: [...basicModifiers],
+      modifiers: [...makeBasicModifiers('player1')],
       properties: {
         initiative: 0,
       },
     },
     player2: {
       name: 'Blinkblade2',
+      isPlayer: true,
       hand: [
         { id: 'first', ...basic, properties: { initiative: 1 } },
         { id: 'second', ...basic, properties: { initiative: 2 } },
@@ -506,13 +140,14 @@ export const gloomhaven = {
         { id: 'sixth', ...basic, properties: { initiative: 6 } },
       ],
       modifierDiscard: [],
-      modifiers: [...basicModifiers],
+      modifiers: [...makeBasicModifiers('player2')],
       properties: {
         initiative: 0,
       },
     },
     player3: {
       name: 'Blinkblade3',
+      isPlayer: true,
       hand: [
         { id: 'first', ...basic, properties: { initiative: 1 } },
         { id: 'second', ...basic, properties: { initiative: 2 } },
@@ -522,13 +157,32 @@ export const gloomhaven = {
         { id: 'sixth', ...basic, properties: { initiative: 6 } },
       ],
       modifierDiscard: [],
-      modifiers: [...basicModifiers],
+      modifiers: [...makeBasicModifiers('player3')],
       properties: {
         initiative: 0,
       },
     },
-    enemy1: { health: 10 },
-    enemy2: { health: 10 },
+    enemy1: {
+      kind: 'flameDemon',
+      isEnemy: true,
+      deck: [],
+      discard: [],
+      properties: {
+        initiative: 0,
+      },
+    },
+    enemy2: {
+      kind: 'iceDemon',
+      isEnemy: true,
+      deck: [],
+      discard: [],
+      properties: {
+        initiative: 0,
+      },
+    },
+    properties: {
+      enemyModifiers: [],
+    },
   },
   ui: {
     shared: {
@@ -549,259 +203,38 @@ export const gloomhaven = {
                 left: 500,
                 top: 500,
               },
-              spaces: {
-                // Center
-                '0.0.0': {
-                  id: '0.0.0',
-                  coordinates: { q: 0, r: 0, s: 0 },
-                },
-
-                // Ring 1
-                '0.1.-1': {
-                  id: '0.1.-1',
-                  coordinates: { q: 0, r: 1, s: -1 },
-                },
-                '1.0.-1': {
-                  id: '1.0.-1',
-                  coordinates: { q: 1, r: 0, s: -1 },
-                },
-                '1.-1.0': {
-                  id: '1.-1.0',
-                  coordinates: { q: 1, r: -1, s: 0 },
-                },
-                '0.-1.1': {
-                  id: '0.-1.1',
-                  coordinates: { q: 0, r: -1, s: 1 },
-                },
-                '-1.0.1': {
-                  id: '-1.0.1',
-                  coordinates: { q: -1, r: 0, s: 1 },
-                },
-                '-1.1.0': {
-                  id: '-1.1.0',
-                  coordinates: { q: -1, r: 1, s: 0 },
-                },
-
-                // Ring 2
-                '0.2.-2': {
-                  id: '0.2.-2',
-                  coordinates: { q: 0, r: 2, s: -2 },
-                },
-                '1.1.-2': {
-                  id: '1.1.-2',
-                  coordinates: { q: 1, r: 1, s: -2 },
-                },
-                '2.0.-2': {
-                  id: '2.0.-2',
-                  coordinates: { q: 2, r: 0, s: -2 },
-                },
-                '2.-1.-1': {
-                  id: '2.-1.-1',
-                  coordinates: { q: 2, r: -1, s: -1 },
-                },
-                '2.-2.0': {
-                  id: '2.-2.0',
-                  coordinates: { q: 2, r: -2, s: 0 },
-                },
-                '1.-2.1': {
-                  id: '1.-2.1',
-                  coordinates: { q: 1, r: -2, s: 1 },
-                },
-                '0.-2.2': {
-                  id: '0.-2.2',
-                  coordinates: { q: 0, r: -2, s: 2 },
-                },
-                '-1.-1.2': {
-                  id: '-1.-1.2',
-                  coordinates: { q: -1, r: -1, s: 2 },
-                },
-                '-2.0.2': {
-                  id: '-2.0.2',
-                  coordinates: { q: -2, r: 0, s: 2 },
-                },
-                '-2.1.1': {
-                  id: '-2.1.1',
-                  coordinates: { q: -2, r: 1, s: 1 },
-                },
-                '-2.2.0': {
-                  id: '-2.2.0',
-                  coordinates: { q: -2, r: 2, s: 0 },
-                },
-                '-1.2.-1': {
-                  id: '-1.2.-1',
-                  coordinates: { q: -1, r: 2, s: -1 },
-                },
-
-                // Ring 3
-                '0.3.-3': {
-                  id: '0.3.-3',
-                  coordinates: { q: 0, r: 3, s: -3 },
-                },
-                '1.2.-3': {
-                  id: '1.2.-3',
-                  coordinates: { q: 1, r: 2, s: -3 },
-                },
-                '2.1.-3': {
-                  id: '2.1.-3',
-                  coordinates: { q: 2, r: 1, s: -3 },
-                },
-                '3.0.-3': {
-                  id: '3.0.-3',
-                  coordinates: { q: 3, r: 0, s: -3 },
-                },
-                '3.-1.-2': {
-                  id: '3.-1.-2',
-                  coordinates: { q: 3, r: -1, s: -2 },
-                },
-                '3.-2.-1': {
-                  id: '3.-2.-1',
-                  coordinates: { q: 3, r: -2, s: -1 },
-                },
-                '3.-3.0': {
-                  id: '3.-3.0',
-                  coordinates: { q: 3, r: -3, s: 0 },
-                },
-                '2.-3.1': {
-                  id: '2.-3.1',
-                  coordinates: { q: 2, r: -3, s: 1 },
-                },
-                '1.-3.2': {
-                  id: '1.-3.2',
-                  coordinates: { q: 1, r: -3, s: 2 },
-                },
-                '0.-3.3': {
-                  id: '0.-3.3',
-                  coordinates: { q: 0, r: -3, s: 3 },
-                },
-                '-1.-2.3': {
-                  id: '-1.-2.3',
-                  coordinates: { q: -1, r: -2, s: 3 },
-                },
-                '-2.-1.3': {
-                  id: '-2.-1.3',
-                  coordinates: { q: -2, r: -1, s: 3 },
-                },
-                '-3.0.3': {
-                  id: '-3.0.3',
-                  coordinates: { q: -3, r: 0, s: 3 },
-                },
-                '-3.1.2': {
-                  id: '-3.1.2',
-                  coordinates: { q: -3, r: 1, s: 2 },
-                },
-                '-3.2.1': {
-                  id: '-3.2.1',
-                  coordinates: { q: -3, r: 2, s: 1 },
-                },
-                '-3.3.0': {
-                  id: '-3.3.0',
-                  coordinates: { q: -3, r: 3, s: 0 },
-                },
-                '-2.3.-1': {
-                  id: '-2.3.-1',
-                  coordinates: { q: -2, r: 3, s: -1 },
-                },
-                '-1.3.-2': {
-                  id: '-1.3.-2',
-                  coordinates: { q: -1, r: 3, s: -2 },
-                },
-
-                // Ring 4
-                '0.4.-4': {
-                  id: '0.4.-4',
-                  coordinates: { q: 0, r: 4, s: -4 },
-                },
-                '1.3.-4': {
-                  id: '1.3.-4',
-                  coordinates: { q: 1, r: 3, s: -4 },
-                },
-                '2.2.-4': {
-                  id: '2.2.-4',
-                  coordinates: { q: 2, r: 2, s: -4 },
-                },
-                '3.1.-4': {
-                  id: '3.1.-4',
-                  coordinates: { q: 3, r: 1, s: -4 },
-                },
-                '4.0.-4': {
-                  id: '4.0.-4',
-                  coordinates: { q: 4, r: 0, s: -4 },
-                },
-                '4.-1.-3': {
-                  id: '4.-1.-3',
-                  coordinates: { q: 4, r: -1, s: -3 },
-                },
-                '4.-2.-2': {
-                  id: '4.-2.-2',
-                  coordinates: { q: 4, r: -2, s: -2 },
-                },
-                '4.-3.-1': {
-                  id: '4.-3.-1',
-                  coordinates: { q: 4, r: -3, s: -1 },
-                },
-                '4.-4.0': {
-                  id: '4.-4.0',
-                  coordinates: { q: 4, r: -4, s: 0 },
-                },
-                '3.-4.1': {
-                  id: '3.-4.1',
-                  coordinates: { q: 3, r: -4, s: 1 },
-                },
-                '2.-4.2': {
-                  id: '2.-4.2',
-                  coordinates: { q: 2, r: -4, s: 2 },
-                },
-                '1.-4.3': {
-                  id: '1.-4.3',
-                  coordinates: { q: 1, r: -4, s: 3 },
-                },
-                '0.-4.4': {
-                  id: '0.-4.4',
-                  coordinates: { q: 0, r: -4, s: 4 },
-                },
-                '-1.-3.4': {
-                  id: '-1.-3.4',
-                  coordinates: { q: -1, r: -3, s: 4 },
-                },
-                '-2.-2.4': {
-                  id: '-2.-2.4',
-                  coordinates: { q: -2, r: -2, s: 4 },
-                },
-                '-3.-1.4': {
-                  id: '-3.-1.4',
-                  coordinates: { q: -3, r: -1, s: 4 },
-                },
-                '-4.0.4': {
-                  id: '-4.0.4',
-                  coordinates: { q: -4, r: 0, s: 4 },
-                },
-                '-4.1.3': {
-                  id: '-4.1.3',
-                  coordinates: { q: -4, r: 1, s: 3 },
-                },
-                '-4.2.2': {
-                  id: '-4.2.2',
-                  coordinates: { q: -4, r: 2, s: 2 },
-                },
-                '-4.3.1': {
-                  id: '-4.3.1',
-                  coordinates: { q: -4, r: 3, s: 1 },
-                },
-                '-4.4.0': {
-                  id: '-4.4.0',
-                  coordinates: { q: -4, r: 4, s: 0 },
-                },
-                '-3.4.-1': {
-                  id: '-3.4.-1',
-                  coordinates: { q: -3, r: 4, s: -1 },
-                },
-                '-2.4.-2': {
-                  id: '-2.4.-2',
-                  coordinates: { q: -2, r: 4, s: -2 },
-                },
-                '-1.4.-3': {
-                  id: '-1.4.-3',
-                  coordinates: { q: -1, r: 4, s: -3 },
+              hex: {
+                slots: {
+                  character: {
+                    token: {
+                      image: {
+                        if: {
+                          token: {
+                            properties: {
+                              isEnemy: {
+                                equals: true,
+                              },
+                            },
+                          },
+                        },
+                        then: enemy,
+                        else: blinkblade,
+                      },
+                      styles: {
+                        width: 60,
+                        height: 75,
+                      },
+                    },
+                  },
+                  coin: {
+                    token: {
+                      image: blinkblade,
+                      styles: {
+                        width: 60,
+                        height: 75,
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -853,8 +286,14 @@ export const gloomhaven = {
                     id: 'playerModifiers',
                     styles: {
                       position: 'absolute',
-                      left: 0,
+                      left: 600,
                       top: 0,
+                      width: 100,
+                      height: 75,
+                    },
+                    cardStyles: {
+                      width: 100,
+                      height: 75,
                     },
                     content: {
                       player: {
@@ -868,8 +307,8 @@ export const gloomhaven = {
                     id: 'playerModifierDiscard',
                     styles: {
                       position: 'absolute',
-                      left: 0,
-                      top: 0,
+                      left: 600,
+                      top: 300,
                     },
                     content: {
                       player: {

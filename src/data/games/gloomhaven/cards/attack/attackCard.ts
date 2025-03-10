@@ -1,6 +1,6 @@
-export const attackCard = (id: string, damage: number, multiplier?: number) => {
+export const attackCard = (kind: string, damage: number, multiplier?: number) => {
   return {
-    id,
+    kind,
     name: 'Attack Modifier',
     properties: {
       damage,

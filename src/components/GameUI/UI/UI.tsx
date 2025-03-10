@@ -4,6 +4,9 @@ import { CardStack } from './components/CardStack';
 import { TokenStack } from './components/TokenStack';
 import { Zone } from './components/Zone';
 import { Text } from './components/Text';
+import { Hex } from './components/Hex';
+import { Token } from './components/Token';
+import React from 'react';
 
 export const UIType = {
   Zone: 'zone',
@@ -11,7 +14,9 @@ export const UIType = {
   CardStack: 'cardStack',
   TokenStack: 'tokenStack',
   HexMap: 'hexMap',
+  Hex: 'hex',
   Text: 'text',
+  Token: 'token',
 } as const;
 type BaseUIModel = {
   id: string;
@@ -31,6 +36,7 @@ type BaseUIModel = {
   properties?: {
     [key: string]: any;
   };
+  data?: any;
 };
 export type ZoneUIModel = BaseUIModel & {
   type: typeof UIType.Zone;
@@ -49,6 +55,7 @@ export type CardStackUIModel = BaseUIModel & {
   filter?: any;
   content?: string | any;
   disabled?: boolean | any;
+  cardStyles?: any;
 };
 
 export type TokenStackUIModel = BaseUIModel & {
@@ -59,9 +66,13 @@ export type TokenStackUIModel = BaseUIModel & {
 
 export type HexMapUIModel = BaseUIModel & {
   type: typeof UIType.HexMap;
-  spaces?: {
-    [key: string]: any;
-  };
+  hex?: any;
+};
+
+export type HexUIModel = BaseUIModel & {
+  type: typeof UIType.Hex;
+  data?: any;
+  onClick?: () => void;
 };
 
 export type TextUIModel = BaseUIModel & {
@@ -69,19 +80,29 @@ export type TextUIModel = BaseUIModel & {
   content?: string | any;
 };
 
-export type UIModel =
-  | { zone: ZoneUIModel }
-  | { button: ButtonUIModel }
-  | { cardStack: CardStackUIModel }
-  | { tokenStack: TokenStackUIModel }
-  | { hexMap: HexMapUIModel }
-  | { text: TextUIModel };
+export type TokenUIModel = BaseUIModel & {
+  type: typeof UIType.Token;
+  image?: string;
+};
 
-export const UI = (model: UIModel) => {
+export type UIModel =
+  | { data?: any; onClick?: () => void } & (
+      | { zone: ZoneUIModel }
+      | { button: ButtonUIModel }
+      | { cardStack: CardStackUIModel }
+      | { tokenStack: TokenStackUIModel }
+      | { hexMap: HexMapUIModel }
+      | { hex: HexUIModel }
+      | { text: TextUIModel }
+      | { token: TokenUIModel }
+    );
+
+export const UI = React.memo((model: any) => {
   const modelType = getType(model);
   const UIComponent = UIComponentMap[modelType];
-  return <UIComponent {...(model[modelType] as any)} />;
-};
+  const { [modelType]: modelItem, ...rest } = model;
+  return <UIComponent {...modelItem} {...rest} />;
+});
 export const UIComponentMap = {
   [UIType.Zone]: Zone,
   [UIType.Button]: Button,
@@ -89,6 +110,8 @@ export const UIComponentMap = {
   [UIType.TokenStack]: TokenStack,
   [UIType.HexMap]: HexMap,
   [UIType.Text]: Text,
+  [UIType.Hex]: Hex,
+  [UIType.Token]: Token,
 };
 
 function getType(model: any) {

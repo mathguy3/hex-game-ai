@@ -5,8 +5,8 @@ export const move = {
   resolve: (serverSession: ServerSession, action: any) => {
     const { from, to } = action;
     //console.log('move action', action);
-    const { store, id, link } = from;
-    const { store: toStore, id: toId, link: toLink } = to;
+    const { source, id, slot } = from;
+    const { source: toSource, id: toId, slot: toSlot } = to;
 
     const fromResolvedId = doEval({
       ifItem: id,
@@ -18,7 +18,7 @@ export const move = {
     });
 
     const toResolvedId =
-      toStore !== 'supply'
+      toSource !== 'supply'
         ? doEval({
             ifItem: toId,
             model: {
@@ -31,12 +31,13 @@ export const move = {
 
     //console.log('move action', action, fromResolvedId, toResolvedId);
 
-    if (toStore !== 'supply') {
-      serverSession.gameSession.gameState.data[toStore][toResolvedId][toLink] =
-        serverSession.gameSession.gameState.data[store][fromResolvedId][link];
+    if (toSource !== 'supply') {
+      console.log('move', toSource, toResolvedId, toSlot, source, fromResolvedId, slot);
+      serverSession.gameSession.gameState.data[toSource][toResolvedId][toSlot] =
+        serverSession.gameSession.gameState.data[source][fromResolvedId][slot];
     }
 
-    serverSession.gameSession.gameState.data[store][fromResolvedId][link] = undefined;
+    serverSession.gameSession.gameState.data[source][fromResolvedId][slot] = undefined;
 
     serverSession.gameSession.localControl = {
       activeOptions: [],

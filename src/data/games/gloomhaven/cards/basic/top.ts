@@ -25,12 +25,12 @@ export const top = {
                 actions: [
                   {
                     targetSpace: {
-                      slot: {
+                      character: {
                         properties: {
                           health: {
                             equals: {
                               targetSpace: {
-                                slot: {
+                                character: {
                                   properties: { health: { minus: 2 } },
                                 },
                               },
@@ -47,7 +47,7 @@ export const top = {
               action: {
                 if: {
                   targetSpace: {
-                    slot: {
+                    character: {
                       properties: {
                         health: { equals: 0 },
                       },
@@ -58,16 +58,16 @@ export const top = {
                   {
                     move: {
                       from: {
-                        store: 'board',
+                        source: 'board',
                         id: {
                           targetSpace: {
                             id: '$String',
                           },
                         },
-                        link: 'slot',
+                        slot: 'character',
                       },
                       to: {
-                        store: 'supply',
+                        source: 'supply',
                       },
                     },
                   },

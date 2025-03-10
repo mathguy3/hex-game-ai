@@ -8,23 +8,31 @@ export const round = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
     const nextPath = serverSession.sequenceState.path + '.round';
     serverSession.gameSession.gameState.activeStep = nextPath;
-    serverSession.sequenceState = setIndex({
-      previousContext: serverSession.sequenceState,
-      path: nextPath,
-      operationType: 'round',
-      isComplete: false,
-      localBag: {
-        roundNumber: 0,
-        initialPlayerId: serverSession.gameSession.gameState.activeId,
+    console.log('round startOp', serverSession.sequenceState);
+    serverSession.sequenceState = setIndex(
+      {
+        previousContext: serverSession.sequenceState,
+        path: nextPath,
+        operationType: 'round',
+        isComplete: false,
+        localBag: {
+          roundNumber: 0,
+          initialPlayerId: serverSession.gameSession.gameState.activeId,
+        },
+        autoContinue: true,
+        withBroadcast: true,
+        bag: serverSession.sequenceState.bag,
       },
-      autoContinue: true,
-      withBroadcast: true,
-      bag: serverSession.sequenceState.bag,
-    });
+      serverSession.gameSession.gameDefinition.definitions.procedures
+    );
+    console.log('round startOp', serverSession.sequenceState);
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
+    serverSession.sequenceState = nextIndex(
+      serverSession.sequenceState,
+      serverSession.gameSession.gameDefinition.definitions.procedures
+    );
     //console.log('continueOp round', serverSession.sequenceState);
 
     if (serverSession.sequenceState.isComplete && serverSession.sequenceState.previousContext.nextSequenceItem.repeat) {
@@ -45,14 +53,17 @@ export const round = {
       }
       serverSession.gameSession.gameState.activeId = serverSession.sequenceState.localBag.initialPlayerId;
 
-      serverSession.sequenceState = setIndex({
-        ...serverSession.sequenceState,
-        isComplete: false,
-        localBag: {
-          ...serverSession.sequenceState.localBag,
-          roundNumber: serverSession.sequenceState.localBag.roundNumber + 1,
+      serverSession.sequenceState = setIndex(
+        {
+          ...serverSession.sequenceState,
+          isComplete: false,
+          localBag: {
+            ...serverSession.sequenceState.localBag,
+            roundNumber: serverSession.sequenceState.localBag.roundNumber + 1,
+          },
         },
-      });
+        serverSession.gameSession.gameDefinition.definitions.procedures
+      );
     }
 
     return serverSession;

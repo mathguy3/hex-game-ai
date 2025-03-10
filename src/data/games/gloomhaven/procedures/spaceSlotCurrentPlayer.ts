@@ -1,6 +1,6 @@
 export const spaceSlotCurrentPlayer = {
   space: {
-    slot: {
+    character: {
       properties: {
         playerId: {
           equals: {

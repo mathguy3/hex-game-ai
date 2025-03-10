@@ -31,5 +31,5 @@ export const getOperation = (ifItem: Context['ifItem']) => {
 };
 
 const isSimpleType = (type: Context['ifItem']) => {
-  return ['string', 'number', 'boolean'].includes(typeof type) || type === null;
+  return ['string', 'number', 'boolean'].includes(typeof type) || type === null || type === undefined;
 };

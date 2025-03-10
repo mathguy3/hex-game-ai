@@ -17,7 +17,7 @@ export const min = {
     const index = 0;
     const nextPath = addPath(context.path, 'min');
 
-    console.log('min start', context.modelItem, 'min');
+    //console.log('min start', context.modelItem, 'min');
 
     return {
       previousContext: context,
@@ -46,7 +46,7 @@ export const min = {
 
     context.localBag.index++;
     context.modelItem = arrayContext.modelItem[context.localBag.index];
-    console.log('min revisit', context.bag.result, context.localBag.index, context.modelItem);
+    //console.log('min revisit', context.bag.result, context.localBag.index, context.modelItem);
     context.localBag.itemResults.push(context.bag.result);
     context.path = addPath(arrayContext.path, 'min');
     const evalItem = arrayContext.ifItem.min;

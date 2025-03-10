@@ -27,10 +27,12 @@ export const shuffle = {
     const copy = [...context.modelItem];
 
     if (context.previousContext.type == 'set') {
+      console.log('shuffle start', context.modelItem);
       context.bag.result = context.modelItem.sort(() => Math.random() - 0.5);
       if (context.bag.result.every((item, index) => item === copy[index])) {
         context.bag.result = context.modelItem.sort(() => Math.random() - 0.5);
       }
+      console.log('shuffle result', context.bag.result);
 
       return { ...context, isComplete: true };
     } else {

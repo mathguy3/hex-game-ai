@@ -18,6 +18,15 @@ export const bottom = {
                       range: 2,
                     },
                   ],
+                  filter: [
+                    {
+                      space: {
+                        character: {
+                          equals: undefined,
+                        },
+                      },
+                    },
+                  ],
                 },
               },
             },
@@ -29,22 +38,22 @@ export const bottom = {
                   {
                     move: {
                       from: {
-                        store: 'board',
+                        source: 'board',
                         id: {
                           subjectSpace: {
                             id: '$String',
                           },
                         },
-                        link: 'slot',
+                        slot: 'character',
                       },
                       to: {
-                        store: 'board',
+                        source: 'board',
                         id: {
                           targetSpace: {
                             id: '$String',
                           },
                         },
-                        link: 'slot',
+                        slot: 'character',
                       },
                     },
                   },

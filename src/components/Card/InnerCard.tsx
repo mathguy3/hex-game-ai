@@ -31,12 +31,15 @@ export const InnerCard = ({
     console.log(isSelected);
   }
   const image = card?.image ? card.image : `cards/${kind}.png`;
-  console.log('image', image);
+  //console.log('image', styleOverrides);
+
+  const cardWidth = styleOverrides?.width || (isSelected ? selectedSize.width : unselectedSize.width);
+  const cardHeight = styleOverrides?.height || (isSelected ? selectedSize.height : unselectedSize.height);
   return (
     <Box
       position="relative"
-      width={isSelected ? selectedSize.width : unselectedSize.width}
-      height={isSelected ? selectedSize.height : unselectedSize.height}
+      width={cardWidth}
+      height={cardHeight}
       style={{ touchAction: 'none' }}
       onClick={onClick}
       sx={{ ...styleOverrides }}
@@ -44,8 +47,8 @@ export const InnerCard = ({
       <Box
         position="absolute"
         top={isSelected ? '-20px' : '0px'}
-        width={isSelected ? selectedSize.width : unselectedSize.width}
-        height={isSelected ? selectedSize.height : unselectedSize.height}
+        width={cardWidth}
+        height={cardHeight}
         boxSizing="border-box"
         borderRadius="4px"
         bgcolor="white"

@@ -6,6 +6,7 @@ import { UIPlayerProvider } from '../../../logic/game-controller/context/UIPlaye
 export const UIStart = () => {
   const { gameSession } = useGameSession();
   const { gameDefinition } = gameSession;
+  console.log('gameDefinition', gameDefinition.ui.player);
   return (
     <Box>
       <UI {...gameDefinition.ui.shared} />

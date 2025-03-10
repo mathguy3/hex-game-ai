@@ -12,6 +12,7 @@ export const option = {
       operationType: 'option',
       nextOperation: 'interact',
       isComplete: false,
+      autoContinue: true,
       nextSequenceItem: serverSession.sequenceState.nextSequenceItem,
       bag: serverSession.sequenceState.bag,
     };

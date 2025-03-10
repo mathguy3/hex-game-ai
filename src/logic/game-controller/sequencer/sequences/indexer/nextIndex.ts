@@ -1,4 +1,6 @@
-export const nextIndex = (sequenceState: any) => {
+import { getProcedure } from '../../../../if/if-engine-3/getProcedure';
+
+export const nextIndex = (sequenceState: any, procedures: any) => {
   const groupItem = sequenceState.previousContext.nextSequenceItem;
   const grouping = groupItem.actions ?? groupItem.phases ?? groupItem.turns;
   if (!grouping) {
@@ -10,7 +12,7 @@ export const nextIndex = (sequenceState: any) => {
     sequenceState.isComplete = true;
     return sequenceState;
   }
-  const nextItem = grouping[nextIndex];
+  const nextItem = getProcedure(grouping[nextIndex], procedures);
   const nextOperation = Object.keys(nextItem)[0];
   sequenceState.nextOperation = nextOperation;
   sequenceState.nextSequenceItem = nextItem[nextOperation];

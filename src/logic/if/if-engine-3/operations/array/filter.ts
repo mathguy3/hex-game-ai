@@ -42,6 +42,7 @@ export const filter = {
     if (context.bag.result) {
       context.localBag.filteredResults.push(arrayContext.modelItem[context.localBag.index]);
     }
+    //console.log('filtered result', arrayContext.modelItem[context.localBag.index], context.bag.result, context.ifItem);
 
     context.localBag.index++;
     context.modelItem = arrayContext.modelItem[context.localBag.index];

@@ -39,6 +39,7 @@ export type SequencerContext = {
   isComplete: boolean;
   isGameOver?: boolean;
   autoContinue?: boolean;
+  delayedContinue?: boolean;
   withBroadcast?: boolean;
   localBag?: Record<string, any>;
 

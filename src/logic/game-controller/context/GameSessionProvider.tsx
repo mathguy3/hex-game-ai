@@ -50,10 +50,10 @@ export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChild
         if (message.payload.localControl?.transitions) {
           console.log('transitions', message.payload.localControl.transitions);
           setTransitions(message.payload.localControl.transitions);
-          setTimeout(() => {
+          /*setTimeout(() => {
             setTransitions({});
             setGameSession({ ...gameSession, ...message.payload });
-          }, 750);
+          }, 750);*/
         } else {
           setGameSession({ ...gameSession, ...message.payload });
         }

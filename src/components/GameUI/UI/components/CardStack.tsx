@@ -16,28 +16,29 @@ const cardsBasedOnId = (id: string) => ({
   },
 });
 
-export const CardStack = ({ id, type, disabled, styles, content, properties, filter }: CardStackUIModel) => {
-  const { isDragging, activeCard } = useDragState();
+export const CardStack = ({
+  id,
+  type,
+  disabled,
+  styles,
+  content,
+  properties,
+  filter,
+  cardStyles,
+}: CardStackUIModel) => {
+  const { isDragging } = useDragState();
   const { gameSession } = useGameSession();
   const { doEval } = useIf(gameSession?.gameState);
   const mappedStyles = { ...styles };
+  const mappedCardStyles = { ...cardStyles };
   const cards = useMemo(() => {
     const contentCards = content ? doEval(content) : [];
     const finalCards = contentCards || doEval(cardsBasedOnId(id));
     return finalCards;
-  }, [content]);
+  }, [content, gameSession.gameState.data]);
 
   const isDisabled = disabled;
   const matchesFilter = useMemo(() => !filter || filter, [filter]);
-
-  /*if (activeCard && id == 'finalStack1') {
-    console.log('-----------------');
-    console.log('activeCard', activeCard);
-    console.log('matchesFilter', matchesFilter);
-    console.log('testCards', testCards);
-    console.log('filter', filter);
-    console.log('-----------------');
-  }*/
 
   return (
     // add a soft yellow glow to the stack if matchesFilter is true
@@ -59,6 +60,7 @@ export const CardStack = ({ id, type, disabled, styles, content, properties, fil
           card={card}
           index={index}
           isLast={index === cards.length - 1}
+          cardStyles={mappedCardStyles}
         />
       ))}
       {isDragging && !isDisabled && matchesFilter && (
@@ -74,12 +76,14 @@ const StackedCard = ({
   index,
   isLast,
   isDisabled,
+  cardStyles,
 }: {
   stackId: string;
   card: any;
   index: number;
   isLast: boolean;
   isDisabled: boolean;
+  cardStyles: any;
 }) => {
   const maxIndex = Math.min(index, 7);
   const styles = {
@@ -88,6 +92,7 @@ const StackedCard = ({
     left: maxIndex * 3,
     border: '1px solid black',
     borderRadius: '4px',
+    ...cardStyles,
   } as const;
   if (isLast && !isDisabled) {
     return (

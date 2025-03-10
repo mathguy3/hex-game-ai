@@ -1,6 +1,7 @@
 import { ServerSession } from '../../../../server/games/gameManager';
 import { doIf } from '../../../if/if-engine-3/doIf';
 import { doSet } from '../../../if/if-engine-3/doSet';
+import { getProcedure } from '../../../if/if-engine-3/getProcedure';
 import { ActionRequest } from '../doSequence';
 import { actionHandlers } from './actions';
 
@@ -29,13 +30,13 @@ export const action = {
     let hasTransitions = false;
     let shouldTransition = true;
     for (const action of actions) {
-      ///console.log('action', action);
+      const proceduredAction = getProcedure(action, serverSession.gameSession.gameDefinition.definitions.procedures);
       //console.log('action', serverSession.sequenceState.bag, action);
 
       // Check if there's a specific handler for this action type
-      const actionKey = Object.keys(action)[0];
+      const actionKey = Object.keys(proceduredAction)[0];
       if (actionHandlers[actionKey]) {
-        serverSession = actionHandlers[actionKey].resolve(serverSession, action[actionKey]);
+        serverSession = actionHandlers[actionKey].resolve(serverSession, proceduredAction[actionKey]);
         hasTransitions = true;
       } else {
         shouldTransition = false;
@@ -43,14 +44,16 @@ export const action = {
         if (serverSession.sequenceState.bag.references) {
           console.log('Taking action with this reference', serverSession.sequenceState.bag.references);
         }
+        //console.log('test result1', serverSession.gameSession.gameState.data.player1.modifiers);
         serverSession.gameSession.gameState = doSet({
-          ifItem: action,
+          ifItem: proceduredAction,
           model: {
             context: serverSession.gameSession.gameState as any,
             ...(serverSession.sequenceState.bag.references || {}),
           },
           procedures: serverSession.gameSession.gameDefinition.definitions.procedures,
         })?.context as any;
+        //console.log('test result2', serverSession.gameSession.gameState.data.player1.modifiers);
       }
     }
     //console.log('dataq', serverSession.gameSession.gameState.data);
@@ -62,7 +65,8 @@ export const action = {
       path: serverSession.sequenceState.path + '.action',
       operationType: 'action',
       isComplete: false,
-      autoContinue: !hasTransitions || !shouldTransition,
+      autoContinue: true,
+      delayedContinue: hasTransitions && shouldTransition,
       nextSequenceItem: serverSession.sequenceState.nextSequenceItem,
       bag: serverSession.sequenceState.bag,
     };
@@ -70,6 +74,7 @@ export const action = {
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
     serverSession.sequenceState.isComplete = true;
+    serverSession.sequenceState.delayedContinue = false;
     return serverSession;
   },
 };

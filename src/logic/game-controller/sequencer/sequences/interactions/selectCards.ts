@@ -35,18 +35,24 @@ export const selectCards = {
     serverSession.gameSession.gameState.activeStep = nextPath;
     serverSession.gameSession.localControl = null;
 
-    serverSession.sequenceState = setIndex({
-      previousContext: serverSession.sequenceState,
-      path: nextPath,
-      operationType: 'selectCards',
-      isComplete: true,
-      autoContinue: true,
-      bag: serverSession.sequenceState.bag,
-    });
+    serverSession.sequenceState = setIndex(
+      {
+        previousContext: serverSession.sequenceState,
+        path: nextPath,
+        operationType: 'selectCards',
+        isComplete: true,
+        autoContinue: true,
+        bag: serverSession.sequenceState.bag,
+      },
+      serverSession.gameSession.gameDefinition.definitions.procedures
+    );
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
+    serverSession.sequenceState = nextIndex(
+      serverSession.sequenceState,
+      serverSession.gameSession.gameDefinition.definitions.procedures
+    );
     return serverSession;
   },
 };

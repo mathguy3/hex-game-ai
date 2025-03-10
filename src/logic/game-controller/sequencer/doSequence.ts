@@ -1,5 +1,6 @@
 import { ServerSession } from '../../../server/games/gameManager';
 import { doIf } from '../../if/if-engine-3/doIf';
+import { getProcedure } from '../../if/if-engine-3/getProcedure';
 import { isPlayerTurn } from '../../util/isPlayerTurn';
 import * as handlers from './sequences';
 
@@ -60,7 +61,7 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
   const { gameSession, sequenceState } = game;
   const { gameState } = gameSession;
   const nextOperation = sequenceState.nextOperation;
-  console.log('starting', sequenceState.path, nextOperation ? '-> ' + nextOperation : '<--');
+
   if (nextOperation == 'start' && request.type !== 'start') {
     return game;
   }
@@ -94,6 +95,7 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
         return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
       }
     }
+    console.log('starting', sequenceState.path, nextOperation ? '-> ' + nextOperation : '<--');
     // Need to make sure subject and target are setup first
     const optionWithInteract = nextOperation.includes('interact') ? request.type : nextOperation;
     const sequenceHandler = handlers[optionWithInteract];
@@ -116,10 +118,16 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
     }
     //console.log('no next operation', sequenceState.path);
     const operation = handlers[sequenceState.operationType];
-    console.log('revisiting seq', sequenceState.path, sequenceState.operationType, operation);
+    console.log('revisiting', sequenceState.path, sequenceState.operationType);
 
     if (operation.continueOp) {
       game = operation.continueOp(game, request);
+    }
+
+    if (nextOperation == 'start') {
+      // That means the game is over actually
+      console.log('game over');
+      return { ...game, gameState: { ...gameState, isComplete: true } };
     }
 
     if (game.sequenceState.isComplete) {
@@ -135,17 +143,21 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
     gameSession.gameState.history.push(game.sequenceState.path);
   }
 
-  if (nextOperation == 'start') {
-    // That means the game is over actually
-    console.log('game over');
-    return { ...game, gameState: { ...gameState, isComplete: true } };
-  }
   if (game.sequenceState.autoContinue) {
     console.log('auto continuing');
     if (game.sequenceState.withBroadcast) {
       broadcast();
     }
-    return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+    if (game.sequenceState.delayedContinue) {
+      console.log('delayed continue');
+      setTimeout(() => {
+        doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+        broadcast();
+      }, 1000);
+      return game;
+    } else {
+      return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+    }
   } else {
     return game;
   }

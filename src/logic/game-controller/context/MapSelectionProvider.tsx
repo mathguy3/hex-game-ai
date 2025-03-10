@@ -3,13 +3,13 @@ import { Button } from '@mui/material';
 import { useClient } from '../../client/ClientProvider';
 import { queryData } from './query/queryData';
 import { useGameSession } from './GameSessionProvider';
-
+import { useUpdatingRef } from '../../../utils/useUpdatingRef';
 type MapSelectionCtx = {
   selectedHex: any;
   targetState: Record<string, any>;
   previewState: Record<string, any>;
   setTargetState: (state: Record<string, any>) => void;
-  selectHex: (id: string) => void;
+  selectHex: React.MutableRefObject<(hex: any) => void>;
 };
 
 const MapSelectionContext = createContext<MapSelectionCtx>(null);
@@ -22,7 +22,8 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
   const [targetState, setTargetState] = useState<Record<string, any>>({});
   const [optionPreview, setOptionPreview] = useState<Record<string, any>>({});
 
-  const firstBoardOption = activeOptions?.find((x) => x.token ?? x.space);
+  const firstValidOption = activeOptions?.find((x) => x.token ?? x.space);
+  const firstBoardOption = firstValidOption?.token ?? firstValidOption?.space;
 
   useEffect(() => {
     setSelectedHex(null);
@@ -31,13 +32,8 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
   }, [gameSession.gameState.activeStep]);
 
   const previewOption = useCallback(
-    (optionToPreview: any, subjectSpace?: any, targetSpace?: any, type?: string) => {
-      const option = optionToPreview.token ?? optionToPreview.space;
-      if (!option) {
-        return {};
-      }
-
-      const { query, target } = option;
+    (option: any, subjectSpace?: any, type?: string) => {
+      const { query } = option;
       const queryTiles = queryData(
         { context: gameSession.gameState, subjectSpace },
         gameSession.gameDefinition.definitions.procedures,
@@ -51,15 +47,6 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
         return acc;
       }, {});
 
-      //console.log('target preview', subjectSpace, preview, target);
-      if (subjectSpace && preview[subjectSpace.id] && target) {
-        const firstTarget = Object.entries(target)[0];
-
-        //console.log('starting target preview');
-        const targetPreview = previewOption(firstTarget[1], subjectSpace, targetSpace, 'target');
-        //console.log('targetPreview', targetPreview);
-        preview = { ...preview, ...targetPreview };
-      }
       return preview;
     },
     [gameSession.gameState]
@@ -67,36 +54,44 @@ export const MapSelectionProvider = ({ children }: React.PropsWithChildren) => {
 
   useEffect(() => {
     if (firstBoardOption) {
-      const preview = previewOption(firstBoardOption, selectedHex);
+      let preview = previewOption(firstBoardOption, selectedHex);
+      console.log('selectedHex', selectedHex, preview[selectedHex?.id], firstBoardOption, targetState);
+      if (selectedHex && preview[selectedHex.id] && firstBoardOption.target && Object.keys(targetState).length == 0) {
+        const firstTarget = Object.entries(firstBoardOption.target)[0] as any;
+        const firstTargetOption = firstTarget[1]?.token ?? firstTarget[1]?.space;
+
+        //console.log('starting target preview');
+        const targetPreview = previewOption(firstTargetOption, selectedHex, 'target');
+        //console.log('targetPreview', targetPreview);
+        preview = { ...preview, ...targetPreview };
+      }
       setOptionPreview(preview);
     } else {
       setOptionPreview({});
     }
-  }, [firstBoardOption, selectedHex]);
+  }, [firstBoardOption, selectedHex, targetState]);
 
-  const selectHex = useCallback(
-    (hex: any) => {
-      const isTarget = optionPreview[hex.id]?.type === 'target';
-      const isTargeted = optionPreview[hex.id]?.type === 'targeted';
-      if (isTarget || isTargeted) {
-        //console.log('targeting', hex);
-        if (targetState[hex.id]) {
-          setTargetState({ ...targetState, [hex.id]: null });
-          setOptionPreview({ ...optionPreview, [hex.id]: { type: 'target' } });
-        } else {
-          setTargetState({ ...targetState, [hex.id]: hex.id });
-          setOptionPreview({ ...optionPreview, [hex.id]: { type: 'targeted' } });
-        }
+  const selectHex = useUpdatingRef((hex: any) => {
+    console.log('selectHex', hex);
+    const isTarget = optionPreview[hex.id]?.type === 'target';
+    const isTargeted = optionPreview[hex.id]?.type === 'targeted';
+    if (isTarget || isTargeted) {
+      //console.log('targeting', hex);
+      if (targetState[hex.id]) {
+        setTargetState({ ...targetState, [hex.id]: null });
+        ///setOptionPreview({ ...optionPreview, [hex.id]: { type: 'target' } });
       } else {
-        //console.log('selecting', hex);
-        setTargetState({});
-        setOptionPreview({});
-        setSelectedHex(hex);
+        setTargetState({ ...targetState, [hex.id]: hex.id });
+        ///setOptionPreview({ ...optionPreview, [hex.id]: { type: 'targeted' } });
       }
-      //console.log('selectedHex', selectedHex);
-    },
-    [targetState, optionPreview]
-  );
+    } else {
+      //console.log('selecting', hex);
+      setTargetState({});
+      setOptionPreview({});
+      setSelectedHex(hex);
+    }
+    //console.log('selectedHex', selectedHex);
+  });
 
   const submitAction = useCallback(() => {
     const subjects = [
