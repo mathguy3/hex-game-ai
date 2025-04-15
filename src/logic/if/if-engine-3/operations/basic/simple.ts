@@ -16,24 +16,25 @@ export const simple = {
   alternateFields: [],
   isLeaf: true,
   startOp: (context: Context) => {
-    const item = context.ifItem;
+    const item = context.next.ifItem;
+    //console.log('simple', item);
     if (typeof item !== 'string' && typeof item !== 'number' && typeof item !== 'boolean' && item !== null) {
       throw new Error('Simple operation requires a simple type' + JSON.stringify(item));
     }
     context.bag.result = item;
     let path = addPath(context.path, context.bag.result);
-    if (map[context.ifItem]) {
-      context.bag.result = context.modelItem;
+    if (map[context.next.ifItem]) {
+      context.bag.result = context.next.modelItem;
       //console.log('simple result', context.bag.result);
-      path = addPath(context.path, context.ifItem);
+      path = addPath(context.path, context.next.ifItem);
     }
     //console.log('simple complete', context.path, context.modelItem, context.bag.result);
     return {
-      type: 'eval',
       previousContext: context,
-      bag: context.bag,
+      type: 'eval',
       path: path,
       operationType: 'simple',
+      bag: context.bag,
     };
   },
   revisitOp: (context: Context) => {

@@ -3,5 +3,7 @@ export type ContextProps = {
   model: any;
   subject?: any;
   target?: any;
-  procedures?: Record<string, any>;
+  references?: Record<string, any>;
+  functions?: Record<string, any>;
+  referenceValues?: Record<string, any>;
 };

@@ -1,49 +1,26 @@
-import { getOperation } from '../../getNextOperation';
-import { addPath } from '../../utils/addPath';
+import { complete } from '../../utils/complete';
+import { evalIfField, revisitIfField } from '../../utils/evalIfField';
+import { validateFields } from '../../utils/validateFields';
 import { Context } from '../types';
-import { getProcedure } from '../../getProcedure';
+
 export const ifIf = {
   requiredFields: ['if', 'then'],
   alternateFields: [],
   optionalFields: ['else'],
   startOp: (context: Context) => {
-    if (!('then' in context.ifItem) || !('else' in context.ifItem)) {
-      throw new Error('If statement requires a then and else statement');
-    }
-    const ifNext = context.ifItem.if;
-    const operationType = getOperation(ifNext).operationType;
-    return {
-      type: 'if',
-      previousContext: context,
-      path: addPath(context.path, 'if'),
-      modelItem: context.modelItem,
-      ifItem: getProcedure(ifNext, context.procedures),
-      bag: context.bag,
-      operationType: 'if',
-      nextOperation: operationType,
-    };
+    validateFields(context, ifIf);
+
+    return { ...evalIfField(context, 'if'), type: 'if' };
   },
   revisitOp: (context: Context) => {
     if (context.localBag?.ifResult !== undefined) {
-      // console.log('if if complete', context.localBag.ifResult);
-      return {
-        ...context,
-        isComplete: true,
-      };
+      return complete(context);
     }
-
-    if (context.bag.result === undefined) {
-      throw new Error('If statement requires a result to work');
-    }
-    // console.log('revisiting if if', context.path, context.bag.result);
-    const nextIfItem = context.bag.result ? context.previousContext.ifItem.then : context.previousContext.ifItem.else;
-    const { operationType } = getOperation(nextIfItem);
-
+    const result = !!context.bag.result;
     return {
-      ...context,
-      ifItem: getProcedure(nextIfItem, context.procedures),
-      nextOperation: operationType,
-      localBag: { ...context.localBag, ifResult: context.bag.result },
+      ...revisitIfField(context, result ? 'then' : 'else'),
+      type: context.previousContext.type,
+      localBag: { ifResult: result },
     };
   },
 };

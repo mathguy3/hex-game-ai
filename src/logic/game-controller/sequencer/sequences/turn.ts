@@ -1,66 +1,44 @@
 import { ServerSession } from '../../../../server/games/gameManager';
 import { doEval } from '../../../if/if-engine-3/doEval';
 import { ActionRequest } from '../doSequence';
+import { sEval } from '../utils/sEval';
 import { nextIndex } from './indexer/nextIndex';
 import { setIndex } from './indexer/setIndex';
 export const turn = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
     const { sequenceState, gameSession } = serverSession;
-    const { nextSequenceItem } = sequenceState;
+    const { next } = sequenceState;
+    const { sequenceItem } = next;
     const nextPath = sequenceState.path + '.turn';
     gameSession.gameState.activeStep = nextPath;
-    const specifiedOrder = nextSequenceItem.order
-      ? doEval({
-          ifItem: nextSequenceItem.order,
-          model: {
-            context: gameSession.gameState,
-            ...sequenceState.bag.references,
-          },
-          procedures: gameSession.gameDefinition.definitions.procedures,
-        })
-      : undefined;
-    const order = specifiedOrder
-      ? specifiedOrder
+    const order = sequenceItem.order
+      ? sEval(sequenceItem.order, serverSession)
       : Object.entries(gameSession.gameState.seats)
-          .filter(([id, seat]) => seat.userId)
+          .filter(([id, seat]) => seat.isActive)
           .map(([id, seat]) => id);
-    console.log('turn', order, gameSession.gameState.activeId);
-    serverSession.sequenceState = setIndex(
-      {
-        previousContext: serverSession.sequenceState,
-        path: nextPath,
-        operationType: 'turn',
-        isComplete: false,
-        localBag: {
-          initialPlayerId: gameSession.gameState.activeId,
-          order,
-          orderIndex: 0,
-        },
-        autoContinue: true,
-        withBroadcast: true,
-        bag: sequenceState.bag,
+    serverSession.sequenceState = setIndex({
+      previousContext: serverSession.sequenceState,
+      path: nextPath,
+      operationType: 'turn',
+      isComplete: false,
+      localBag: {
+        initialPlayerId: gameSession.gameState.activeId,
+        order,
+        orderIndex: 0,
       },
-      serverSession.gameSession.gameDefinition.definitions.procedures
-    );
+      autoContinue: true,
+      withBroadcast: true,
+      references: serverSession.sequenceState.references,
+      bag: sequenceState.bag,
+    });
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(
-      serverSession.sequenceState,
-      serverSession.gameSession.gameDefinition.definitions.procedures
-    );
-    if (serverSession.sequenceState.isComplete) {
-      console.log(
-        'end of turn??',
-        serverSession.sequenceState.localBag.orderIndex,
-        serverSession.sequenceState.localBag.order.length,
-        serverSession.sequenceState.previousContext.nextSequenceItem.allPlayers
-      );
-    }
+    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
     if (
       serverSession.sequenceState.isComplete &&
-      (serverSession.sequenceState.previousContext.nextSequenceItem.allPlayers ||
-        serverSession.sequenceState.previousContext.nextSequenceItem.order)
+      (serverSession.sequenceState.previousContext.next?.sequenceItem.allPlayers ||
+        serverSession.sequenceState.previousContext.next?.sequenceItem.order)
     ) {
       const nextOrderIndex = serverSession.sequenceState.localBag.orderIndex + 1;
       serverSession.sequenceState.isComplete = false;
@@ -72,18 +50,14 @@ export const turn = {
       const nextPlayerId = serverSession.sequenceState.localBag.order[nextOrderIndex];
       serverSession.gameSession.gameState.activeId = nextPlayerId;
 
-      serverSession.sequenceState = setIndex(
-        {
-          ...serverSession.sequenceState,
-          localBag: {
-            ...serverSession.sequenceState.localBag,
-            orderIndex: nextOrderIndex,
-          },
+      serverSession.sequenceState = setIndex({
+        ...serverSession.sequenceState,
+        localBag: {
+          ...serverSession.sequenceState.localBag,
+          orderIndex: nextOrderIndex,
         },
-        serverSession.gameSession.gameDefinition.definitions.procedures
-      );
-      const { previousContext, ...rest } = serverSession.sequenceState;
-      console.log('should keep going?', rest);
+        references: serverSession.sequenceState.references,
+      });
     }
 
     return serverSession;

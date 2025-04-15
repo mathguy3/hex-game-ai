@@ -1,7 +1,8 @@
+import { ServerSession } from '../../../../../server/games/gameManager';
 import { getProcedure } from '../../../../if/if-engine-3/getProcedure';
 
-export const nextIndex = (sequenceState: any, procedures: any) => {
-  const groupItem = sequenceState.previousContext.nextSequenceItem;
+export const nextIndex = (sequenceState: ServerSession['sequenceState']) => {
+  const groupItem = sequenceState.previousContext.next.sequenceItem;
   const grouping = groupItem.actions ?? groupItem.phases ?? groupItem.turns;
   if (!grouping) {
     sequenceState.isComplete = true;
@@ -12,10 +13,12 @@ export const nextIndex = (sequenceState: any, procedures: any) => {
     sequenceState.isComplete = true;
     return sequenceState;
   }
-  const nextItem = getProcedure(grouping[nextIndex], procedures);
+  const nextItem = getProcedure(grouping[nextIndex], sequenceState.references);
   const nextOperation = Object.keys(nextItem)[0];
-  sequenceState.nextOperation = nextOperation;
-  sequenceState.nextSequenceItem = nextItem[nextOperation];
+  sequenceState.next = {
+    operationType: nextOperation,
+    sequenceItem: nextItem[nextOperation],
+  };
   sequenceState.localBag = { ...sequenceState.localBag, index: nextIndex };
   return sequenceState;
 };

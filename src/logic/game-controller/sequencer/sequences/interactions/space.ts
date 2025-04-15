@@ -19,31 +19,27 @@ export const space = {
     const targetSpace = serverSession.gameSession.gameState.data[subject.targets[0].from][subject.targets[0].id];
     const targetSpaces = subject.targets.map((x) => serverSession.gameSession.gameState.data[x.from][x.id]);
 
-    serverSession.sequenceState = setIndex(
-      {
-        previousContext: serverSession.sequenceState,
-        path: nextPath,
-        operationType: 'space',
-        isComplete: false,
-        autoContinue: true,
-        bag: {
-          ...serverSession.sequenceState.bag,
-          references: {
-            subjectSpace,
-            targetSpace,
-            targetSpaces,
-          },
+    serverSession.sequenceState = setIndex({
+      previousContext: serverSession.sequenceState,
+      path: nextPath,
+      operationType: 'space',
+      isComplete: false,
+      autoContinue: true,
+      references: serverSession.sequenceState.references,
+      functions: serverSession.sequenceState.functions,
+      bag: {
+        ...serverSession.sequenceState.bag,
+        references: {
+          subjectSpace,
+          targetSpace,
+          targetSpaces,
         },
       },
-      serverSession.gameSession.gameDefinition.definitions.procedures
-    );
+    });
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(
-      serverSession.sequenceState,
-      serverSession.gameSession.gameDefinition.definitions.procedures
-    );
+    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
     return serverSession;
   },
 };

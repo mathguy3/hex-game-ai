@@ -1,4 +1,6 @@
-import { selectNext } from '../../utils/select-next';
+import { complete } from '../../utils/complete';
+import { evalField } from '../../utils/evalField';
+import { validateFields } from '../../utils/validateFields';
 import { Context } from '../types';
 
 export const multiply = {
@@ -6,29 +8,15 @@ export const multiply = {
   alternateFields: ['times', 'x'],
   optionalFields: [],
   startOp: (context: Context) => {
-    const keys = Object.keys(context.ifItem);
-    if (keys.length !== 1) {
-      throw new Error('Field operation requires exactly one field' + JSON.stringify(keys));
-    }
-
-    const nextContext = selectNext(context);
-    return {
-      ...nextContext,
-      type: 'eval',
-      modelItem: context.modelItem,
-      operationType: 'multiply',
-    };
+    validateFields(context, multiply);
+    return { ...evalField(context), type: 'eval' };
   },
   revisitOp: (context: Context) => {
-    if (context.previousContext.type == 'set') {
-      throw new Error('Multiply operation cannot be used for a set operation');
-    }
-
-    if (typeof context.modelItem !== 'number' || typeof context.bag.result !== 'number') {
+    if (typeof context.bag.result !== 'number' || typeof context.modelItem !== 'number') {
       throw new Error('Multiply operation can only be used on numbers');
     }
 
-    context.bag.result = context.modelItem * context.bag.result;
-    return { ...context, isComplete: true };
+    const result = context.bag.result * context.modelItem;
+    return complete(context, result);
   },
 };

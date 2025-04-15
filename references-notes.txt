@@ -1,0 +1,38 @@
+{ // Index-like reference
+  spaces: {
+    filter: {} //etc
+  }
+}
+
+{ // value-like reference
+  sequenceItem: {
+    id: "$Number"
+  }
+}
+
+{ // function-like reference use
+  route: {
+    from: {
+      spaces: {
+        0: "$Object"
+      }
+    },
+    to: {
+      spaces: {
+        last: "$Object"
+      }
+    }
+  }
+}
+
+route: { // function-like reference definition
+  spaces: {
+    filter: {
+      spaces: {
+        from: {id:"$String"},
+        to: {id:"$String"}
+      } 
+    }
+  }
+}
+

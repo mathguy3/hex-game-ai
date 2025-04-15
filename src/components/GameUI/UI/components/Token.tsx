@@ -5,7 +5,7 @@ import { TokenUIModel } from '../UI';
 
 export const Token = ({ id, styles, image, data }: TokenUIModel) => {
   const { gameSession } = useGameSession();
-  const { doEval } = useIf(gameSession?.gameState);
+  const { doEval } = useIf(gameSession);
 
   const defaultStyles = {
     position: 'relative',

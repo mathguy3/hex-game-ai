@@ -14,7 +14,7 @@ export const HexMap = ({ id, styles, hex }: HexMapUIModel) => {
   const { gameSession, transitions: localTransitions } = useGameSession();
   const { selectedHex, previewState, targetState, selectHex } = useMapSelection();
   const { gameState } = gameSession;
-  const { doEval } = useIf(gameState);
+  const { doEval } = useIf(gameSession);
   const content = gameState.data[id] as Record<string, any>;
 
   const stores = gameState.data;

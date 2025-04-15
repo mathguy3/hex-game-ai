@@ -24,10 +24,11 @@ export type GameConfig = {
 
 type Definitions = {
   seats: Record<string, SeatDefinition>;
-  procedures: Record<string, any>;
+  references: Record<string, any>;
+  functions: Record<string, any>;
   cards: Record<string, CardDefinition>;
   tokens?: Record<string, TokenDefinition>;
-  sequence: Sequence;
+  sequence: any;
   winCondition?: IF;
 };
 
@@ -136,6 +137,7 @@ export type GameState = {
   >;
   data: Record<string, any>;
   activeStep: string;
+  activePath: string;
   history: string[];
 };
 

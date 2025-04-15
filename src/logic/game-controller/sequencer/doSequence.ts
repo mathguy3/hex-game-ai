@@ -3,6 +3,7 @@ import { doIf } from '../../if/if-engine-3/doIf';
 import { getProcedure } from '../../if/if-engine-3/getProcedure';
 import { isPlayerTurn } from '../../util/isPlayerTurn';
 import * as handlers from './sequences';
+import { sIf } from './utils/sIf';
 
 type ActionTarget = { id: string } & (
   | {
@@ -53,14 +54,19 @@ export type ActionRequest = { playerId: string; kind?: string } & (
     }
 );
 
-export const doSequence = (game: ServerSession, request: ActionRequest, broadcast: () => void) => {
+export const doSequence = (
+  game: ServerSession,
+  request: ActionRequest,
+  broadcast: () => void,
+  allowAutoContinue = true
+) => {
   if (!isPlayerTurn(game.gameSession.gameState, request)) {
     console.log('not your turn', game.gameSession.gameState.activeId, request.playerId);
     return game;
   }
   const { gameSession, sequenceState } = game;
   const { gameState } = gameSession;
-  const nextOperation = sequenceState.nextOperation;
+  const nextOperation = sequenceState.next?.operationType;
 
   if (nextOperation == 'start' && request.type !== 'start') {
     return game;
@@ -76,26 +82,18 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
 
   if (nextOperation) {
     //console.log('nextOperation', nextOperation);
-    if (sequenceState.nextSequenceItem.if) {
-      const { if: ifCondition } = sequenceState.nextSequenceItem;
+    if (sequenceState.next?.sequenceItem.if) {
+      const { if: ifCondition } = sequenceState.next.sequenceItem;
       //console.log('if condition', ifCondition, sequenceState.bag.references);
-      const result = doIf({
-        ifItem: ifCondition,
-        model: {
-          context: game.gameSession.gameState,
-          ...sequenceState.bag.references,
-        },
-        procedures: game.gameSession.gameDefinition.definitions.procedures,
-      });
+      const result = sIf(ifCondition, game);
       //console.log('if result', result);
       if (!result) {
-        console.log('skipping', sequenceState.path + '-> ' + nextOperation);
-        sequenceState.nextOperation = undefined;
-        sequenceState.nextSequenceItem = undefined;
+        console.log('skipping seq', sequenceState.path + '-> ' + nextOperation);
+        sequenceState.next = undefined;
         return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
       }
     }
-    console.log('starting', sequenceState.path, nextOperation ? '-> ' + nextOperation : '<--');
+    console.log('starting seq', sequenceState.path, nextOperation ? '-> ' + nextOperation : '<--');
     // Need to make sure subject and target are setup first
     const optionWithInteract = nextOperation.includes('interact') ? request.type : nextOperation;
     const sequenceHandler = handlers[optionWithInteract];
@@ -118,7 +116,7 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
     }
     //console.log('no next operation', sequenceState.path);
     const operation = handlers[sequenceState.operationType];
-    console.log('revisiting', sequenceState.path, sequenceState.operationType);
+    console.log('revisiting seq', sequenceState.path, sequenceState.operationType);
 
     if (operation.continueOp) {
       game = operation.continueOp(game, request);
@@ -134,7 +132,7 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
       delete game.activeContexts[sequenceState.path];
       game.sequenceState = {
         ...game.sequenceState.previousContext,
-        nextOperation: undefined,
+        next: undefined,
         autoContinue: true,
         bag: game.sequenceState.bag,
       };
@@ -143,14 +141,16 @@ export const doSequence = (game: ServerSession, request: ActionRequest, broadcas
     gameSession.gameState.history.push(game.sequenceState.path);
   }
 
-  if (game.sequenceState.autoContinue) {
-    console.log('auto continuing');
+  gameSession.gameState.activeStep = game.sequenceState.operationType;
+  gameSession.gameState.activePath = game.sequenceState.path;
+
+  if (game.sequenceState.autoContinue && allowAutoContinue) {
     if (game.sequenceState.withBroadcast) {
       broadcast();
     }
     if (game.sequenceState.delayedContinue) {
-      console.log('delayed continue');
       setTimeout(() => {
+        console.log('auto continuing2');
         doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
         broadcast();
       }, 1000);

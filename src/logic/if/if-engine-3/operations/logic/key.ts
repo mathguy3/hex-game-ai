@@ -1,51 +1,35 @@
-import { getOperation } from '../../getNextOperation';
-import { addPath } from '../../utils/addPath';
 import { Context } from '../types';
-import { getProcedure } from '../../getProcedure';
+import { validateFields } from '../../utils/validateFields';
+import { evalIfField } from '../../utils/evalIfField';
+import { complete } from '../../utils/complete';
+import { revisitField } from '../../utils/evalField';
 
 export const key = {
   requiredFields: ['key', 'value'],
   alternateFields: [],
   optionalFields: [],
   startOp: (context: Context) => {
-    if (!('key' in context.ifItem) || !('value' in context.ifItem)) {
-      throw new Error('If statement requires a key and value statement');
-    }
-    const ifNext = context.ifItem.key;
-    const operationType = getOperation(ifNext).operationType;
-    return {
-      previousContext: context,
-      type: 'eval',
-      path: addPath(context.path, 'key'),
-      modelItem: context.modelItem,
-      ifItem: getProcedure(ifNext, context.procedures),
-      bag: context.bag,
-      operationType: 'key',
-      nextOperation: operationType,
-    };
+    validateFields(context, key);
+
+    return { ...evalIfField(context, 'key'), type: 'eval' };
   },
   revisitOp: (context: Context) => {
     if (context.localBag?.key !== undefined) {
-      return {
-        ...context,
-        isComplete: true,
-      };
+      return complete(context);
     }
 
-    if (context.bag.result === undefined) {
+    if (typeof context.bag.result !== 'string') {
       throw new Error('Key statement requires a string result to work');
     }
-    const nextKey = context.bag.result;
-    const ifNext = context.previousContext.ifItem.value;
-    const { operationType } = getOperation(ifNext);
 
-    return {
-      ...context,
+    const nextModelKey = context.bag.result;
+    //console.log('key', context, nextModelKey);
+    const nextContext = {
+      ...revisitField(context, 'value', nextModelKey),
       type: context.previousContext.type,
-      ifItem: getProcedure(ifNext, context.procedures),
-      modelItem: context.modelItem[nextKey],
-      nextOperation: operationType,
-      localBag: { key: nextKey },
+      localBag: { key: nextModelKey },
     };
+    //console.log('key next context', nextContext);
+    return nextContext;
   },
 };

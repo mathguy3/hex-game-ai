@@ -1,4 +1,6 @@
-import { selectNext } from '../../utils/select-next';
+import { complete } from '../../utils/complete';
+import { evalIfField } from '../../utils/evalIfField';
+import { validateFields } from '../../utils/validateFields';
 import { Context } from '../types';
 
 export const divide = {
@@ -6,29 +8,15 @@ export const divide = {
   alternateFields: ['/'],
   optionalFields: [],
   startOp: (context: Context) => {
-    const keys = Object.keys(context.ifItem);
-    if (keys.length !== 1) {
-      throw new Error('Field operation requires exactly one field' + JSON.stringify(keys));
-    }
-
-    const nextContext = selectNext(context);
-    return {
-      ...nextContext,
-      type: 'eval',
-      modelItem: context.modelItem,
-      operationType: 'divide',
-    };
+    validateFields(context, divide);
+    return { ...evalIfField(context), type: 'eval' };
   },
   revisitOp: (context: Context) => {
-    if (context.previousContext.type == 'set') {
-      throw new Error('Divide operation cannot be used for a set operation');
-    }
-
-    if (typeof context.modelItem !== 'number' || typeof context.bag.result !== 'number') {
+    if (typeof context.bag.result !== 'number' || typeof context.modelItem !== 'number') {
       throw new Error('Divide operation can only be used on numbers');
     }
 
-    context.bag.result = context.modelItem / context.bag.result;
-    return { ...context, isComplete: true };
+    const result = context.bag.result / context.modelItem;
+    return complete(context, result);
   },
 };

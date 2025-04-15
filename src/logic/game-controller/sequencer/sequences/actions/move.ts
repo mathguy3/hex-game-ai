@@ -1,5 +1,5 @@
 import { ServerSession } from '../../../../../server/games/gameManager';
-import { doEval } from '../../../../if/if-engine-3/doEval';
+import { sEval } from '../../utils/sEval';
 
 export const move = {
   resolve: (serverSession: ServerSession, action: any) => {
@@ -8,26 +8,9 @@ export const move = {
     const { source, id, slot } = from;
     const { source: toSource, id: toId, slot: toSlot } = to;
 
-    const fromResolvedId = doEval({
-      ifItem: id,
-      model: {
-        context: serverSession.gameSession.gameState as any,
-        ...(serverSession.sequenceState.bag.references || {}),
-      },
-      procedures: serverSession.gameSession.gameDefinition.definitions.procedures,
-    });
+    const fromResolvedId = sEval(id, serverSession);
 
-    const toResolvedId =
-      toSource !== 'supply'
-        ? doEval({
-            ifItem: toId,
-            model: {
-              context: serverSession.gameSession.gameState as any,
-              ...(serverSession.sequenceState.bag.references || {}),
-            },
-            procedures: serverSession.gameSession.gameDefinition.definitions.procedures,
-          })
-        : null;
+    const toResolvedId = toSource !== 'supply' ? sEval(toId, serverSession) : null;
 
     //console.log('move action', action, fromResolvedId, toResolvedId);
 

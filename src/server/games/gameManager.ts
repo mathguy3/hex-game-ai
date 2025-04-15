@@ -95,6 +95,7 @@ export class GameManager {
         activeId: 'player1',
         hasStarted: false,
         activeStep: 'not started',
+        activePath: '',
         isComplete: false,
       },
     };
@@ -107,8 +108,10 @@ export class GameManager {
         operationType: '',
         isComplete: false,
         autoContinue: true,
-        nextOperation: 'start',
-        nextSequenceItem: definitions.sequence,
+        next: {
+          operationType: 'start',
+          sequenceItem: definitions.sequence,
+        },
         bag: {
           history: [],
         },

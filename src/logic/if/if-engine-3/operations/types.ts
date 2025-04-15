@@ -9,24 +9,30 @@ export type Operation = {
 };
 
 export type Context = {
-  procedures?: Record<string, any>;
+  references?: Record<string, any>;
+  functions?: Record<string, any>;
   previousContext?: Context;
   type: 'if' | 'eval' | 'set';
   operationType: string;
+  modelItem: any;
+  isArray?: boolean;
   path: string;
 
   field?: string;
   isComplete: boolean;
   localBag?: Record<string, any>;
 
-  nextOperation?: string;
-  ifItem: any;
-  modelItem?: any;
+  next: {
+    operationType?: string;
+    ifItem?: any;
+    modelItem?: any;
+  };
 
   bag: {
     history: string[];
     result?: any;
     model: any;
+    references?: Record<string, any>;
   };
 };
 
@@ -43,8 +49,12 @@ export type SequencerContext = {
   withBroadcast?: boolean;
   localBag?: Record<string, any>;
 
-  nextOperation?: string;
-  nextSequenceItem: any;
+  next?: {
+    operationType: string;
+    sequenceItem: any;
+  };
+  references?: Record<string, any>;
+  functions?: Record<string, any>;
 
   bag: any;
 };

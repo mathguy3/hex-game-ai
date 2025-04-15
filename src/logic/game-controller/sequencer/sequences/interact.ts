@@ -10,7 +10,7 @@ export const interact = {
     //console.log('interact', serverSession.sequenceState.nextSequenceItem);
 
     const optionKey = request.kind === 'selectCards' || request.kind === 'playCard' ? 'card' : request.kind;
-    const option = serverSession.sequenceState.nextSequenceItem.options.find((x) => Object.keys(x)[0] === optionKey);
+    const option = serverSession.sequenceState.next.sequenceItem.options.find((x) => Object.keys(x)[0] === optionKey);
 
     const nextPath = serverSession.sequenceState.path + '.interact';
     serverSession.gameSession.gameState.activeStep = nextPath;
@@ -27,8 +27,10 @@ export const interact = {
       path: nextPath,
       operationType: 'interact',
       isComplete: false,
-      nextOperation,
-      nextSequenceItem,
+      next: {
+        operationType: nextOperation,
+        sequenceItem: nextSequenceItem,
+      },
       autoContinue: true,
       localBag: {
         interactRequest: request,

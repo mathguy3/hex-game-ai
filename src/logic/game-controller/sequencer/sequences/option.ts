@@ -10,17 +10,19 @@ export const option = {
       previousContext: serverSession.sequenceState,
       path: nextPath,
       operationType: 'option',
-      nextOperation: 'interact',
       isComplete: false,
       autoContinue: true,
-      nextSequenceItem: serverSession.sequenceState.nextSequenceItem,
+      next: {
+        sequenceItem: serverSession.sequenceState.next.sequenceItem,
+        operationType: 'interact',
+      },
       bag: serverSession.sequenceState.bag,
     };
 
     //console.log('option', serverSession.sequenceState.nextSequenceItem);
 
     serverSession.gameSession.localControl = {
-      activeOptions: serverSession.sequenceState.nextSequenceItem.options,
+      activeOptions: serverSession.sequenceState.next.sequenceItem.options,
     };
 
     // activate options

@@ -8,8 +8,7 @@ import { useUIPlayer } from '../../../../logic/game-controller/context/UIPlayerP
 export const Text = ({ content, styles }: TextUIModel) => {
   const { gameSession } = useGameSession();
   const { playerState } = useUIPlayer();
-  const { gameState } = gameSession;
-  const { doEval } = useIf(gameState);
+  const { doEval } = useIf(gameSession);
   const mappedStyles = styles ? mapStyles(styles, doEval) : {};
   const mappedContent = content ? doEval(content, { player: playerState }) : content;
   console.log('rendering text', mappedContent);

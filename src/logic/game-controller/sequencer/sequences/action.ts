@@ -1,24 +1,18 @@
 import { ServerSession } from '../../../../server/games/gameManager';
-import { doIf } from '../../../if/if-engine-3/doIf';
-import { doSet } from '../../../if/if-engine-3/doSet';
 import { getProcedure } from '../../../if/if-engine-3/getProcedure';
 import { ActionRequest } from '../doSequence';
+import { sIf } from '../utils/sIf';
+import { sSet } from '../utils/sSet';
 import { actionHandlers } from './actions';
 
 export const action = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
-    const actions = serverSession.sequenceState.nextSequenceItem.actions;
-    const ifItem = serverSession.sequenceState.nextSequenceItem.if;
-    const ifResult = ifItem
-      ? doIf({
-          ifItem,
-          model: {
-            context: serverSession.gameSession.gameState,
-            ...(serverSession.sequenceState.bag.references || {}),
-          },
-          procedures: serverSession.gameSession.gameDefinition.definitions.procedures,
-        })
-      : true;
+    const isSingleAction = !('actions' in serverSession.sequenceState.next.sequenceItem);
+    const actions = isSingleAction
+      ? [serverSession.sequenceState.next.sequenceItem]
+      : serverSession.sequenceState.next.sequenceItem.actions;
+    const ifItem = isSingleAction ? null : serverSession.sequenceState.next.sequenceItem.if;
+    const ifResult = ifItem ? sIf(ifItem, serverSession) : true;
     if (ifItem != undefined) {
       console.log('ifResult', serverSession.sequenceState.path, ifResult);
     }
@@ -30,7 +24,7 @@ export const action = {
     let hasTransitions = false;
     let shouldTransition = true;
     for (const action of actions) {
-      const proceduredAction = getProcedure(action, serverSession.gameSession.gameDefinition.definitions.procedures);
+      const proceduredAction = getProcedure(action, serverSession.gameSession.gameDefinition.definitions.references);
       //console.log('action', serverSession.sequenceState.bag, action);
 
       // Check if there's a specific handler for this action type
@@ -41,18 +35,13 @@ export const action = {
       } else {
         shouldTransition = false;
         // Fall back to default doSet behavior
-        if (serverSession.sequenceState.bag.references) {
-          console.log('Taking action with this reference', serverSession.sequenceState.bag.references);
+        if (serverSession.sequenceState.references) {
+          console.log('Taking action with this reference', serverSession.sequenceState.references);
         }
         //console.log('test result1', serverSession.gameSession.gameState.data.player1.modifiers);
-        serverSession.gameSession.gameState = doSet({
-          ifItem: proceduredAction,
-          model: {
-            context: serverSession.gameSession.gameState as any,
-            ...(serverSession.sequenceState.bag.references || {}),
-          },
-          procedures: serverSession.gameSession.gameDefinition.definitions.procedures,
-        })?.context as any;
+        const setResult = sSet(proceduredAction, serverSession);
+        //console.log('setResult', setResult);
+        serverSession.gameSession.gameState.data = setResult as any;
         //console.log('test result2', serverSession.gameSession.gameState.data.player1.modifiers);
       }
     }
@@ -67,7 +56,7 @@ export const action = {
       isComplete: false,
       autoContinue: true,
       delayedContinue: hasTransitions && shouldTransition,
-      nextSequenceItem: serverSession.sequenceState.nextSequenceItem,
+      //next: serverSession.sequenceState.next,
       bag: serverSession.sequenceState.bag,
     };
     return serverSession;

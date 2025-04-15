@@ -8,8 +8,7 @@ export const selectCards = {
   startOp: (serverSession: ServerSession, continueRequest: InteractActionRequest) => {
     const { interactRequest: request } = serverSession.sequenceState.localBag;
     const gameState = serverSession.gameSession.gameState;
-    const option = serverSession.sequenceState.nextSequenceItem;
-    console.log(request);
+    const option = serverSession.sequenceState.next.sequenceItem;
     // Request.subjects length should equal option.card.select?.count
     if (request.subjects.length !== option.select?.count) {
       throw new Error('Invalid number of subjects');
@@ -35,24 +34,20 @@ export const selectCards = {
     serverSession.gameSession.gameState.activeStep = nextPath;
     serverSession.gameSession.localControl = null;
 
-    serverSession.sequenceState = setIndex(
-      {
-        previousContext: serverSession.sequenceState,
-        path: nextPath,
-        operationType: 'selectCards',
-        isComplete: true,
-        autoContinue: true,
-        bag: serverSession.sequenceState.bag,
-      },
-      serverSession.gameSession.gameDefinition.definitions.procedures
-    );
+    serverSession.sequenceState = setIndex({
+      previousContext: serverSession.sequenceState,
+      path: nextPath,
+      operationType: 'selectCards',
+      isComplete: true,
+      autoContinue: true,
+      bag: serverSession.sequenceState.bag,
+      references: serverSession.sequenceState.references,
+      functions: serverSession.sequenceState.functions,
+    });
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(
-      serverSession.sequenceState,
-      serverSession.gameSession.gameDefinition.definitions.procedures
-    );
+    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
     return serverSession;
   },
 };

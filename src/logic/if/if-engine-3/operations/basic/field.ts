@@ -1,4 +1,5 @@
-import { selectNext } from '../../utils/select-next';
+import { complete } from '../../utils/complete';
+import { evalField } from '../../utils/evalField';
 import { Context } from '../types';
 
 export const field = {
@@ -6,21 +7,32 @@ export const field = {
   optionalFields: [],
   alternateFields: [],
   startOp: (context: Context) => {
-    const keys = Object.keys(context.ifItem);
+    const keys = Object.keys(context.next.ifItem);
     if (keys.length !== 1) {
-      console.log('field', keys, context);
       throw new Error('Field operation requires exactly one field');
     }
-    const updatedContext = selectNext(context);
-    //console.log('field', context.path, updatedContext.path);
-    //console.log('field', context.modelItem, updatedContext.modelItem);
+    const field = keys[0];
+    const updatedContext = evalField(context);
+    if (!updatedContext.next.modelItem) {
+      console.log('loading unknown field', field, Object.keys(updatedContext.bag.model), context.bag.references);
+      if (context.bag.references?.[field]) {
+        console.log('loading reference field', field, context.bag.references[field]);
+        updatedContext.next.modelItem = context.bag.references[field];
+      } else if (updatedContext.bag.model?.[field]) {
+        updatedContext.next.modelItem = updatedContext.bag.model[field];
+        console.log('loading model field', field, updatedContext.next.modelItem);
+      } else {
+        console.log('field loaded', field, updatedContext.next.modelItem);
+      }
+    } else {
+      console.log('field loaded', field, updatedContext.next.modelItem);
+    }
     return {
       ...updatedContext,
-      operationType: 'field',
       field: keys[0],
     };
   },
   revisitOp: (context: Context) => {
-    return { ...context, isComplete: true };
+    return complete(context);
   },
 };

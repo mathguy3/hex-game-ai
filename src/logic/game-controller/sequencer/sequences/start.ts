@@ -8,17 +8,24 @@ export const start = {
     }
 
     serverSession.gameSession.gameState.hasStarted = true;
-    serverSession.gameSession.gameState.activeStep = 'start';
-    const nextOperation = Object.keys(serverSession.sequenceState.nextSequenceItem)[0];
+    const nextOperation = Object.keys(serverSession.sequenceState.next.sequenceItem)[0];
     serverSession.sequenceState = {
       previousContext: serverSession.sequenceState,
       path: 'start',
       operationType: 'start',
-      nextOperation,
+      next: {
+        operationType: nextOperation,
+        sequenceItem: serverSession.sequenceState.next.sequenceItem[nextOperation],
+      },
       isComplete: false,
       autoContinue: true,
-      nextSequenceItem: serverSession.sequenceState.nextSequenceItem[nextOperation],
-      bag: serverSession.sequenceState.bag,
+      bag: {
+        ...serverSession.sequenceState.bag,
+        references: serverSession.sequenceState.bag.references ?? {},
+        functions: serverSession.sequenceState.bag.functions ?? {},
+      },
+      references: serverSession.sequenceState.bag.references ?? {},
+      functions: serverSession.sequenceState.bag.functions ?? {},
     };
     return serverSession;
   },

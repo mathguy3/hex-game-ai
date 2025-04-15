@@ -8,7 +8,7 @@ export const playCard = {
   startOp: (serverSession: ServerSession, continueRequest: InteractActionRequest) => {
     const { interactRequest: request } = serverSession.sequenceState.localBag;
     const gameState = serverSession.gameSession.gameState;
-    const option = serverSession.sequenceState.nextSequenceItem;
+    const option = serverSession.sequenceState.next.sequenceItem;
     // Request.subjects length should equal option.card.select?.count
     const subject = request.subjects[0];
     if (subject.type !== 'card') {
@@ -47,8 +47,10 @@ export const playCard = {
       isComplete: false,
       autoContinue: true,
       bag: serverSession.sequenceState.bag,
-      nextSequenceItem,
-      nextOperation,
+      next: {
+        sequenceItem: nextSequenceItem,
+        operationType: nextOperation,
+      },
     };
     //console.log(
     //  'playCard sequenceState',

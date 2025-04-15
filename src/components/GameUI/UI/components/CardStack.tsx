@@ -28,12 +28,12 @@ export const CardStack = ({
 }: CardStackUIModel) => {
   const { isDragging } = useDragState();
   const { gameSession } = useGameSession();
-  const { doEval } = useIf(gameSession?.gameState);
+  const { doEval } = useIf(gameSession);
   const mappedStyles = { ...styles };
   const mappedCardStyles = { ...cardStyles };
   const cards = useMemo(() => {
     const contentCards = content ? doEval(content) : [];
-    const finalCards = contentCards || doEval(cardsBasedOnId(id));
+    const finalCards = contentCards || doEval(cardsBasedOnId(id)) || [];
     return finalCards;
   }, [content, gameSession.gameState.data]);
 
