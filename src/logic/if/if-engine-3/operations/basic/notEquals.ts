@@ -12,6 +12,10 @@ export const notEquals = {
     return { ...evalIfField(context), type: 'eval' };
   },
   revisitOp: (context: Context) => {
+    console.log('notEquals', context.bag.result, context.modelItem);
+    if (context.bag.result === '$undefined' && context.modelItem === undefined) {
+      return complete(context, false);
+    }
     const result = context.modelItem != context.bag.result;
     return complete(context, result);
   },

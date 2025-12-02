@@ -3,6 +3,7 @@ import { getKey } from '../utils/getHexKey';
 import { getS } from '../utils/getS';
 import { hexCoordsMatch } from '../utils/hexCoordsMatch';
 
+// Filled circle at a distance of range
 export const range = (model: any, query: any) => {
   const { subjectSpace } = model;
   if (!subjectSpace) {

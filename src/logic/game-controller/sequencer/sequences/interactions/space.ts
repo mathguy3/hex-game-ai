@@ -7,6 +7,7 @@ export const space = {
   startOp: (serverSession: ServerSession, continueRequest: InteractActionRequest) => {
     const { interactRequest: request } = serverSession.sequenceState.localBag;
     const subject = request.subjects[0];
+
     if (subject.type !== 'space') {
       throw new Error('Invalid subject');
     }
@@ -19,7 +20,8 @@ export const space = {
     const targetSpace = serverSession.gameSession.gameState.data[subject.targets[0].from][subject.targets[0].id];
     const targetSpaces = subject.targets.map((x) => serverSession.gameSession.gameState.data[x.from][x.id]);
 
-    serverSession.sequenceState = setIndex({
+    console.log('space activation', subjectSpace, targetSpace, targetSpaces);
+    serverSession.sequenceState = setIndex(serverSession, {
       previousContext: serverSession.sequenceState,
       path: nextPath,
       operationType: 'space',
@@ -39,7 +41,7 @@ export const space = {
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
+    serverSession.sequenceState = nextIndex(serverSession, serverSession.sequenceState);
     return serverSession;
   },
 };

@@ -26,6 +26,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
   const [selected, setSelected] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const seatId = Object.values(gameSession.gameState.seats).find((x) => x.userId === user.userId)?.id;
+  console.log('seatId', seatId, gameSession.gameState.seats, user.userId);
   const isActive = isUserActive(gameSession, user.userId);
 
   const firstCardOption = activeOptions?.find((x) => x.card);
@@ -75,7 +76,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
       }
       console.log('why does it go boom', active.data.current, over.data.current);
       // do a handlePlaceCard
-      handlePlaceCard.current(active.data.current.id, active.data.current.stackId, over.data.current.id);
+      //handlePlaceCard.current(active.data.current.id, active.data.current.stackId, over.data.current.id);
       //console.log('CardPlace!', active.data.current, over.data.current);
       // move the card to the other stack
       // Need to do a 'set' action to move the card
@@ -97,7 +98,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
       const newIndex = ph.findIndex((x) => x.id === over?.id);
       const oldValue = ph[oldIndex];
       ph = [...ph.toSpliced(oldIndex, 1).toSpliced(newIndex, 0, oldValue)];
-      saveActionState.current({
+      /*saveActionState.current({
         ...basicActionState,
         gameState: {
           ...gameState,
@@ -106,7 +107,7 @@ export const CardManager = ({ children }: { children: React.ReactNode }) => {
             [localState.meId]: { ...gameState.players[localState.meId], hand: ph },
           },
         },
-      });
+      });*/
     }
   }
 

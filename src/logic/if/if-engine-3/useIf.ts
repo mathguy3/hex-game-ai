@@ -5,7 +5,7 @@ import { doSet } from './doSet';
 import { useUIPlayer } from '../../game-controller/context/UIPlayerProvider';
 import { GameSession } from '../../../server/games/gameManager';
 
-export const useIf = (gameSession: GameSession) => {
+export const useIf = (gameSession: GameSession, shouldDebug?: boolean) => {
   const uiPlayer = useUIPlayer();
   const gameState = gameSession.gameState;
   return useMemo(() => {
@@ -14,13 +14,19 @@ export const useIf = (gameSession: GameSession) => {
       functions: gameSession.gameDefinition.definitions.functions,
       references: gameSession.gameDefinition.definitions.references,
       model: {
-        context: gameState,
+        context: gameState.data,
+        activeId: gameState.activeId,
+        hasStarted: gameState.hasStarted,
       },
+      shouldDebug,
     };
     return {
-      doIf: (ifItem: any, referenceValues?: any) => doIf({ ...context, ifItem, referenceValues }),
-      doEval: (ifItem: any, referenceValues?: any) => doEval({ ...context, ifItem, referenceValues }),
-      doSet: (ifItem: any, referenceValues?: any) => doSet({ ...context, ifItem, referenceValues }),
+      doIf: (ifItem: any, referenceValues?: any, shouldDebug?: boolean) =>
+        doIf({ ...context, ifItem, referenceValues, shouldDebug }),
+      doEval: (ifItem: any, referenceValues?: any, shouldDebug?: boolean) =>
+        doEval({ ...context, ifItem, referenceValues, shouldDebug }),
+      doSet: (ifItem: any, referenceValues?: any, shouldDebug?: boolean) =>
+        doSet({ ...context, ifItem, referenceValues, shouldDebug }),
     };
   }, [gameState, uiPlayer]);
 };

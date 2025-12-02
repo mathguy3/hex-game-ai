@@ -11,6 +11,7 @@ import { GameSessionProvider } from '../../../logic/game-controller/context/Game
 import { MapSelectionProvider } from '../../../logic/game-controller/context/MapSelectionProvider';
 import { AnnounceHandler } from '../../../logic/game-controller/context/AnnounceHandler';
 import { WinCondition } from '../../../logic/game-controller/context/WinCondition';
+import { SequenceVisualizerWrapper } from '../../GameUI/SequenceVisualizer';
 
 export const GamePage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ export const GamePage: React.FC = () => {
       </Stack>
 
       <GameSessionProvider roomCode={roomCode}>
+        <SequenceVisualizerWrapper />
         <AnnounceHandler />
         <WinCondition />
         <MapSelectionProvider>

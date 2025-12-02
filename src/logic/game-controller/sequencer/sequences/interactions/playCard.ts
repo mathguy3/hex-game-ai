@@ -1,8 +1,7 @@
 import { ActionRequest, InteractActionRequest } from '../..';
 import { ServerSession } from '../../../../../server/games/gameManager';
 import { PlayerState } from '../../../../../types/game';
-import { nextIndex } from '../indexer/nextIndex';
-import { setIndex } from '../indexer/setIndex';
+import { nextSequenceOperation } from '../indexer/nextSequenceOperation';
 
 export const playCard = {
   startOp: (serverSession: ServerSession, continueRequest: InteractActionRequest) => {
@@ -37,7 +36,7 @@ export const playCard = {
 
     //console.log('playCard action', action);
 
-    const nextOperation = Object.keys(action)[0];
+    const nextOperation = nextSequenceOperation(action);
     const nextSequenceItem = action[nextOperation];
 
     serverSession.sequenceState = {

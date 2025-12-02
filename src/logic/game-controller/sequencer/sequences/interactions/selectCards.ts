@@ -28,13 +28,14 @@ export const selectCards = {
       // Move the selected cards to the selectedCards array
       playerState.hand = playerState.hand.filter((x) => !selectedCards.includes(x));
       playerState.selectedCards = selectedCards;
+      console.log('Selecting cards', selectedCards);
     }
 
     const nextPath = serverSession.sequenceState.path + '.selectCards';
     serverSession.gameSession.gameState.activeStep = nextPath;
     serverSession.gameSession.localControl = null;
 
-    serverSession.sequenceState = setIndex({
+    serverSession.sequenceState = setIndex(serverSession, {
       previousContext: serverSession.sequenceState,
       path: nextPath,
       operationType: 'selectCards',
@@ -47,7 +48,7 @@ export const selectCards = {
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
+    serverSession.sequenceState = nextIndex(serverSession, serverSession.sequenceState);
     return serverSession;
   },
 };

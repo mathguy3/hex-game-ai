@@ -7,6 +7,8 @@ import { spaceSlotCurrentPlayer } from './spaceSlotCurrentPlayer';
 import { shuffleModifiers } from './playerActions/shuffleModifiers';
 import { playerSelectCards } from './playerActions/playerSelectCards';
 import { playerTurn } from './playerActions/playerTurn';
+import { isPlayerAction } from './playerActions/isPlayerAction';
+import { isEnemyAction } from './enemyActions/isEnemyAction';
 
 export const procedures = {
   isEnemyTargetSpace,
@@ -18,4 +20,6 @@ export const procedures = {
   shuffleModifiers,
   playerSelectCards,
   playerTurn,
+  isPlayerAction,
+  isEnemyAction,
 };

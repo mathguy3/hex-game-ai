@@ -5,6 +5,7 @@ import { attackCard } from './cards/attack/attackCard';
 import blinkblade from '../../../images/tokens/blinkblade.png';
 import enemy from '../../../images/tokens/enemy.png';
 import { board } from './board';
+import { enemyBasic } from './cards/enemy/enemyBasic';
 
 const makeBasicModifiers = (prefix?: string) => [
   { id: `${prefix}MinusTwo`, ...attackCard('minusTwo', -2) },
@@ -44,7 +45,6 @@ export const gloomhaven = {
       enemy1: { isConfigurable: false, isOpen: false, isAi: true },
       enemy2: { isConfigurable: false, isOpen: false, isAi: true },
     },
-    procedures,
     cards: {
       basic,
       minusTwo: attackCard('minusTwo', -2),
@@ -58,7 +58,7 @@ export const gloomhaven = {
     sequence: {
       round: {
         repeat: true,
-        breakIf: {
+        /*breakIf: {
           spaces: {
             filter: {
               character: {
@@ -75,16 +75,16 @@ export const gloomhaven = {
               },
             },
           },
-        },
+        },*/
         phases: [
-          '%shuffleModifiers',
+          /*'%shuffleModifiers',
           {
             announce: {
               to: 'all',
               message: 'Round Start',
               if: 'isPlayerAction',
             },
-          },
+          },*/
           '%playerSelectCards',
           '%playerTurn',
         ],
@@ -108,6 +108,8 @@ export const gloomhaven = {
         },
       },
     },
+    references: procedures,
+    functions: {},
   },
   data: {
     board,
@@ -124,8 +126,9 @@ export const gloomhaven = {
       ],
       modifierDiscard: [],
       modifiers: [...makeBasicModifiers('player1')],
+      selectedCards: [],
       properties: {
-        initiative: 0,
+        initiative: -1,
       },
     },
     player2: {
@@ -165,8 +168,9 @@ export const gloomhaven = {
     enemy1: {
       kind: 'flameDemon',
       isEnemy: true,
-      deck: [],
+      hand: [{ id: 'first', ...enemyBasic }],
       discard: [],
+      selectedCards: [],
       properties: {
         initiative: 0,
       },

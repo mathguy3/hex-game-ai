@@ -10,5 +10,16 @@ var diagonalVectors: Coordinates[] = [
 ];
 
 export function getDiagonal(direction: string | number) {
+  if (typeof direction === 'string') {
+    const directionMap: Record<string, number> = {
+      downLeft: 0,
+      left: 1,
+      upLeft: 2,
+      upRight: 3,
+      right: 4,
+      downRight: 5,
+    };
+    direction = directionMap[direction];
+  }
   return diagonalVectors[direction];
 }

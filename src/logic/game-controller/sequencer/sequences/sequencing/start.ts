@@ -1,5 +1,6 @@
-import { ServerSession } from '../../../../server/games/gameManager';
-import { ActionRequest } from '../doSequence';
+import { ServerSession } from '../../../../../server/games/gameManager';
+import { ActionRequest } from '../../doSequence';
+import { nextSequenceOperation } from '../indexer/nextSequenceOperation';
 
 export const start = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
@@ -8,7 +9,7 @@ export const start = {
     }
 
     serverSession.gameSession.gameState.hasStarted = true;
-    const nextOperation = Object.keys(serverSession.sequenceState.next.sequenceItem)[0];
+    const nextOperation = nextSequenceOperation(serverSession.sequenceState.next.sequenceItem);
     serverSession.sequenceState = {
       previousContext: serverSession.sequenceState,
       path: 'start',
@@ -24,8 +25,8 @@ export const start = {
         references: serverSession.sequenceState.bag.references ?? {},
         functions: serverSession.sequenceState.bag.functions ?? {},
       },
-      references: serverSession.sequenceState.bag.references ?? {},
-      functions: serverSession.sequenceState.bag.functions ?? {},
+      references: serverSession.sequenceState.references ?? {},
+      functions: serverSession.sequenceState.functions ?? {},
     };
     return serverSession;
   },

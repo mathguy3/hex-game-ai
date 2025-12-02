@@ -101,6 +101,10 @@ export const UI = React.memo((model: any) => {
   const modelType = getType(model);
   const UIComponent = UIComponentMap[modelType];
   const { [modelType]: modelItem, ...rest } = model;
+  if (!(modelType in UIComponentMap)) {
+    console.log('model', model, modelType);
+    throw new Error(`Unknown model type: ${modelType}`);
+  }
   return <UIComponent {...modelItem} {...rest} />;
 });
 export const UIComponentMap = {

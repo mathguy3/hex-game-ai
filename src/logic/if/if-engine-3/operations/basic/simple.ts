@@ -8,6 +8,7 @@ const map = {
   $Array: 'array',
   $Number: 'number',
   $Boolean: 'boolean',
+  $Action: 'action',
 };
 
 export const simple = {

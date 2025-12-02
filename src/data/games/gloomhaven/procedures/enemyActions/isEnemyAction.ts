@@ -1,7 +1,5 @@
-const isEnemyAction = {
+export const isEnemyAction = {
   player: {
-    properties: {
-      isEnemy: true,
-    },
+    isEnemy: { '==': true },
   },
 };

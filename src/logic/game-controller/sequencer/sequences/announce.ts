@@ -11,14 +11,16 @@ export const announce = {
       withBroadcast: true,
       isComplete: true,
       bag: serverSession.sequenceState.bag,
-      nextOperation: 'ackAnnounce',
-      nextSequenceItem: serverSession.sequenceState.nextSequenceItem,
+      next: {
+        operationType: 'ackAnnounce',
+        sequenceItem: serverSession.sequenceState.next.sequenceItem,
+      },
     };
     serverSession.gameSession.localControl = {
       activeOptions: [],
       activeAnnounce: {
-        to: serverSession.sequenceState.nextSequenceItem.to,
-        message: serverSession.sequenceState.nextSequenceItem.message,
+        to: serverSession.sequenceState.next.sequenceItem.to,
+        message: serverSession.sequenceState.next.sequenceItem.message,
       },
     };
     return serverSession;

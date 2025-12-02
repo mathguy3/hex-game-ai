@@ -3,7 +3,9 @@ import { hexVectorAdd } from '../utils/hexVectorAdd';
 import { hexVectorScale } from '../utils/hexVectorScale';
 import { getHexNeighbor } from '../utils/getHexNeighbor';
 import { getKey } from '../utils/getHexKey';
+import { orthogonalDirections } from './direction';
 
+// Circle at a distance of range
 export const distance = (model: any, query: any) => {
   const { subjectSpace } = model;
   if (!subjectSpace) {
@@ -16,11 +18,11 @@ export const distance = (model: any, query: any) => {
   const finalCoords = [];
   console.log('distance', subjectSpace, range);
   let currentHex = hexVectorAdd(subjectSpace.coordinates, hexVectorScale(getHexDiagonal(4), range));
-  for (let direction = 0; direction < 6; direction++) {
+  for (let direction = 0; direction < orthogonalDirections.length; direction++) {
     for (let r = 0; r < range; r++) {
-      finalCoords.push(getKey(currentHex));
-      currentHex = getHexNeighbor(currentHex, direction);
+      finalCoords.push(currentHex);
+      currentHex = getHexNeighbor(currentHex, orthogonalDirections[direction]);
     }
   }
-  return Object.fromEntries(finalCoords.map((x) => [x, { id: x }]));
+  return Object.fromEntries(finalCoords.map((x) => [getKey(x), { id: getKey(x), coordinates: x }]));
 };

@@ -34,30 +34,28 @@ export const bottom = {
           actions: [
             {
               action: {
-                actions: [
-                  {
-                    move: {
-                      from: {
-                        source: 'board',
-                        id: {
-                          subjectSpace: {
-                            id: '$String',
-                          },
+                move: {
+                  token: {
+                    from: {
+                      source: 'board',
+                      id: {
+                        subjectSpace: {
+                          id: '$String',
                         },
-                        slot: 'character',
                       },
-                      to: {
-                        source: 'board',
-                        id: {
-                          targetSpace: {
-                            id: '$String',
-                          },
+                      slot: 'character',
+                    },
+                    to: {
+                      source: 'board',
+                      id: {
+                        targetSpace: {
+                          id: '$String',
                         },
-                        slot: 'character',
                       },
+                      slot: 'character',
                     },
                   },
-                ],
+                },
               },
             },
           ],

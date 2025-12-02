@@ -6,4 +6,5 @@ export type ContextProps = {
   references?: Record<string, any>;
   functions?: Record<string, any>;
   referenceValues?: Record<string, any>;
+  shouldDebug?: boolean;
 };

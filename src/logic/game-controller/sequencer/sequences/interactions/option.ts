@@ -1,5 +1,5 @@
-import { ServerSession } from '../../../../server/games/gameManager';
-import { ActionRequest } from '../doSequence';
+import { ServerSession } from '../../../../../server/games/gameManager';
+import { ActionRequest } from '../../doSequence';
 
 export const option = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
@@ -19,24 +19,9 @@ export const option = {
       bag: serverSession.sequenceState.bag,
     };
 
-    //console.log('option', serverSession.sequenceState.nextSequenceItem);
-
     serverSession.gameSession.localControl = {
       activeOptions: serverSession.sequenceState.next.sequenceItem.options,
     };
-
-    // activate options
-
-    /*for (const option of serverSession.sequenceState.sequenceItem.options) {
-      const optionType = Object.keys(option)[0];
-      const optionValue = option[optionType];
-      const optionHandler = optionHandlers[optionType];
-      if (!optionHandler) {
-        throw new Error(`No handler found for option type: ${optionType}`);
-      }
-
-      serverSession = optionHandler.activate(serverSession, optionValue);
-    }*/
 
     return serverSession;
   },

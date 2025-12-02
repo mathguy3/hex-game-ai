@@ -2,24 +2,25 @@ import { ServerSession } from '../../../../server/games/gameManager';
 import { ActionRequest } from '../doSequence';
 
 export const ackAnnounce = {
-  startOp: (game: ServerSession, request: ActionRequest) => {
-    const { gameSession, sequenceState } = game;
+  startOp: (serverSession: ServerSession, request: ActionRequest) => {
+    const { sequenceState } = serverSession;
     const nextPath = sequenceState.path + '.ackAnnounce';
-    gameSession.gameState.activeStep = nextPath;
-    game.sequenceState = {
+    serverSession.sequenceState = {
       previousContext: sequenceState,
       path: nextPath,
       operationType: 'ackAnnounce',
-      isComplete: true,
+      isComplete: false,
       autoContinue: true,
       withBroadcast: true,
-      bag: sequenceState.bag,
-      nextSequenceItem: sequenceState.nextSequenceItem,
+      bag: serverSession.sequenceState.bag,
+      references: serverSession.sequenceState.references,
+      functions: serverSession.sequenceState.functions,
     };
-    return game;
+    return serverSession;
   },
-  continueOp: (game: ServerSession, request: ActionRequest) => {
-    game.sequenceState.isComplete = true;
-    return game;
+  continueOp: (serverSession: ServerSession, request: ActionRequest) => {
+    console.log('ackAnnounce continueOp', serverSession.sequenceState);
+    serverSession.sequenceState.isComplete = true;
+    return serverSession;
   },
 };

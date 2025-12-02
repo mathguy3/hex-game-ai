@@ -9,10 +9,22 @@ export const and = {
   startOp: (context: Context) => {
     validateFields(context, and);
 
-    return { ...evalIfArrayField(context), type: 'if' };
+    return { ...evalIfArrayField({ ...context, localBag: { result: true } }), type: 'if' };
   },
   revisitOp: (context: Context) => {
+    console.log(
+      'and revisit',
+      context.bag.result,
+      context.localBag.result,
+      context.bag.result && context.localBag.result
+    );
     const nextContext = revisitIfArrayField(context);
+    console.log(
+      'and revisit2',
+      nextContext.bag.result,
+      nextContext.localBag.result,
+      nextContext.bag.result && nextContext.localBag.result
+    );
     const nextResult = nextContext.bag.result && nextContext.localBag.result;
     return {
       ...nextContext,

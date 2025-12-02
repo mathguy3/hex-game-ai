@@ -41,7 +41,7 @@ export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChild
         //console.log('WebSocket message received:', event.data);
       } catch (error) {
         console.log('Error parsing WebSocket message:', error, event);
-        console.log(event.data);
+        console.log(event);
         return;
       }
 
@@ -72,7 +72,7 @@ export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChild
   useEffect(() => {
     if (gameSession?.roomCode) {
       // Join the game's WebSocket room
-      console.log('joining game', gameSession.roomCode, user.userId);
+      //console.log('joining game', gameSession.roomCode, user.userId);
       sendMessage({
         type: 'connectToRoom',
         roomCode: gameSession.roomCode,

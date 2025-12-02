@@ -29,18 +29,18 @@ type Definitions = {
   cards: Record<string, CardDefinition>;
   tokens?: Record<string, TokenDefinition>;
   sequence: any;
-  winCondition?: IF;
+  winCondition?: any;
 };
 
 export type GameDefinition = {
   config: GameConfig;
   data?: Record<string, any>;
   definitions: Definitions;
-  ui?: { shared: UIModel; player: UIModel };
+  ui?: { shared: any; player: any };
 };
 
 export type CardDefinition = {
-  actions?: Record<string, Sequence[]>;
+  actions?: Record<string, any>;
   requirements?: {}[];
   properties?: Record<string, any>;
   targeting?: Targeting;

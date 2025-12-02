@@ -1,6 +1,6 @@
-import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
 import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
+import SoldierSvg from '../../../components/Soldier/Soldier.svg';
 import { targetIsNotUnit } from './helpers/targetIsNotUnit';
 
 const getKnightAttackMove = (attack?: boolean) => ({
@@ -14,9 +14,10 @@ const getKnightAttackMove = (attack?: boolean) => ({
   not: [{ type: 'orthogonal' as const, range: 10 }],
 });
 
-export const knight: UnitDefinition = {
+export const knight: any = {
   type: 'unit',
   kind: 'knight',
+  image: SoldierSvg,
   properties: {},
   interactions: [
     {
@@ -30,7 +31,8 @@ export const knight: UnitDefinition = {
         {
           type: 'action' as const,
           name: 'moveToHex',
-          description: 'Moves subject unit to target hex, clears subject hex, and sets newly movedc target unit aspect hasMoved: true',
+          description:
+            'Moves subject unit to target hex, clears subject hex, and sets newly movedc target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],
@@ -46,7 +48,8 @@ export const knight: UnitDefinition = {
         {
           type: 'action' as const,
           name: 'moveToHex',
-          description: 'Moves subject unit to target hex, clears subject hex, and sets target unit aspect hasMoved: true',
+          description:
+            'Moves subject unit to target hex, clears subject hex, and sets target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],

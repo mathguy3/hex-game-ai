@@ -20,6 +20,7 @@ const getModel = () => {
           '0.0.0': { id: '0.0.0', type: 'space' },
         },
       },
+      basicList: [2, 1, 3],
       basicValue: 'test',
       basicNumber: 1,
       sideA: 3,
@@ -146,5 +147,19 @@ describe('main', () => {
       },
     });
     expect(result.context.sideC).toEqual(5);
+  });
+
+  it.only('should calculate the min of an array', () => {
+    const result = doEval({
+      ifItem: {
+        context: {
+          basicList: {
+            min: '$Number',
+          },
+        },
+      },
+      model: getModel(),
+    });
+    expect(result).toEqual(1);
   });
 });

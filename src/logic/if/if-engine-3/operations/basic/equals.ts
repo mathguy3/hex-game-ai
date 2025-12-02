@@ -22,6 +22,10 @@ export const equals = {
       context.previousContext.modelItem[field] = context.bag.result;
       return complete(context);
     } else {
+      console.log('equals is', context.modelItem, context.bag.result);
+      if (context.bag.result === '$undefined' && context.modelItem === undefined) {
+        return complete(context, true);
+      }
       const result = context.modelItem == context.bag.result;
       return complete(context, result);
     }

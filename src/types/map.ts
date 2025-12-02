@@ -12,6 +12,7 @@ type ContainState = {
 export type MapState = Record<string, HexItem>;
 
 export type HexItem = {
+  id: string;
   type: 'hex';
   key: CoordinateKey;
   coordinates: Coordinates;
@@ -20,4 +21,5 @@ export type HexItem = {
   isSelected: boolean;
   contains: ContainState;
   preview: Record<string, Preview>;
+  source: string;
 };

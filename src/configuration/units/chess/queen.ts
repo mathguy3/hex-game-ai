@@ -1,8 +1,8 @@
-import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
 import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
 import { targetIsNotUnit } from './helpers/targetIsNotUnit';
 import { targetIsUnit } from './helpers/targetIsUnit';
+import SoldierSvg from '../../../components/Soldier/Soldier.svg';
 
 const getQueenAttackMove = (attack?: boolean) => ({
   add: [
@@ -20,11 +20,11 @@ const getQueenAttackMove = (attack?: boolean) => ({
     },
   ],
 });
-
-export const queen: UnitDefinition = {
+export const queen: any = {
   type: 'unit',
   kind: 'queen',
   properties: {},
+  image: SoldierSvg,
   interactions: [
     {
       type: 'hex' as const,
@@ -37,7 +37,8 @@ export const queen: UnitDefinition = {
         {
           type: 'action' as const,
           name: 'moveToHex',
-          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
+          description:
+            'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],

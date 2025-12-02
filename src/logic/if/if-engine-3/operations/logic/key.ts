@@ -19,17 +19,16 @@ export const key = {
     }
 
     if (typeof context.bag.result !== 'string') {
-      throw new Error('Key statement requires a string result to work');
+      return complete(context, null);
+      //throw new Error('Key statement requires a string result to work');
     }
 
     const nextModelKey = context.bag.result;
-    //console.log('key', context, nextModelKey);
     const nextContext = {
       ...revisitField(context, 'value', nextModelKey),
       type: context.previousContext.type,
       localBag: { key: nextModelKey },
     };
-    //console.log('key next context', nextContext);
     return nextContext;
   },
 };

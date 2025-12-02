@@ -11,7 +11,10 @@ export const min = {
     return { ...evalArrayField(context, 'min'), type: 'eval' };
   },
   revisitOp: (context: Context) => {
-    context.localBag.itemResults = [...(context.localBag.itemResults ?? []), context.bag.result];
+    console.log('revisit min', context.bag.result);
+    if (context.bag.result) {
+      context.localBag.itemResults = [...(context.localBag.itemResults ?? []), context.bag.result];
+    }
 
     return revisitArrayField(context, 'min', (context) => {
       context.bag.result = Math.min(...context.localBag.itemResults);

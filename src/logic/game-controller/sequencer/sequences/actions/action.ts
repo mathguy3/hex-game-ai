@@ -1,9 +1,10 @@
-import { ServerSession } from '../../../../server/games/gameManager';
-import { getProcedure } from '../../../if/if-engine-3/getProcedure';
-import { ActionRequest } from '../doSequence';
-import { sIf } from '../utils/sIf';
-import { sSet } from '../utils/sSet';
-import { actionHandlers } from './actions';
+import { ServerSession } from '../../../../../server/games/gameManager';
+import { getProcedure } from '../../../../if/if-engine-3/getProcedure';
+import { ActionRequest } from '../../doSequence';
+import { sIf } from '../../utils/sIf';
+import { sSet } from '../../utils/sSet';
+import { actionHandlers } from '.';
+import { nextSequenceOperation } from '../indexer/nextSequenceOperation';
 
 export const action = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
@@ -28,7 +29,7 @@ export const action = {
       //console.log('action', serverSession.sequenceState.bag, action);
 
       // Check if there's a specific handler for this action type
-      const actionKey = Object.keys(proceduredAction)[0];
+      const actionKey = nextSequenceOperation(proceduredAction);
       if (actionHandlers[actionKey]) {
         serverSession = actionHandlers[actionKey].resolve(serverSession, proceduredAction[actionKey]);
         hasTransitions = true;

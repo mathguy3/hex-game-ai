@@ -1,8 +1,9 @@
-import { ServerSession } from '../../../../server/games/gameManager';
-import { ActionRequest, InteractActionRequest } from '../doSequence';
+import { ServerSession } from '../../../../../server/games/gameManager';
+import { ActionRequest, InteractActionRequest } from '../../doSequence';
 
 export const interact = {
   startOp: (serverSession: ServerSession, request: InteractActionRequest) => {
+    console.log('interact', request);
     if (request.type !== 'interact') {
       throw new Error('wrong request type, should be interact');
     }
@@ -21,7 +22,7 @@ export const interact = {
       throw new Error('No next operation found');
     }
     const nextSequenceItem = option[optionKey];
-
+    console.log('nextSequenceItem FOR INTERACT', optionKey, nextOperation);
     serverSession.sequenceState = {
       previousContext: serverSession.sequenceState,
       path: nextPath,

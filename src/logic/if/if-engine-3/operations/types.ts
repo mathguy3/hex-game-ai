@@ -17,6 +17,7 @@ export type Context = {
   modelItem: any;
   isArray?: boolean;
   path: string;
+  shouldDebug?: boolean;
 
   field?: string;
   isComplete: boolean;

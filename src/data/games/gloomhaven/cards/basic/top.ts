@@ -22,25 +22,21 @@ export const top = {
           actions: [
             {
               action: {
-                actions: [
-                  {
-                    targetSpace: {
-                      character: {
-                        properties: {
-                          health: {
-                            equals: {
-                              targetSpace: {
-                                character: {
-                                  properties: { health: { minus: 2 } },
-                                },
-                              },
+                targetSpace: {
+                  character: {
+                    properties: {
+                      health: {
+                        equals: {
+                          targetSpace: {
+                            character: {
+                              properties: { health: { minus: 2 } },
                             },
                           },
                         },
                       },
                     },
                   },
-                ],
+                },
               },
             },
             {
@@ -57,17 +53,19 @@ export const top = {
                 actions: [
                   {
                     move: {
-                      from: {
-                        source: 'board',
-                        id: {
-                          targetSpace: {
-                            id: '$String',
+                      token: {
+                        from: {
+                          source: 'board',
+                          id: {
+                            targetSpace: {
+                              id: '$String',
+                            },
                           },
+                          slot: 'character',
                         },
-                        slot: 'character',
-                      },
-                      to: {
-                        source: 'supply',
+                        to: {
+                          source: 'supply',
+                        },
                       },
                     },
                   },

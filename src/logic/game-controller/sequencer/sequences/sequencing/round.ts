@@ -1,13 +1,14 @@
-import { ServerSession } from '../../../../server/games/gameManager';
-import { ActionRequest } from '../doSequence';
-import { sIf } from '../utils/sIf';
-import { nextIndex } from './indexer/nextIndex';
-import { setIndex } from './indexer/setIndex';
+import { ServerSession } from '../../../../../server/games/gameManager';
+import { ActionRequest } from '../../doSequence';
+import { sIf } from '../../utils/sIf';
+import { nextIndex } from '../indexer/nextIndex';
+import { setIndex } from '../indexer/setIndex';
 
 export const round = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
     const nextPath = serverSession.sequenceState.path + '.round';
-    serverSession.sequenceState = setIndex({
+
+    serverSession.sequenceState = setIndex(serverSession, {
       previousContext: serverSession.sequenceState,
       path: nextPath,
       operationType: 'round',
@@ -20,17 +21,23 @@ export const round = {
       withBroadcast: true,
       references: serverSession.sequenceState.references ?? {},
       functions: serverSession.sequenceState.functions ?? {},
-      bag: serverSession.sequenceState.bag,
+      bag: {
+        ...serverSession.sequenceState.bag,
+        references: {
+          ...serverSession.sequenceState.bag.references,
+          player: serverSession.gameSession.gameState.data[serverSession.gameSession.gameState.activeId],
+        },
+      },
     });
     //console.log('round startOp', serverSession.sequenceState);
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
     const { previousContext, ...rest } = serverSession.sequenceState;
-    console.log('continueOp round', rest);
-    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
+    //console.log('continueOp round', rest);
+    serverSession.sequenceState = nextIndex(serverSession, serverSession.sequenceState);
     const { previousContext: _, ...rest2 } = serverSession.sequenceState.previousContext;
-    console.log('continueOp round', rest2);
+    //console.log('continueOp round', rest2);
 
     if (
       serverSession.sequenceState.isComplete &&
@@ -46,7 +53,7 @@ export const round = {
       }
       serverSession.gameSession.gameState.activeId = serverSession.sequenceState.localBag.initialPlayerId;
 
-      serverSession.sequenceState = setIndex({
+      serverSession.sequenceState = setIndex(serverSession, {
         ...serverSession.sequenceState,
         isComplete: false,
         localBag: {
@@ -55,7 +62,7 @@ export const round = {
         },
         references: serverSession.sequenceState.references,
       });
-      console.log('round continueOp', serverSession.sequenceState);
+      //console.log('round continueOp', serverSession.sequenceState);
     }
 
     return serverSession;

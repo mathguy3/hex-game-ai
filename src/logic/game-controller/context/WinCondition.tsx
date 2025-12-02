@@ -1,20 +1,20 @@
 import { Box } from '@mui/material';
 import { useGameSession } from './GameSessionProvider';
-import { doIf } from '../../if/if-engine-3/doIf';
+import { useIf } from '../../if/if-engine-3/useIf';
 
 export const WinCondition = () => {
   const { gameSession } = useGameSession();
+  const { doIf } = useIf(gameSession);
 
   console.log('win condition', gameSession.gameState.isComplete);
   if (!gameSession.gameState.isComplete) {
     return null;
   }
   const condition = gameSession.gameDefinition.definitions.winCondition;
-  const hasWon = doIf({
-    ifItem: condition,
-    model: { context: gameSession.gameState },
-    procedures: gameSession.gameDefinition.definitions.procedures,
-  });
+  if (!condition) {
+    return null;
+  }
+  const hasWon = doIf(condition);
   //centered on screen
   return (
     <Box

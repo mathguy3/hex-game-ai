@@ -40,81 +40,10 @@ export const hexChess: GameDefinition = {
     description: 'A strategic board game',
     rotateTable: true,
   },
-  players: {
-    team1: {},
-    team2: {},
-  },
-  initialState: {
-    testCards: [
-      {
-        id: '1',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '2',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '3',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '4',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '5',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '6',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '7',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '8',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '9',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '10',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '11',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '12',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-      {
-        id: '13',
-        kind: 'ace',
-        properties: { value: 1 },
-      },
-    ],
-  },
-  definitions: {
-    map: mapGen()
+  data: {
+    player1: {},
+    player2: {},
+    board: mapGen()
       .radius(5)
       // Team 1 (White) back row - bottom
       .spawn('rook', '3.-5.2', 'team2')
@@ -159,57 +88,8 @@ export const hexChess: GameDefinition = {
       .spawn('pawnWhite', '2.1.-3', 'team1')
       .spawn('pawnWhite', '3.1.-4', 'team1')
       .spawn('pawnWhite', '4.1.-5', 'team1')
-
       .result(),
-    sequencing: {
-      type: 'repeating',
-      breakOn: currentPlayerHasWon,
-      actions: [
-        {
-          type: 'options',
-          interactions: {
-            hex: {
-              type: 'hex',
-              kind: 'selection',
-              targeting: {
-                tiles: {
-                  add: [
-                    {
-                      type: 'hex',
-                      tileIf: isMyTeam,
-                    },
-                  ],
-                },
-              },
-              actions: [],
-            },
-            card: {
-              type: 'card',
-              kind: 'play',
-            },
-          },
-        },
-      ],
-    },
-    actions: {
-      movement: {
-        type: 'action',
-        description: 'Swaps subject unit to target unit',
-        name: 'movement',
-        set: moveToHex,
-      },
-    },
-    cards: {
-      ace: {
-        actions: {
-          top: [],
-          bottom: [],
-        },
-        requirements: [{}],
-        properties: {},
-      },
-    },
-    units: {
+    unit: {
       pawnWhite,
       pawnBlack,
       rook,
@@ -219,87 +99,108 @@ export const hexChess: GameDefinition = {
       king,
     },
   },
+  definitions: {
+    sequence: {
+      round: {
+        repeat: true,
+        phases: [
+          {
+            turn: {
+              name: 'Your Turn',
+              allPlayers: true,
+              rotate: true,
+              actions: [
+                {
+                  option: {
+                    options: [
+                      {
+                        space: {
+                          query: {
+                            type: 'space',
+                            from: ['board'],
+                            filter: ['%isMyTeam'],
+                          },
+                          defined: {
+                            context: {
+                              unit: {
+                                key: {
+                                  subjectSpace: {
+                                    unit: {
+                                      kind: '$String',
+                                    },
+                                  },
+                                },
+                                value: {
+                                  action: '$Action',
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    cards: {},
+    references: {},
+    functions: {},
+    seats: {
+      player1: { isOpen: true, isAi: false },
+      player2: { isOpen: true, isAi: false },
+    },
+  },
   ui: {
-    type: 'Zone',
-    id: 'hex-chess-ui',
-    children: [
-      {
-        id: 'testCards',
-        type: 'CardStack',
-        disabled: {
-          not: {
-            context: {
-              hasStarted: '$Boolean',
-            },
-          },
-        },
+    shared: {
+      zone: {
+        id: 'primary',
         styles: {
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
+          width: 1500,
+          height: 1000,
+          border: '1px solid #777',
+          borderRadius: 10,
         },
-        content: {
-          context: {
-            cardStacks: {
-              testCards: '$Array',
-            },
-          },
-        },
-      },
-      {
-        id: 'otherCards',
-        type: 'CardStack',
-        styles: {
-          position: 'absolute',
-          bottom: 0,
-          left: 400,
-          width: '150px',
-          height: '190px',
-          backgroundColor: '#ccc',
-        },
-        disabled: {
-          not: {
-            context: {
-              hasStarted: '$Boolean',
-            },
-          },
-        },
-        content: {
-          context: {
-            cardStacks: {
-              otherCards: '$Array',
-            },
-          },
-        },
-      },
-      {
-        id: 'move-button',
-        type: 'Button',
-        styles: {
-          position: 'absolute',
-          bottom: 10,
-          left: -600,
-          color: {
-            context: {
-              if: {
-                hasStarted: '$Boolean',
+        children: [
+          {
+            hexMap: {
+              id: 'board',
+              styles: {
+                position: 'absolute',
+                left: 500,
+                top: 500,
               },
-              then: 'secondary',
-              else: 'primary',
-            },
-          },
-        },
-        properties: {
-          disabled: {
-            not: {
-              context: {
-                hasStarted: '$Boolean',
+              hex: {
+                slots: {
+                  unit: {
+                    token: {
+                      type: 'unit',
+                      styles: {
+                        width: 60,
+                        height: 75,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
-        },
-        content: 'Move',
+        ],
       },
-    ],
+    },
+    player: {
+      zone: {
+        id: 'playerZone',
+        styles: {
+          position: 'absolute',
+          left: 500,
+          top: 1050,
+        },
+      },
+    },
   },
 };

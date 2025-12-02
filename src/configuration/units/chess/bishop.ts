@@ -1,7 +1,7 @@
-import { UnitDefinition } from '../../../types/entities/unit/unit';
 import { moveToHex } from './helpers/moveToHex';
 import { targetIsEnemyUnit } from './helpers/targetIsEnemyUnit';
 import { targetIsNotUnit } from './helpers/targetIsNotUnit';
+import SoldierSvg from '../../../components/Soldier/Soldier.svg';
 import { targetIsUnit } from './helpers/targetIsUnit';
 
 const getBishopAttackMove = (attack?: boolean) => ({
@@ -15,11 +15,12 @@ const getBishopAttackMove = (attack?: boolean) => ({
   ],
 });
 
-export const bishop: UnitDefinition = {
+export const bishop: any = {
   type: 'unit',
   kind: 'bishop',
+  image: SoldierSvg,
   properties: {},
-  interactions: [
+  actions: [
     {
       type: 'hex' as const,
       kind: 'movement',
@@ -31,7 +32,8 @@ export const bishop: UnitDefinition = {
         {
           type: 'action' as const,
           name: 'moveToHex',
-          description: 'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
+          description:
+            'Moves subject unit to target hex, clears subject hex, and sets newly moved target unit aspect hasMoved: true',
           set: moveToHex,
         },
       ],

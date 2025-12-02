@@ -23,8 +23,8 @@ export const mapGen = (tiles: MapState = {}) => {
         ...tiles,
         [coordinates]: {
           ...tiles[coordinates],
-          contains: { unit: newUnit },
-        },
+          unit: newUnit,
+        } as HexItem,
       });
     },
     result: () => tiles,
@@ -33,6 +33,7 @@ export const mapGen = (tiles: MapState = {}) => {
 
 const makeHex = (coordinates: Coordinates): HexItem => {
   return {
+    id: getKey(coordinates),
     type: 'hex' as const,
     key: getKey(coordinates),
     kind: coordinates.q === -2 ? 'river' : 'hex',
@@ -41,6 +42,7 @@ const makeHex = (coordinates: Coordinates): HexItem => {
     isSelected: false,
     contains: {},
     preview: {},
+    source: 'board',
   };
 };
 

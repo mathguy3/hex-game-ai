@@ -1,18 +1,45 @@
 export const playerSelectCards = {
   turn: {
-    if: 'isPlayerAction',
     name: 'Select Card',
     allPlayers: true,
     async: true,
     actions: [
       {
+        action: {
+          if: '%isEnemyAction',
+          move: {
+            card: {
+              from: {
+                source: {
+                  context: {
+                    activeId: '$String',
+                  },
+                },
+                slot: 'hand',
+                id: 'first',
+              },
+              to: {
+                source: {
+                  context: {
+                    activeId: '$String',
+                  },
+                },
+                slot: 'selectedCards',
+              },
+            },
+          },
+        },
+      },
+      {
         announce: {
+          if: '%isPlayerAction',
           to: 'active',
           message: 'Select 2 cards',
         },
       },
       {
         option: {
+          if: '%isPlayerAction',
           options: [
             {
               card: {
@@ -27,35 +54,25 @@ export const playerSelectCards = {
       },
       {
         action: {
-          actions: [
-            {
+          context: {
+            key: {
               context: {
-                data: {
-                  key: {
+                activeId: '$String',
+              },
+            },
+            value: {
+              properties: {
+                initiative: {
+                  equals: {
                     context: {
-                      activeId: '$String',
-                    },
-                  },
-                  value: {
-                    properties: {
-                      initiative: {
-                        equals: {
-                          context: {
-                            data: {
-                              key: {
-                                context: {
-                                  activeId: '$String',
-                                },
-                              },
-                              value: {
-                                selectedCards: {
-                                  min: {
-                                    properties: {
-                                      initiative: '$Number',
-                                    },
-                                  },
-                                },
-                              },
+                      key: {
+                        activeId: '$String',
+                      },
+                      value: {
+                        selectedCards: {
+                          min: {
+                            properties: {
+                              initiative: '$Number',
                             },
                           },
                         },
@@ -65,7 +82,7 @@ export const playerSelectCards = {
                 },
               },
             },
-          ],
+          },
         },
       },
     ],

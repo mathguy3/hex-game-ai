@@ -30,13 +30,23 @@ export const revisitField = (context: Context, field?: string, modelField?: stri
   const nextIfItem = context.previousContext.next.ifItem[nextField];
   const { operationType } = getOperation(nextIfItem, context.references, context.functions);
   //const nextPath = addPath(context.previousContext.path, nextField);
+  /*console.log(
+    'revisitField',
+    context.bag,
+    context.previousContext.next.modelItem,
+    context.previousContext.modelItem,
+    context.previousContext.next.ifItem,
+    nextField,
+    modelField
+  );*/
+  const nextModelItem = context.modelItem[modelField ?? nextField];
   return {
     ...context,
     //path: nextPath,
     next: {
       ifItem: nextIfItem,
       operationType: operationType,
-      modelItem: context.modelItem[modelField ?? nextField],
+      modelItem: nextModelItem,
     },
   };
 };

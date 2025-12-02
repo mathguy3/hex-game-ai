@@ -1,8 +1,8 @@
-import { ServerSession } from '../../../../server/games/gameManager';
-import { ActionRequest } from '../doSequence';
-import { sEval } from '../utils/sEval';
-import { nextIndex } from './indexer/nextIndex';
-import { setIndex } from './indexer/setIndex';
+import { ServerSession } from '../../../../../server/games/gameManager';
+import { ActionRequest } from '../../doSequence';
+import { sEval } from '../../utils/sEval';
+import { nextIndex } from '../indexer/nextIndex';
+import { setIndex } from '../indexer/setIndex';
 
 export const foreach = {
   startOp: (serverSession: ServerSession, request: ActionRequest) => {
@@ -12,8 +12,9 @@ export const foreach = {
     const nextPath = sequenceState.path + '.foreach';
     gameSession.gameState.activeStep = nextPath;
     const items = sEval(sequenceItem.items, serverSession);
+    const refName = sequenceItem.name;
 
-    serverSession.sequenceState = setIndex({
+    serverSession.sequenceState = setIndex(serverSession, {
       previousContext: serverSession.sequenceState,
       path: nextPath,
       operationType: 'foreach',
@@ -31,14 +32,14 @@ export const foreach = {
         ...sequenceState.bag,
         references: {
           ...sequenceState.bag.references,
-          sequenceItem: items[0],
+          [refName ?? 'sequenceItem']: items[0],
         },
       },
     });
     return serverSession;
   },
   continueOp: (serverSession: ServerSession, request: ActionRequest) => {
-    serverSession.sequenceState = nextIndex(serverSession.sequenceState);
+    serverSession.sequenceState = nextIndex(serverSession, serverSession.sequenceState);
     if (serverSession.sequenceState.isComplete) {
       const nextItemIndex = serverSession.sequenceState.localBag.itemIndex + 1;
       serverSession.sequenceState.isComplete = false;
@@ -49,7 +50,7 @@ export const foreach = {
       }
       const nextItem = serverSession.sequenceState.localBag.items[nextItemIndex];
       //serverSession.gameSession.gameState.activeId = nextPlayerId;
-      serverSession.sequenceState = setIndex({
+      serverSession.sequenceState = setIndex(serverSession, {
         ...serverSession.sequenceState,
         localBag: {
           ...serverSession.sequenceState.localBag,

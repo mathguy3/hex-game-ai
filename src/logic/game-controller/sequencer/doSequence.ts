@@ -60,16 +60,26 @@ export const doSequence = (
   broadcast: () => void,
   allowAutoContinue = true
 ) => {
-  if (!isPlayerTurn(game.gameSession.gameState, request)) {
-    console.log('not your turn', game.gameSession.gameState.activeId, request.playerId);
+  if (request.type !== 'continue' && !isPlayerTurn(game.gameSession.gameState, request)) {
+    console.log('not your turn', request.type, game.gameSession.gameState.activeId, request.playerId);
     return game;
   }
   const { gameSession, sequenceState } = game;
   const { gameState } = gameSession;
   const nextOperation = sequenceState.next?.operationType;
+  const currentSeat = gameState.seats[gameState.activeId];
 
+  //console.log('nextOperation', nextOperation, currentSeat);
   if (nextOperation == 'start' && request.type !== 'start') {
     return game;
+  }
+
+  // Skip unplayable ackAnnounce or interact steps
+  //console.log('currentSeat', currentSeat);
+  if ((nextOperation == 'ackAnnounce' || nextOperation == 'interact') && !currentSeat.userId) {
+    game.sequenceState.next = undefined;
+    console.log('skipping seq', sequenceState.path + '-> ' + nextOperation);
+    return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast, allowAutoContinue);
   }
 
   if (nextOperation == 'interact' && request.type !== 'interact') {
@@ -81,16 +91,16 @@ export const doSequence = (
   }
 
   if (nextOperation) {
-    //console.log('nextOperation', nextOperation);
+    console.log('nextOperation', sequenceState.next);
     if (sequenceState.next?.sequenceItem.if) {
       const { if: ifCondition } = sequenceState.next.sequenceItem;
-      //console.log('if condition', ifCondition, sequenceState.bag.references);
+      console.log('if condition', ifCondition); //, sequenceState.bag.references, nextOperation);
       const result = sIf(ifCondition, game);
-      //console.log('if result', result);
+      console.log('if result', result);
       if (!result) {
         console.log('skipping seq', sequenceState.path + '-> ' + nextOperation);
         sequenceState.next = undefined;
-        return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+        return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast, allowAutoContinue);
       }
     }
     console.log('starting seq', sequenceState.path, nextOperation ? '-> ' + nextOperation : '<--');
@@ -149,16 +159,19 @@ export const doSequence = (
       broadcast();
     }
     if (game.sequenceState.delayedContinue) {
+      console.log('auto continuing delayed');
       setTimeout(() => {
         console.log('auto continuing2');
-        doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+        doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast, allowAutoContinue);
         broadcast();
       }, 1000);
       return game;
     } else {
-      return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast);
+      console.log('auto continuing', game.sequenceState.path, game.sequenceState.operationType);
+      return doSequence(game, { type: 'continue', playerId: request.playerId }, broadcast, allowAutoContinue);
     }
   } else {
+    console.log('not auto continuing', game.sequenceState.path, game.sequenceState.operationType);
     return game;
   }
 };

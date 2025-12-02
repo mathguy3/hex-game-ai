@@ -5,7 +5,7 @@ import { runIf } from './runIf';
 import { ContextProps } from './types';
 
 export const doOp = (context: ContextProps, type: 'if' | 'set' | 'eval') => {
-  const { ifItem, model, references, functions } = context;
+  const { ifItem, model, references, functions, shouldDebug } = context;
   const runContext: Context = {
     next: { ifItem: getProcedure(ifItem, references), modelItem: model },
     type,
@@ -16,6 +16,7 @@ export const doOp = (context: ContextProps, type: 'if' | 'set' | 'eval') => {
     references: references ?? {},
     functions: functions ?? {},
     modelItem: model,
+    shouldDebug,
   };
   const { operationType } = getNextOperation(runContext);
   runContext.next.operationType = operationType;

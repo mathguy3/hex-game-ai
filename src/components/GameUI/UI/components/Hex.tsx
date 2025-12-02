@@ -90,7 +90,7 @@ export const Hex = React.memo(
     const slotKeys = Object.keys(slots);
     //console.log('slots', slots, slotKeys);
     if (data) {
-      console.log('hex', id, data, hex, isSelected, isTargeted, preview);
+      //console.log('hex', id, data, hex, isSelected, isTargeted, preview);
     }
     //console.log('data', data);
     return (
@@ -126,6 +126,18 @@ export const Hex = React.memo(
         {slotKeys.map((slotKey) =>
           data[slotKey] ? <UI key={slotKey} {...slots[slotKey]} data={data[slotKey]} /> : null
         )}
+        <Box
+          position="absolute"
+          top={50}
+          right={15}
+          zIndex={99}
+          color="white"
+          bgcolor="#00000080"
+          borderRadius={10}
+          p={'2px'}
+        >
+          {coordinates.q},{coordinates.r},{coordinates.s}
+        </Box>
         {/*data?.character && (
         <Box
           zIndex={2}

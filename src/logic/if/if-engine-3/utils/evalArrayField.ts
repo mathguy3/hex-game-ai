@@ -8,12 +8,17 @@ export const evalArrayField = (context: Context, field?: string) => {
   const nextPath = addPath(context.path, nextField);
 
   const initialIndex = 0;
-  if (context.next.modelItem.length === initialIndex) {
+  if ((context.next?.modelItem?.length ?? 0) === initialIndex) {
     return {
       previousContext: context,
       type: context.type,
-      bag: context.bag,
       path: nextPath,
+      operationType: context.next.operationType,
+      localBag: { ...context.localBag, index: initialIndex },
+      modelItem: context.next.modelItem,
+      references: context.references,
+      functions: context.functions,
+      bag: context.bag,
     };
   }
   const ifItem = context.next.ifItem[field];
@@ -29,6 +34,8 @@ export const evalArrayField = (context: Context, field?: string) => {
       operationType: operationType,
       modelItem: firstItem,
     },
+    operationType: context.next.operationType,
+    modelItem: context.next.modelItem,
     localBag: { ...context.localBag, index: initialIndex },
     references: context.references,
     functions: context.functions,
@@ -41,19 +48,19 @@ export const revisitArrayField = (
   field?: string,
   onComplete?: (context: Context) => Context
 ): Context => {
-  const nextField = field ?? Object.keys(context.previousContext.next.ifItem)[0];
   const nextIndex = context.localBag.index + 1;
-  const array = context.modelItem[nextField];
-  if (nextIndex === array.length) {
+  const array = context.modelItem;
+  if (context.localBag?.itemResults?.length > 10) {
+    throw new Error();
+  }
+  if (nextIndex >= (array?.length ?? 0)) {
     return complete(onComplete?.(context) ?? context);
   }
-  const nextPath = addPath(context.previousContext.path, nextField);
   const ifItem = context.previousContext.next.ifItem[field];
 
   const { operationType } = getOperation(ifItem, context.references, context.functions);
   return {
     ...context,
-    path: nextPath,
     next: {
       ifItem: ifItem,
       operationType: operationType,

@@ -1,6 +1,5 @@
 export const playerTurn = {
   turn: {
-    if: 'isPlayerAction',
     name: 'Play Card',
     allPlayers: true,
     rotate: true,
@@ -11,17 +10,23 @@ export const playerTurn = {
     },
     actions: [
       {
-        option: {
-          options: [
-            {
-              card: {
-                play: {
-                  from: 'selectedCards',
-                  remove: true,
+        doAction: {
+          from: {
+            context: {
+              key: {
+                activeId: '$String',
+              },
+              value: {
+                selectedCards: {
+                  0: {
+                    actions: {
+                      0: '$Action',
+                    },
+                  },
                 },
               },
             },
-          ],
+          },
         },
       },
       {
@@ -37,6 +42,22 @@ export const playerTurn = {
             },
           ],
         },
+        if: '%isPlayerAction',
+      },
+      {
+        option: {
+          options: [
+            {
+              card: {
+                play: {
+                  from: 'selectedCards',
+                  remove: true,
+                },
+              },
+            },
+          ],
+        },
+        if: '%isPlayerAction',
       },
     ],
   },
