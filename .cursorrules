@@ -1,0 +1,2 @@
+Do not write comments describing WHAT a block of code does, only WHY a block of code was included. Only include that comment if it is a confusing block of code. TODO: comments are okay.
+
