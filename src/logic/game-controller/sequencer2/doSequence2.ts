@@ -1,117 +1,59 @@
-import { ServerSession } from '../../../server/games/gameManager';
+import { GameSession } from '../../../server/games/gameManager';
 import { ActionRequest } from '../sequencer/doSequence';
-import { isPlayerTurn } from '../../util/isPlayerTurn';
 import * as sequences from './sequences/index';
-import * as sequenceOperations from '../sequencer/sequences';
+import { verify } from './verify';
+import { act } from './act';
+import { setup } from './setup';
+import { getGroupArray } from './utils/getGroupArray';
 
-export type SequenceResult = {
-  game: ServerSession;
-  next: unknown;
+export type SequenceState = {
+  path: string;
+  parentState?: SequenceState;
+  currentOp: keyof typeof sequences;
+  currentSequence: Record<string, any> | any[];
+  hasStarted?: boolean;
+  next?: NextContext;
 };
 
-const testGame: any = {
-  sequenceState: {
-    currentOp: 'start',
-    currentSequence: {
-      round: {
-        turn: {
-          action: {},
-        },
-      },
-    },
-    next: null,
-  },
+export type ServerSession2 = {
+  roomCode: string;
+  gameSession: GameSession;
+  sequenceState: SequenceState;
 };
 
-export function doSequence2(game: ServerSession, request: ActionRequest): SequenceResult {
+export type NextContext = {
+  isComplete?: boolean;
+  continueUntilComplete?: boolean;
+  index?: number;
+};
+
+const makeSequenceLogger = (...args1: any[]) => {
+  return (...args: any[]) => {
+    console.log(...args1, ...args);
+  };
+};
+export let cons = { log: makeSequenceLogger('start') };
+
+export function doSequence2(game: ServerSession2, request: ActionRequest): ServerSession2 {
+  const isGroup = !!getGroupArray(game.sequenceState.currentSequence);
+  cons.log = makeSequenceLogger(
+    '|' +
+      game.sequenceState.path +
+      (isGroup ? game.sequenceState.next?.index ?? 0 : '') +
+      (game.sequenceState.hasStarted ? '|' : '')
+  );
+  cons.log('gear turn', game.sequenceState.currentOp, request);
   // 1. Verify - check that the playerId is on their turn, etc.
   const verificationResult = verify(game, request);
   if (!verificationResult.valid) {
-    return {
-      game,
-      next: {},
-    };
+    cons.log('verificationResult', verificationResult);
+    return game;
   }
 
-  // 2. Load - prepare and load any necessary data for the operation
-  const loadResult = load(game, request);
+  // 2. Act - do the actual operation
+  const updatedGame = act(game, request);
+  //console.log('updatedGame', updatedGame);
 
-  // 3. Act - do the actual operation
-  const actResult = act(loadResult.game, request, loadResult);
-
-  // 4. Setup - setup the next session object for the result based on the output of Act
-  const setupResult = setup(actResult);
-
-  return {
-    game: setupResult.game,
-    next: setupResult.next,
-  };
-}
-
-function verify(game: ServerSession, request: ActionRequest): { valid: boolean } {
-  // Check that playerId is on their turn (except for 'continue' requests)
-  if (request.type !== 'continue' && !isPlayerTurn(game.gameSession.gameState, request)) {
-    return { valid: false };
-  }
-
-  // Check that only 'start' type is allowed when next operation is 'start'
-  const nextOperation = game.sequenceState.next?.operationType;
-  if (nextOperation === 'start' && request.type !== 'start') {
-    return { valid: false };
-  }
-
-  return { valid: true };
-}
-
-function load(game: ServerSession, request: ActionRequest): { game: ServerSession; [key: string]: unknown } {
-  // TODO: Load and prepare any necessary data for the operation
-  return { game };
-}
-
-function act(
-  game: ServerSession,
-  request: ActionRequest,
-  loadResult: { game: ServerSession; [key: string]: unknown }
-): { game: ServerSession; next: unknown } {
-  // TODO: Execute the actual operation
-  const handler = sequences[loadResult.currentOp as keyof typeof sequences];
-  if (!handler || !handler.start) {
-    throw new Error(`No handler found for operation: ${loadResult.currentOp}`);
-  }
-  return handler.start(game, request);
-}
-
-function findPrimaryKey(currentSequence: unknown): string | undefined {
-  if (!currentSequence || typeof currentSequence !== 'object') {
-    return undefined;
-  }
-
-  const sequenceKeys = Object.keys(sequenceOperations);
-  return sequenceKeys.find((key) => key in currentSequence);
-}
-
-function setup(actResult: { game: ServerSession; next: unknown }): { game: ServerSession; next: unknown } {
-  const { game, next } = actResult;
-
-  if (next === null) {
-    const { currentSequence } = game.sequenceState;
-    const foundKey = findPrimaryKey(currentSequence);
-
-    if (foundKey) {
-      const updatedGame = {
-        ...game,
-        sequenceState: {
-          ...game.sequenceState,
-          currentOp: foundKey,
-          currentSequence: currentSequence[foundKey],
-        },
-      };
-
-      return { game: updatedGame, next: null };
-    }
-
-    return { game, next: null };
-  }
-
-  return { game, next };
+  // 3. Setup - setup the next session object for the result based on the output of Act
+  return setup(updatedGame);
 }

@@ -1,22 +1,17 @@
 import { ActionRequest } from '../../sequencer/doSequence';
-import { NextContext, ServerSession2 } from '../doSequence2';
+import { cons, NextContext, ServerSession2 } from '../doSequence2';
 
-export const start = {
+const group = {
   start: (serverSession: ServerSession2, request: ActionRequest): ServerSession2 => {
     // By default, we will select the next operation automatically
     return serverSession;
   },
   continue: (serverSession: ServerSession2, request: ActionRequest): ServerSession2 => {
-    // TODO: Implement continue logic
-    // If we get here, we end the game
-    return {
-      ...serverSession,
-      sequenceState: {
-        ...serverSession.sequenceState,
-        next: {
-          isComplete: true,
-        },
-      },
-    };
+    cons.log('group continue', serverSession.sequenceState.currentOp, request);
+    return serverSession;
   },
 };
+
+export const round = group;
+export const turn = group;
+export const phase = group;

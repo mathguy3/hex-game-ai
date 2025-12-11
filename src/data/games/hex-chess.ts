@@ -124,7 +124,7 @@ export const hexChess: GameDefinition = {
                             context: {
                               unit: {
                                 key: {
-                                  subjectSpace: {
+                                  subject: {
                                     unit: {
                                       kind: '$String',
                                     },

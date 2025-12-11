@@ -1,14 +1,7 @@
 import { ActionRequest, doSequence } from '../../logic/game-controller/sequencer';
 import { SequencerContext } from '../../logic/if/if-engine-3/operations/types';
 import { WebSocketMessage } from '../../logic/websocket/WebSocketProvider';
-import {
-  GameDefinition,
-  GameState,
-  LocalControl,
-  OtherPlayerState,
-  PlayerState,
-  SeatDefinition,
-} from '../../types/game';
+import { GameDefinition, GameState, LocalControl, SeatDefinition } from '../../types/game';
 import { broadcastToGame } from '../startup';
 
 export type PlayerConfig = {

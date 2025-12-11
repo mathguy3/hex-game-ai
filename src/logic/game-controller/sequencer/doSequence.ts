@@ -20,7 +20,7 @@ type ActionTarget = { id: string } & (
     }
 );
 
-export type ActionSubject = { id: string; from?: string; targets?: ActionSubject[] } & (
+export type ActionSubject = { from?: any; targets?: ActionSubject[] } & (
   | {
       type: 'space';
     }
