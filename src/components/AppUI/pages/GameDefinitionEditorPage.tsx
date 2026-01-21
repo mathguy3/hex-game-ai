@@ -58,7 +58,7 @@ export const GameDefinitionEditorPage = () => {
   };
 
   return (
-    <Stack spacing={3} sx={{ padding: 4 }} height="750px">
+    <Stack spacing={3} sx={{ padding: 4 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Box>
           <Typography variant="h4">{definition.definition.config.name}</Typography>

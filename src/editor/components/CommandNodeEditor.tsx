@@ -61,6 +61,7 @@ export const CommandNodeEditor = ({
           registry={registry}
           rootValue={rootValue}
           label={commandKey}
+          compact
         />
       )}
     </Stack>

@@ -102,6 +102,7 @@ export const EditorNode = ({
         registry={registry}
         rootValue={rootValue}
         label={parentKey}
+        compact={parentKey !== undefined}
       />
     );
   }
