@@ -2,6 +2,7 @@ import { ActionRequest, doSequence } from '../../logic/game-controller/sequencer
 import { SequencerContext } from '../../logic/if/if-engine-3/operations/types';
 import { WebSocketMessage } from '../../logic/websocket/WebSocketProvider';
 import { GameDefinition, GameState, LocalControl, SeatDefinition } from '../../types/game';
+import { getNewId } from '../util/id';
 import { broadcastToGame } from '../startup';
 
 export type PlayerConfig = {
@@ -31,9 +32,17 @@ export interface GameSession {
   localControl?: LocalControl;
 }
 
+export type GameDefinitionRecord = {
+  id: string;
+  definition: GameDefinition;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export class GameManager {
   private games: Record<string, ServerSession> = {};
   private users: Record<string, { userId: string; userName: string; state: string }> = {};
+  private gameDefinitions: Record<string, GameDefinitionRecord> = {};
 
   addUser(userId: string, userName: string) {
     this.users[userId] = { userId, userName, state: 'disconnected' };
@@ -58,6 +67,59 @@ export class GameManager {
   updateName(userId: string, name: string) {
     this.users[userId].userName = name;
     return this.users[userId];
+  }
+
+  seedGameDefinitions(definitions: GameDefinition[]) {
+    definitions.forEach((definition) => {
+      const id = getNewId();
+      const now = Date.now();
+      this.gameDefinitions[id] = {
+        id,
+        definition,
+        createdAt: now,
+        updatedAt: now,
+      };
+    });
+  }
+
+  listGameDefinitions() {
+    return Object.values(this.gameDefinitions);
+  }
+
+  getGameDefinition(id: string) {
+    return this.gameDefinitions[id];
+  }
+
+  createGameDefinition(definition: GameDefinition) {
+    const id = getNewId();
+    const now = Date.now();
+    const record: GameDefinitionRecord = {
+      id,
+      definition,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.gameDefinitions[id] = record;
+    return record;
+  }
+
+  updateGameDefinition(id: string, definition: GameDefinition) {
+    const existing = this.gameDefinitions[id];
+    if (!existing) {
+      throw new Error('Game definition not found');
+    }
+    const updated = { ...existing, definition, updatedAt: Date.now() };
+    this.gameDefinitions[id] = updated;
+    return updated;
+  }
+
+  deleteGameDefinition(id: string) {
+    const existing = this.gameDefinitions[id];
+    if (!existing) {
+      throw new Error('Game definition not found');
+    }
+    delete this.gameDefinitions[id];
+    return existing;
   }
 
   // Create a new game session

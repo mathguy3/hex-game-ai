@@ -4,8 +4,7 @@ import { Snackbar } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClient } from '../../../logic/client';
-import { GameSession } from '../../../server/games/gameManager';
-import { GameDefinition } from '../../../types/game';
+import { GameDefinitionRecord, GameSession } from '../../../server/games/gameManager';
 import { GamePicker } from './GamePicker';
 
 export const GamePickerPage: React.FC = () => {
@@ -14,6 +13,7 @@ export const GamePickerPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [activeUsers, setActiveUsers] = useState<{ userId: string; userName: string }[]>([]);
+  const [gameDefinitions, setGameDefinitions] = useState<GameDefinitionRecord[]>([]);
 
   useEffect(() => {
     const fetchActiveUsers = async () => {
@@ -27,13 +27,25 @@ export const GamePickerPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [client]);
 
-  const handleCreateGame = async (game: GameDefinition) => {
+  useEffect(() => {
+    const fetchDefinitions = async () => {
+      try {
+        const response = await client.listGameDefinitions();
+        setGameDefinitions(response.definitions ?? []);
+      } catch (err) {
+        console.error('Failed to load game definitions', err);
+      }
+    };
+    fetchDefinitions();
+  }, [client]);
+
+  const handleCreateGame = async (game: GameDefinitionRecord) => {
     setLoading(true);
     setError(null);
 
     try {
       const newGameSession = await client.createGame({
-        gameDefinition: game,
+        gameDefinitionId: game.id,
       });
 
       navigate(`/room/${newGameSession.roomCode}`);
@@ -95,7 +107,12 @@ export const GamePickerPage: React.FC = () => {
       >
         {'< Back to Main Menu'}
       </Button>
-      <GamePicker onCreateGame={handleCreateGame} onJoinGame={handleJoinGame} loading={loading} />
+      <GamePicker
+        gameDefinitions={gameDefinitions}
+        onCreateGame={handleCreateGame}
+        onJoinGame={handleJoinGame}
+        loading={loading}
+      />
       <Stack sx={{ position: 'absolute', top: 45, right: 10, zIndex: 1000, textAlign: 'right' }}>
         {activeUsers.map((user) => (
           <Typography key={user.userId} variant="body2" color="text.secondary">

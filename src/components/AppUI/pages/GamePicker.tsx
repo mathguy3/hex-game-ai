@@ -1,19 +1,18 @@
 import { Box, Button, Card, CardActions, CardContent, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { hexChess, solitaire } from '../../../data';
 import { useClient } from '../../../logic/client/ClientProvider';
 import { GameSession } from '../../../server/games/gameManager';
-import { GameDefinition } from '../../../types/game';
-import { gloomhaven } from '../../../data/games/gloomhaven/gloomhaven';
+import { GameDefinitionRecord } from '../../../server/games/gameManager';
 import { useNavigate } from 'react-router-dom';
 
 interface GamePickerProps {
-  onCreateGame: (gameDefinition: GameDefinition) => void;
+  gameDefinitions: GameDefinitionRecord[];
+  onCreateGame: (gameDefinition: GameDefinitionRecord) => void;
   onJoinGame: (gameSession: GameSession) => void;
   loading?: boolean;
 }
 
-export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProps) => {
+export const GamePicker = ({ gameDefinitions, onCreateGame, onJoinGame, loading }: GamePickerProps) => {
   const { client, user } = useClient();
   const navigate = useNavigate();
   const [yourGames, setYourGames] = useState<GameSession[]>([]);
@@ -65,9 +64,9 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
           Create New Game
         </Typography>
         <Stack height="content" border="1px solid" borderColor="divider" borderRadius={2}>
-          {[solitaire, hexChess, gloomhaven].map((gameType, idx) => (
+          {gameDefinitions.map((gameType, idx) => (
             <Stack
-              key={gameType.config.name + idx}
+              key={gameType.id + idx}
               sx={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -78,14 +77,14 @@ export const GamePicker = ({ onCreateGame, onJoinGame, loading }: GamePickerProp
               }}
             >
               <Box>
-                <Typography>{gameType.config.name}</Typography>
+                <Typography>{gameType.definition.config.name}</Typography>
                 <Typography color="text.secondary" fontSize={16}>
-                  {gameType.config.description}
+                  {gameType.definition.config.description}
                 </Typography>
               </Box>
               <Box>
-                <Button variant="contained" fullWidth onClick={() => onCreateGame(gameType as any)} disabled={loading}>
-                  {loading ? 'Creating...' : `New ${gameType.config.name}`}
+                <Button variant="contained" fullWidth onClick={() => onCreateGame(gameType)} disabled={loading}>
+                  {loading ? 'Creating...' : `New ${gameType.definition.config.name}`}
                 </Button>
               </Box>
             </Stack>

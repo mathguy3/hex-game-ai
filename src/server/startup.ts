@@ -13,6 +13,13 @@ import { continueGame } from './games/continueGame';
 import { interact } from './games/interact';
 import { ackAnnounce } from './games/ackAnnounce';
 import { updateName } from './games/updateName';
+import { listGameDefinitions } from './games/listGameDefinitions';
+import { createGameDefinition } from './games/createGameDefinition';
+import { updateGameDefinition } from './games/updateGameDefinition';
+import { deleteGameDefinition } from './games/deleteGameDefinition';
+import { getGameDefinition } from './games/getGameDefinition';
+import { hexChess, solitaire } from '../data';
+import { gloomhaven } from '../data/games/gloomhaven/gloomhaven';
 const serverRoutes = {
   id,
   chat,
@@ -28,6 +35,11 @@ const serverRoutes = {
   listUsers,
   ackAnnounce,
   updateName,
+  listGameDefinitions,
+  createGameDefinition,
+  updateGameDefinition,
+  deleteGameDefinition,
+  getGameDefinition,
 };
 
 function listUsers() {
@@ -58,6 +70,8 @@ export type ServerRoutes = {
 console.log('Server startup');
 const gameConnections = new Map<string, Set<WebSocket>>();
 const playerConnections = new Map<string, { userId: string; userName: string; ws: string }>();
+
+gameManager.seedGameDefinitions([solitaire, hexChess, gloomhaven]);
 
 const server = Bun.serve({
   port: 3006,

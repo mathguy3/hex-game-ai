@@ -28,6 +28,9 @@ export const MainMenu = () => {
           <Button variant="contained" size="medium" onClick={() => navigate('/pick')}>
             Start
           </Button>
+          <Button variant="contained" size="medium" onClick={() => navigate('/editor')}>
+            Editor
+          </Button>
           <Button variant="contained" size="medium" onClick={() => navigate('/configure')}>
             Configure
           </Button>
