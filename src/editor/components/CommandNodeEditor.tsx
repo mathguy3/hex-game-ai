@@ -55,6 +55,7 @@ export const CommandNodeEditor = ({
         />
       ) : (
         <ObjectEditor
+          node={commandValue ?? {}}
           objectValue={commandValue ?? {}}
           path={[...path, commandKey]}
           onChange={onChange}
@@ -62,6 +63,7 @@ export const CommandNodeEditor = ({
           rootValue={rootValue}
           label={commandKey}
           compact
+          allowAddFields={false}
         />
       )}
     </Stack>

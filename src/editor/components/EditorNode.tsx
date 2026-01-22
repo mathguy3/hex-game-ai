@@ -6,6 +6,18 @@ import { CommandNodeEditor } from './CommandNodeEditor';
 import { ObjectEditor } from './ObjectEditor';
 import { PrimitiveEditor } from './PrimitiveEditor';
 
+const recordContainerKeys = new Set([
+  'seats',
+  'cards',
+  'tokens',
+  'hexes',
+  'references',
+  'functions',
+  'data',
+  'shared',
+  'player',
+]);
+
 export const EditorNode = ({
   node,
   path,
@@ -103,6 +115,7 @@ export const EditorNode = ({
         rootValue={rootValue}
         label={parentKey}
         compact={parentKey !== undefined}
+        allowAddFields={parentKey ? recordContainerKeys.has(parentKey) : false}
       />
     );
   }
