@@ -27,11 +27,13 @@ export const CommandNodeEditor = ({
   return (
     <Stack spacing={1} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 1 }}>
       <Stack direction="row" spacing={2} alignItems="center">
-        <Box minWidth={140}>
-          <Typography variant="subtitle2" color="text.secondary">
-            {label ?? 'command'}
-          </Typography>
-        </Box>
+        {label && (
+          <Box minWidth={140}>
+            <Typography variant="subtitle2" color="text.secondary">
+              {label}
+            </Typography>
+          </Box>
+        )}
         <Autocomplete
           freeSolo
           size="small"

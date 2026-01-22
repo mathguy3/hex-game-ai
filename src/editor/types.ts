@@ -20,4 +20,5 @@ export type EditorRegistration = {
   component?: React.ComponentType<EditorComponentProps>;
   defaultValue?: any;
   allowedKeys?: string[];
+  allowedArrayKeys?: string[];
 };

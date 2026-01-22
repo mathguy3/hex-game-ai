@@ -33,6 +33,7 @@ export const EditorNode = ({
   }
 
   if (Array.isArray(node)) {
+    const registration = parentKey ? registry.get(parentKey) : undefined;
     return (
       <ArrayEditor
         node={node}
@@ -42,6 +43,7 @@ export const EditorNode = ({
         registry={registry}
         rootValue={rootValue}
         parentKey={parentKey}
+        allowedArrayKeys={registration?.allowedArrayKeys}
       />
     );
   }
@@ -55,6 +57,7 @@ export const EditorNode = ({
 
     if (isCommandNode) {
       const commandKey = keys[0];
+      const label = parentRegistration?.allowedKeys ? undefined : parentKey;
       return (
         <CommandNodeEditor
           node={node}
@@ -64,7 +67,7 @@ export const EditorNode = ({
           onChange={onChange}
           registry={registry}
           rootValue={rootValue}
-          label={parentKey}
+          label={label}
           parentKey={parentKey}
         />
       );

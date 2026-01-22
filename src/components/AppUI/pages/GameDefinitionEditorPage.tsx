@@ -19,6 +19,7 @@ export const GameDefinitionEditorPage = () => {
     next.register('shared', { allowedKeys: uiKeys });
     next.register('player', { allowedKeys: uiKeys });
     next.register('zone', { defaultValue: { children: [] } });
+    next.register('children', { allowedArrayKeys: uiKeys });
     next.register('button', { defaultValue: { content: '', action: '' } });
     next.register('cardStack', { defaultValue: { content: '' } });
     next.register('tokenStack', { defaultValue: { content: '' } });
