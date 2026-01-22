@@ -1,5 +1,12 @@
 import { gameManager } from './gameManager';
 
-export const listGameDefinitions = async () => {
+interface ListGameDefinitionsParams {
+  user: {
+    userId: string;
+    userName: string;
+  };
+}
+
+export const listGameDefinitions = async (_params: ListGameDefinitionsParams) => {
   return { definitions: gameManager.listGameDefinitions() };
 };

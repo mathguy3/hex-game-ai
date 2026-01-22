@@ -3,6 +3,10 @@ import { gameManager } from './gameManager';
 
 interface CreateGameDefinitionParams {
   definition?: GameDefinitionV2;
+  user: {
+    userId: string;
+    userName: string;
+  };
 }
 
 const defaultGameDefinition: GameDefinitionV2 = {

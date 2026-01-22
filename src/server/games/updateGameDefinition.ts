@@ -4,6 +4,10 @@ import { gameManager } from './gameManager';
 interface UpdateGameDefinitionParams {
   id: string;
   definition: GameDefinition;
+  user: {
+    userId: string;
+    userName: string;
+  };
 }
 
 export const updateGameDefinition = async (params: UpdateGameDefinitionParams) => {
