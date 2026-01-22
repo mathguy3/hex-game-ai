@@ -1,5 +1,5 @@
 import { Add } from '@mui/icons-material';
-import { Box, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
@@ -9,6 +9,7 @@ type ObjectEditorProps = EditorComponentProps & {
   label?: string;
   compact?: boolean;
   allowAddFields?: boolean;
+  allowedKeys?: string[];
 };
 
 export const ObjectEditor = ({
@@ -20,6 +21,7 @@ export const ObjectEditor = ({
   label,
   compact,
   allowAddFields,
+  allowedKeys,
 }: ObjectEditorProps) => {
   const [newKey, setNewKey] = useState('');
 
@@ -88,6 +90,24 @@ export const ObjectEditor = ({
           >
             <Add fontSize="small" />
           </IconButton>
+        </Stack>
+      )}
+      {!allowAddFields && allowedKeys && keys.length === 0 && (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Autocomplete
+            size="small"
+            options={allowedKeys}
+            value={null}
+            onChange={(_, nextValue) => {
+              if (!nextValue || objectValue[nextValue] !== undefined) {
+                return;
+              }
+              const defaultValue = registry.get(nextValue)?.defaultValue ?? {};
+              onChange(path, { ...objectValue, [nextValue]: structuredClone(defaultValue) });
+            }}
+            renderInput={(params) => <TextField {...params} placeholder="add item" />}
+            sx={{ minWidth: 200 }}
+          />
         </Stack>
       )}
     </Stack>

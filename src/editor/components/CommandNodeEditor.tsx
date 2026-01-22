@@ -6,6 +6,7 @@ type CommandNodeEditorProps = EditorComponentProps & {
   commandKey: string;
   commandValue: any;
   label?: string;
+  parentKey?: string;
 };
 
 export const CommandNodeEditor = ({
@@ -16,10 +17,12 @@ export const CommandNodeEditor = ({
   registry,
   rootValue,
   label,
+  parentKey,
 }: CommandNodeEditorProps) => {
   const registration = registry.get(commandKey);
+  const parentRegistration = parentKey ? registry.get(parentKey) : undefined;
   const Component = registration?.component;
-  const registryKeys = registry.keys();
+  const registryKeys = parentRegistration?.allowedKeys ?? registry.keys();
 
   return (
     <Stack spacing={1} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 1 }}>
@@ -38,7 +41,8 @@ export const CommandNodeEditor = ({
             if (!nextValue || nextValue === commandKey) {
               return;
             }
-            onChange(path, { [nextValue]: commandValue });
+            const defaultValue = registry.get(nextValue)?.defaultValue ?? {};
+            onChange(path, { [nextValue]: structuredClone(defaultValue) });
           }}
           renderInput={(params) => <TextField {...params} />}
           sx={{ minWidth: 200 }}

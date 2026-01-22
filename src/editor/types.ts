@@ -19,4 +19,5 @@ export type EditorRegistration = {
   label?: string;
   component?: React.ComponentType<EditorComponentProps>;
   defaultValue?: any;
+  allowedKeys?: string[];
 };

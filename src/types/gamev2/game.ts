@@ -1,3 +1,4 @@
+import { UIModel } from "./ui";
 
 export type SeatDefinition = {
   isOpen?: boolean;
@@ -22,7 +23,7 @@ export type GameDefinitionV2 = {
   data: Record<string, unknown>;
   definitions: Definitions;
   ui: {
-    shared: Record<string, unknown>;
-    player: Record<string, unknown>;
+    shared: UIModel;
+    player: UIModel;
   };
 };

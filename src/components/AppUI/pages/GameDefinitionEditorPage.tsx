@@ -13,7 +13,21 @@ export const GameDefinitionEditorPage = () => {
   const [definition, setDefinition] = useState<GameDefinitionRecord | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const registry = useMemo(() => new EditorRegistry(), []);
+  const registry = useMemo(() => {
+    const next = new EditorRegistry();
+    const uiKeys = ['zone', 'button', 'cardStack', 'tokenStack', 'hexMap', 'hex', 'text', 'token'];
+    next.register('shared', { allowedKeys: uiKeys });
+    next.register('player', { allowedKeys: uiKeys });
+    next.register('zone', { defaultValue: { children: [] } });
+    next.register('button', { defaultValue: { content: '', action: '' } });
+    next.register('cardStack', { defaultValue: { content: '' } });
+    next.register('tokenStack', { defaultValue: { content: '' } });
+    next.register('hexMap', { defaultValue: { hex: {} } });
+    next.register('hex', { defaultValue: {} });
+    next.register('text', { defaultValue: { content: '' } });
+    next.register('token', { defaultValue: { image: '' } });
+    return next;
+  }, []);
 
   useEffect(() => {
     const fetchDefinition = async () => {

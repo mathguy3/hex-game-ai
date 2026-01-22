@@ -6,17 +6,7 @@ import { CommandNodeEditor } from './CommandNodeEditor';
 import { ObjectEditor } from './ObjectEditor';
 import { PrimitiveEditor } from './PrimitiveEditor';
 
-const recordContainerKeys = new Set([
-  'seats',
-  'cards',
-  'tokens',
-  'hexes',
-  'references',
-  'functions',
-  'data',
-  'shared',
-  'player',
-]);
+const recordContainerKeys = new Set(['seats', 'cards', 'tokens', 'hexes', 'references', 'functions', 'data']);
 
 export const EditorNode = ({
   node,
@@ -58,7 +48,10 @@ export const EditorNode = ({
 
   if (typeof node === 'object') {
     const keys = Object.keys(node);
-    const isCommandNode = keys.length === 1 && (allowCommand || registry.get(keys[0]) !== undefined);
+    const parentRegistration = parentKey ? registry.get(parentKey) : undefined;
+    const isCommandNode =
+      keys.length === 1 &&
+      (allowCommand || registry.get(keys[0]) !== undefined || parentRegistration?.allowedKeys !== undefined);
 
     if (isCommandNode) {
       const commandKey = keys[0];
@@ -72,6 +65,7 @@ export const EditorNode = ({
           registry={registry}
           rootValue={rootValue}
           label={parentKey}
+          parentKey={parentKey}
         />
       );
     }
@@ -105,6 +99,9 @@ export const EditorNode = ({
       );
     }
 
+    const registration = parentKey ? registry.get(parentKey) : undefined;
+    const allowAddFields = parentKey ? recordContainerKeys.has(parentKey) : false;
+
     return (
       <ObjectEditor
         node={node}
@@ -115,7 +112,8 @@ export const EditorNode = ({
         rootValue={rootValue}
         label={parentKey}
         compact={parentKey !== undefined}
-        allowAddFields={parentKey ? recordContainerKeys.has(parentKey) : false}
+        allowAddFields={allowAddFields}
+        allowedKeys={registration?.allowedKeys}
       />
     );
   }
