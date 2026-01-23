@@ -29,6 +29,20 @@ export const ObjectEditor = ({
   const [collapsedKeys, setCollapsedKeys] = useState<Record<string, boolean>>({});
 
   const keys = Object.keys(objectValue);
+  const orderedKeys = path.length === 0
+    ? [
+        ...keys.filter((key) => key === 'config'),
+        ...keys.filter((key) => key === 'seats'),
+        ...keys.filter((key) => key === 'definitions'),
+        ...keys.filter((key) => key === 'sequence'),
+        ...keys.filter((key) => key === 'ui'),
+        ...keys.filter((key) => key === 'data'),
+        ...keys.filter(
+          (key) =>
+            !['config', 'seats', 'definitions', 'sequence', 'ui', 'data'].includes(key)
+        ),
+      ]
+    : keys;
   const getFieldType = (value: any) => {
     if (typeof value === 'number') return 'number';
     if (typeof value === 'boolean') return 'boolean';
@@ -51,7 +65,7 @@ export const ObjectEditor = ({
           {label}
         </Typography>
       )}
-      {keys.map((key) => {
+      {orderedKeys.map((key) => {
         const isCollapsed = collapsedKeys[key];
         const value = objectValue[key];
         const isInlineValue = value === null || value === undefined || typeof value !== 'object';
