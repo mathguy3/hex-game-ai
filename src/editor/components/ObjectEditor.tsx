@@ -40,42 +40,72 @@ export const ObjectEditor = ({
       )}
       {keys.map((key) => {
         const isCollapsed = collapsedKeys[key];
+        const value = objectValue[key];
+        const isInlineValue = value === null || value === undefined || typeof value !== 'object';
         return (
         <Stack key={`${path.join('.')}-${key}`} direction="row" spacing={1} alignItems="flex-start">
           <Stack>
-            <Box
-              display="flex"
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ border: '1px solid', borderColor: 'divider' }}
-            >
-              <Box minWidth={140} pt={0.5} pl={1}>
-                <Typography variant="body2" color="text.secondary">
+            {isInlineValue ? (
+              <Box
+                display="flex"
+                alignItems="center"
+                flexWrap="wrap"
+                gap={1}
+                sx={{ border: '1px solid', borderColor: 'divider', p: 1 }}
+              >
+                <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
                   {key}
                 </Typography>
+                {!isCollapsed && (
+                  <Box flex={1} minWidth={160}>
+                    <EditorNode
+                      node={value}
+                      path={[...path, key]}
+                      onChange={onChange}
+                      registry={registry}
+                      rootValue={rootValue}
+                      parentKey={key}
+                    />
+                  </Box>
+                )}
               </Box>
-              <IconButton
-                size="small"
-                onClick={() =>
-                  setCollapsedKeys((prev) => ({ ...prev, [key]: !prev[key] }))
-                }
-                aria-label={isCollapsed ? 'expand' : 'collapse'}
-              >
-                {isCollapsed ? <ExpandMore fontSize="small" /> : <ExpandLess fontSize="small" />}
-              </IconButton>
-            </Box>
-            {!isCollapsed && (
-              <Box flex={1}>
-                <EditorNode
-                  node={objectValue[key]}
-                  path={[...path, key]}
-                  onChange={onChange}
-                  registry={registry}
-                  rootValue={rootValue}
-                  parentKey={key}
-                />
-              </Box>
+            ) : (
+              <>
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ border: '1px solid', borderColor: 'divider' }}
+                >
+                  <Box minWidth={140} pt={0.5} pl={1}>
+                    <Typography variant="body2" color="text.secondary">
+                      {key}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      setCollapsedKeys((prev) => ({ ...prev, [key]: !prev[key] }))
+                    }
+                    aria-label={isCollapsed ? 'expand' : 'collapse'}
+                  >
+                    {isCollapsed ? <ExpandMore fontSize="small" /> : <ExpandLess fontSize="small" />}
+                  </IconButton>
+                </Box>
+                {!isCollapsed && (
+                  <Box flex={1}>
+                    <EditorNode
+                      node={value}
+                      path={[...path, key]}
+                      onChange={onChange}
+                      registry={registry}
+                      rootValue={rootValue}
+                      parentKey={key}
+                    />
+                  </Box>
+                )}
+              </>
             )}
           </Stack>
         </Stack>

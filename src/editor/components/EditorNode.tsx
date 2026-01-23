@@ -49,6 +49,20 @@ export const EditorNode = ({
   }
 
   if (typeof node === 'object') {
+    const directRegistration = parentKey ? registry.get(parentKey) : undefined;
+    if (directRegistration?.component) {
+      const Component = directRegistration.component;
+      return (
+        <Component
+          node={node}
+          path={path}
+          onChange={onChange}
+          registry={registry}
+          rootValue={rootValue}
+          parentKey={parentKey}
+        />
+      );
+    }
     const keys = Object.keys(node);
     const parentRegistration = parentKey ? registry.get(parentKey) : undefined;
     const isCommandNode =

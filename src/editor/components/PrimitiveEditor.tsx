@@ -10,7 +10,7 @@ export const PrimitiveEditor = ({ value, path, onChange }: PrimitiveEditorProps)
     return (
       <FormControlLabel
         control={
-          <Checkbox checked={value} onChange={(event) => onChange(path, event.target.checked)} size="small" />
+          <Checkbox sx={{ pt: 0, pb: '1px' }} checked={value} onChange={(event) => onChange(path, event.target.checked)} size="small" />
         }
         label=""
       />
@@ -25,6 +25,7 @@ export const PrimitiveEditor = ({ value, path, onChange }: PrimitiveEditorProps)
       size="small"
       type={isNumber ? 'number' : 'text'}
       value={stringValue}
+      sx={{ '& .MuiInputBase-input': { py: 0.5 } }}
       onChange={(event) => {
         const nextValue = isNumber ? Number(event.target.value) : event.target.value;
         onChange(path, nextValue);

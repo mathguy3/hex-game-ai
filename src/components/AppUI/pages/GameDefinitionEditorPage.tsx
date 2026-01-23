@@ -2,7 +2,7 @@ import { Save } from '@mui/icons-material';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { EditorRegistry, EditorRoot, HexMapEditor, setAtPath } from '../../../editor';
+import { CoordinatesEditor, EditorRegistry, EditorRoot, HexMapEditor, setAtPath } from '../../../editor';
 import { UI } from '../../GameUI/UI/UI';
 import { UIFrame } from '../../GameUI/TableFrame';
 import { useClient } from '../../../logic/client';
@@ -63,6 +63,7 @@ export const GameDefinitionEditorPage = () => {
     next.register('hex', { defaultValue: {} });
     next.register('text', { defaultValue: { content: '' } });
     next.register('token', { defaultValue: { image: '' } });
+    next.register('coordinates', { component: CoordinatesEditor });
     return next;
   }, []);
 
