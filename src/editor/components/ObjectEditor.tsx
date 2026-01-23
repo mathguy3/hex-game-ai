@@ -55,6 +55,15 @@ export const ObjectEditor = ({
     boolean: false,
     object: {},
   };
+  const shouldConfirmDelete = (value: any) => {
+    if (typeof value === 'string') {
+      return value.length !== 0;
+    }
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return Object.keys(value).length !== 0;
+    }
+    return true;
+  };
 
   return (
     <Stack
@@ -226,8 +235,10 @@ export const ObjectEditor = ({
                         <IconButton
                           size="small"
                           onClick={() => {
-                            if (!window.confirm(`Delete "${key}"? This cannot be undone.`)) {
-                              return;
+                            if (shouldConfirmDelete(value)) {
+                              if (!window.confirm(`Delete "${key}"? This cannot be undone.`)) {
+                                return;
+                              }
                             }
                             const { [key]: removed, ...rest } = objectValue;
                             onChange(path, rest);

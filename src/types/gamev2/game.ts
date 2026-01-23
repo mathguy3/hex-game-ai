@@ -14,6 +14,7 @@ export type Definitions = {
   cards: Record<string, unknown>;
   tokens: Record<string, unknown>;
   hexes: Record<string, unknown>;
+  other: Record<string, unknown>;
 };
 
 export type GameDefinitionV2 = {

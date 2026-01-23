@@ -24,10 +24,11 @@ const defaultGameDefinition: GameDefinitionV2 = {
     cards: {},
     tokens: {},
     hexes: {},
+    other: {},
   },
   ui: {
-    shared: {},
-    player: {},
+    shared: { zone: { id: 'shared', type: 'zone' } },
+    player: { zone: { id: 'player', type: 'zone' } },
   },
 };
 

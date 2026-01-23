@@ -6,7 +6,17 @@ import { CommandNodeEditor } from './CommandNodeEditor';
 import { ObjectEditor } from './ObjectEditor';
 import { PrimitiveEditor } from './PrimitiveEditor';
 
-const recordContainerKeys = new Set(['seats', 'cards', 'tokens', 'hexes', 'references', 'functions', 'data']);
+const recordContainerKeys = new Set([
+  'seats',
+  'cards',
+  'tokens',
+  'hexes',
+  'references',
+  'functions',
+  'data',
+  'other',
+  'sequence',
+]);
 
 export const EditorNode = ({
   node,
