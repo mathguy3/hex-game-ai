@@ -1,5 +1,5 @@
-import { Add, ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Autocomplete, Box, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Add, Close, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { Autocomplete, Box, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
@@ -29,6 +29,18 @@ export const ObjectEditor = ({
   const [collapsedKeys, setCollapsedKeys] = useState<Record<string, boolean>>({});
 
   const keys = Object.keys(objectValue);
+  const getFieldType = (value: any) => {
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'boolean') return 'boolean';
+    if (typeof value === 'object') return 'object';
+    return 'string';
+  };
+  const typeDefaults: Record<string, any> = {
+    string: '',
+    number: 0,
+    boolean: false,
+    object: {},
+  };
 
   return (
     <Stack
@@ -67,7 +79,8 @@ export const ObjectEditor = ({
                   gap={1}
                   sx={{ border: '1px solid', borderColor: 'divider', p: 1 }}
                 >
-                  {allowAddFields ? (
+                {allowAddFields ? (
+                  <>
                     <TextField
                       size="small"
                       value={isRenaming ? renameValue : key}
@@ -82,14 +95,37 @@ export const ObjectEditor = ({
                           commitRename();
                         }
                       }}
-                      sx={{ minWidth: 80, maxWidth: 160 }}
-                      inputProps={{ style: { paddingTop: 4, paddingBottom: 4 } }}
+                      sx={{
+                        minWidth: 80,
+                        maxWidth: 160,
+                        '& .MuiInputBase-input': { py: 0.5, px: 1 },
+                      }}
                     />
-                  ) : (
-                    <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
-                      {key}
-                    </Typography>
-                  )}
+                    <TextField
+                      select
+                      size="small"
+                      value={getFieldType(value)}
+                      onChange={(event) => {
+                        const nextType = event.target.value;
+                        onChange([...path, key], typeDefaults[nextType]);
+                      }}
+                      sx={{
+                        width: 90,
+                        '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
+                        '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
+                      }}
+                    >
+                      <MenuItem value="string">string</MenuItem>
+                      <MenuItem value="number">number</MenuItem>
+                      <MenuItem value="boolean">boolean</MenuItem>
+                      <MenuItem value="object">object</MenuItem>
+                    </TextField>
+                  </>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
+                    {key}
+                  </Typography>
+                )}
                   {!isCollapsed && (
                     <Box flex={1} minWidth={160}>
                       <EditorNode
@@ -114,7 +150,8 @@ export const ObjectEditor = ({
                     sx={{ border: '1px solid', borderColor: 'divider' }}
                   >
                     <Box minWidth={140} pt={0.5} pl={1}>
-                      {allowAddFields ? (
+                    {allowAddFields ? (
+                      <Stack direction="row" spacing={1} alignItems="center">
                         <TextField
                           size="small"
                           value={isRenaming ? renameValue : key}
@@ -129,24 +166,63 @@ export const ObjectEditor = ({
                               commitRename();
                             }
                           }}
-                          sx={{ minWidth: 120, maxWidth: 200 }}
-                          inputProps={{ style: { paddingTop: 4, paddingBottom: 4 } }}
+                          sx={{
+                            minWidth: 120,
+                            maxWidth: 200,
+                            '& .MuiInputBase-input': { py: 0.5, px: 1 },
+                          }}
                         />
-                      ) : (
-                        <Typography variant="body2" color="text.secondary">
-                          {key}
-                        </Typography>
-                      )}
+                        <TextField
+                          select
+                          size="small"
+                          value={getFieldType(value)}
+                          onChange={(event) => {
+                            const nextType = event.target.value;
+                            onChange([...path, key], typeDefaults[nextType]);
+                          }}
+                          sx={{
+                            width: 90,
+                            '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
+                            '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
+                          }}
+                        >
+                          <MenuItem value="string">string</MenuItem>
+                          <MenuItem value="number">number</MenuItem>
+                          <MenuItem value="boolean">boolean</MenuItem>
+                          <MenuItem value="object">object</MenuItem>
+                        </TextField>
+                      </Stack>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        {key}
+                      </Typography>
+                    )}
                     </Box>
-                    <IconButton
-                      size="small"
-                      onClick={() =>
-                        setCollapsedKeys((prev) => ({ ...prev, [key]: !prev[key] }))
-                      }
-                      aria-label={isCollapsed ? 'expand' : 'collapse'}
-                    >
-                      {isCollapsed ? <ExpandMore fontSize="small" /> : <ExpandLess fontSize="small" />}
-                    </IconButton>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setCollapsedKeys((prev) => ({ ...prev, [key]: !prev[key] }))
+                        }
+                        aria-label={isCollapsed ? 'expand' : 'collapse'}
+                      >
+                        {isCollapsed ? <ExpandMore fontSize="small" /> : <ExpandLess fontSize="small" />}
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          if (!window.confirm(`Delete "${key}"? This cannot be undone.`)) {
+                            return;
+                          }
+                          const { [key]: removed, ...rest } = objectValue;
+                          onChange(path, rest);
+                        }}
+                        aria-label="delete"
+                        sx={{ p: 0.25 }}
+                      >
+                        <Close fontSize="inherit" sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Stack>
                   </Box>
                   {!isCollapsed && (
                     <Box flex={1}>

@@ -55,7 +55,7 @@ export const Hex = React.memo(
 
     const { handleTouchStart, handleTouchEnd, handleTouchCancel } = useTouchTap(() => selectHex.current(data));
 
-    useTraceUpdate({ id, hex, data, slots, selectHex, isSelected, isTargeted, preview, transition });
+    //useTraceUpdate({ id, hex, data, slots, selectHex, isSelected, isTargeted, preview, transition });
     if (preview) {
       //console.log('preview hex', isSelected, id, preview);
     }

@@ -11,7 +11,7 @@ const parseNumber = (value: string) => {
 
 export const CoordinatesEditor = ({ node, path, onChange }: EditorComponentProps) => {
   const coordinates = (node ?? {}) as { q?: number; r?: number; s?: number };
-  console.log("blah", coordinates);
+
 
   return (
     <Stack direction="row" spacing={1} alignItems="center">
