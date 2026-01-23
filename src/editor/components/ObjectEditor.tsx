@@ -26,7 +26,12 @@ export const ObjectEditor = ({
   const [newKey, setNewKey] = useState('');
   const [renamingKey, setRenamingKey] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
-  const [collapsedKeys, setCollapsedKeys] = useState<Record<string, boolean>>({});
+  const [collapsedKeys, setCollapsedKeys] = useState<Record<string, boolean>>(() => {
+    if (path.length === 0) {
+      return { data: true, seats: true };
+    }
+    return {};
+  });
 
   const keys = Object.keys(objectValue);
   const orderedKeys = path.length === 0
