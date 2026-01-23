@@ -1,9 +1,10 @@
 import { Save } from '@mui/icons-material';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { EditorRegistry, EditorRoot, HexMapEditor, setAtPath } from '../../../editor';
 import { UI } from '../../GameUI/UI/UI';
+import { UIFrame } from '../../GameUI/TableFrame';
 import { useClient } from '../../../logic/client';
 import { GameDefinitionRecord } from '../../../server/games/gameManager';
 import { PreviewGameSessionProvider } from '../../../logic/game-controller/context/GameSessionProvider';
@@ -41,6 +42,12 @@ export const GameDefinitionEditorPage = () => {
   const { id } = useParams();
   const [definition, setDefinition] = useState<GameDefinitionRecord | null>(null);
   const [loading, setLoading] = useState(false);
+  const [editorWidthPct, setEditorWidthPct] = useState(() => {
+    const stored = window.localStorage.getItem('editorSplitPct');
+    const parsed = stored ? Number(stored) : NaN;
+    return Number.isFinite(parsed) ? parsed : 55;
+  });
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const registry = useMemo(() => {
     const next = new EditorRegistry();
@@ -71,6 +78,10 @@ export const GameDefinitionEditorPage = () => {
     };
     fetchDefinition();
   }, [client, id]);
+
+  useEffect(() => {
+    window.localStorage.setItem('editorSplitPct', String(editorWidthPct));
+  }, [editorWidthPct]);
 
 
   const previewGameSession = useMemo(() => {
@@ -135,7 +146,7 @@ export const GameDefinitionEditorPage = () => {
   };
 
   return (
-    <Stack height="100%" spacing={3} sx={{ padding: 4, minHeight: 0 }}>
+    <Stack flex={1} height="100%" spacing={3} sx={{ padding: 4, minHeight: 0 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Box>
           <Typography variant="h4">{definition.definition.config.name}</Typography>
@@ -150,43 +161,106 @@ export const GameDefinitionEditorPage = () => {
           </Button>
         </Stack>
       </Stack>
-      <Stack minHeight={0} height="calc(100vh - 100px)" direction="row" spacing={3} alignItems="stretch">
-        <EditorRoot value={definition.definition} onChange={handleChange} registry={registry} />
+      <Stack
+        ref={containerRef}
+        minHeight={0}
+        height="calc(100vh - 100px)"
+        direction="row"
+        spacing={0}
+        alignItems="stretch"
+      >
         <Box
           sx={{
+            width: `${editorWidthPct}%`,
+            minWidth: 300,
+            pr: 2,
+            overflow: 'hidden',
+          }}
+        >
+          <EditorRoot value={definition.definition} onChange={handleChange} registry={registry} />
+        </Box>
+        <Box
+          sx={{
+            width: '8px',
+            cursor: 'col-resize',
+            position: 'relative',
+            flexShrink: 0,
+          }}
+          onMouseDown={(event) => {
+            event.preventDefault();
+            const startX = event.clientX;
+            const startPct = editorWidthPct;
+            const container = containerRef.current;
+            if (!container) {
+              return;
+            }
+            const { width } = container.getBoundingClientRect();
+            const handleMove = (moveEvent: MouseEvent) => {
+              const delta = moveEvent.clientX - startX;
+              const nextPct = Math.min(80, Math.max(20, startPct + (delta / width) * 100));
+              setEditorWidthPct(nextPct);
+            };
+            const handleUp = () => {
+              window.removeEventListener('mousemove', handleMove);
+              window.removeEventListener('mouseup', handleUp);
+            };
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', handleUp);
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: '50%',
+              width: '2px',
+              transform: 'translateX(-50%)',
+              bgcolor: 'divider',
+            }}
+          />
+        </Box>
+        <Box
+          sx={{
+            width: `${100 - editorWidthPct}%`,
+            minWidth: 320,
+            pl: 2,
             border: '1px solid',
             borderColor: 'divider',
             borderRadius: 2,
             p: 2,
             height: '75vh',
-            width: '750px',
             position: 'relative'
           }}
         >
           <Typography variant="h6" gutterBottom>
             Preview
           </Typography>
-          <Box sx={{ position: 'absolute', top: '50%', left: '50%', right: 0, bottom: 0 }}>
-            {(() => {
-              const sharedModel = definition.definition.ui?.shared;
-              const sharedKeys = sharedModel && typeof sharedModel === 'object' ? Object.keys(sharedModel) : [];
-              if (!sharedModel || sharedKeys.length === 0) {
-                return <Typography color="text.secondary">No UI model yet.</Typography>;
-              }
-              return previewGameSession ? (
-                <PreviewGameSessionProvider gameSession={previewGameSession}>
-                  <MapSelectionProvider>
-                    <UIPlayerProvider>
-                      <PreviewErrorBoundary resetKey={sharedModel}>
+          {(() => {
+            const sharedModel = definition.definition.ui?.shared;
+            const sharedKeys = sharedModel && typeof sharedModel === 'object' ? Object.keys(sharedModel) : [];
+            if (!sharedModel || sharedKeys.length === 0) {
+              return <Typography color="text.secondary">No UI model yet.</Typography>;
+            }
+            return previewGameSession ? (
+              <PreviewGameSessionProvider gameSession={previewGameSession}>
+                <MapSelectionProvider>
+                  <UIPlayerProvider>
+                    <PreviewErrorBoundary resetKey={sharedModel}>
+                      <UIFrame
+                        width={sharedModel?.zone?.styles?.width ?? 1}
+                        height={sharedModel?.zone?.styles?.height ?? 1}
+                      >
                         <UI {...sharedModel} />
-                      </PreviewErrorBoundary>
-                    </UIPlayerProvider>
-                  </MapSelectionProvider>
-                </PreviewGameSessionProvider>
-              ) : (
-                <Typography color="text.secondary">Preview unavailable.</Typography>
-              );
-            })()}</Box>
+                      </UIFrame>
+                    </PreviewErrorBoundary>
+                  </UIPlayerProvider>
+                </MapSelectionProvider>
+              </PreviewGameSessionProvider>
+            ) : (
+              <Typography color="text.secondary">Preview unavailable.</Typography>
+            );
+          })()}
         </Box>
       </Stack>
     </Stack>

@@ -7,6 +7,40 @@ import { useGameSession } from '../../logic/game-controller/context/GameSessionP
 import { useClient } from '../../logic/client';
 import { GameHistory } from './HexMap/GameHistory';
 
+type UIFrameProps = React.PropsWithChildren<{
+  width?: number | string;
+  height?: number | string;
+  disablePan?: boolean;
+  disableZoom?: boolean;
+}>;
+
+export const UIFrame = ({ width = 1, height = 1, disablePan, disableZoom, children }: UIFrameProps) => {
+  const normalizedWidth = typeof width === 'number' ? width : Number(width) || 1;
+  const normalizedHeight = typeof height === 'number' ? height : Number(height) || 1;
+  const maxWidth = 550;
+  const maxHeight = 400;
+  const scale = Math.min(maxWidth / normalizedWidth, maxHeight / normalizedHeight);
+
+  return (
+    <MapInteractionCSS
+      minScale={0.1}
+      maxScale={10}
+      defaultValue={{
+        scale: scale,
+        translation: {
+          x: 375 - (normalizedWidth * scale) / 2,
+          y: 210 - (normalizedHeight * scale) / 2,
+        },
+      }}
+      showControls={false}
+      disablePan={disablePan}
+      disableZoom={disableZoom}
+    >
+      {children}
+    </MapInteractionCSS>
+  );
+};
+
 export const TableFrame = ({ children }: React.PropsWithChildren) => {
   const { isDragging } = useDragState();
   const { user } = useClient();
@@ -24,10 +58,6 @@ export const TableFrame = ({ children }: React.PropsWithChildren) => {
       type: 'start',
     });*/
   };
-
-  const maxWidth = 550;
-  const maxHeight = 400;
-  const scale = Math.min(maxWidth / primaryWidth, maxHeight / primaryHeight);
 
   console.log('active playerid', gameState.activeId, user.userId);
   return (
@@ -76,22 +106,9 @@ export const TableFrame = ({ children }: React.PropsWithChildren) => {
           </Box>
         </Box>
       </>
-      <MapInteractionCSS
-        minScale={0.1}
-        maxScale={10}
-        defaultValue={{
-          scale: scale,
-          translation: {
-            x: 375 - (primaryWidth * scale) / 2,
-            y: 210 - (primaryHeight * scale) / 2,
-          },
-        }}
-        showControls={false}
-        disablePan={isDragging}
-        disableZoom={isDragging}
-      >
+      <UIFrame width={primaryWidth} height={primaryHeight} disablePan={isDragging} disableZoom={isDragging}>
         {children}
-      </MapInteractionCSS>
+      </UIFrame>
     </Box>
   );
 };
