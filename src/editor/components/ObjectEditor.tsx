@@ -79,53 +79,53 @@ export const ObjectEditor = ({
                   gap={1}
                   sx={{ border: '1px solid', borderColor: 'divider', p: 1 }}
                 >
-                {allowAddFields ? (
-                  <>
-                    <TextField
-                      size="small"
-                      value={isRenaming ? renameValue : key}
-                      onFocus={() => {
-                        setRenamingKey(key);
-                        setRenameValue(key);
-                      }}
-                      onChange={(event) => setRenameValue(event.target.value)}
-                      onBlur={commitRename}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          commitRename();
-                        }
-                      }}
-                      sx={{
-                        minWidth: 80,
-                        maxWidth: 160,
-                        '& .MuiInputBase-input': { py: 0.5, px: 1 },
-                      }}
-                    />
-                    <TextField
-                      select
-                      size="small"
-                      value={getFieldType(value)}
-                      onChange={(event) => {
-                        const nextType = event.target.value;
-                        onChange([...path, key], typeDefaults[nextType]);
-                      }}
-                      sx={{
-                        width: 90,
-                        '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
-                        '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
-                      }}
-                    >
-                      <MenuItem value="string">string</MenuItem>
-                      <MenuItem value="number">number</MenuItem>
-                      <MenuItem value="boolean">boolean</MenuItem>
-                      <MenuItem value="object">object</MenuItem>
-                    </TextField>
-                  </>
-                ) : (
-                  <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
-                    {key}
-                  </Typography>
-                )}
+                  {allowAddFields ? (
+                    <>
+                      <TextField
+                        size="small"
+                        value={isRenaming ? renameValue : key}
+                        onFocus={() => {
+                          setRenamingKey(key);
+                          setRenameValue(key);
+                        }}
+                        onChange={(event) => setRenameValue(event.target.value)}
+                        onBlur={commitRename}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            commitRename();
+                          }
+                        }}
+                        sx={{
+                          minWidth: 80,
+                          maxWidth: 160,
+                          '& .MuiInputBase-input': { py: 0.5, px: 1 },
+                        }}
+                      />
+                      <TextField
+                        select
+                        size="small"
+                        value={getFieldType(value)}
+                        onChange={(event) => {
+                          const nextType = event.target.value;
+                          onChange([...path, key], typeDefaults[nextType]);
+                        }}
+                        sx={{
+                          width: 90,
+                          '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
+                          '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
+                        }}
+                      >
+                        <MenuItem value="string">string</MenuItem>
+                        <MenuItem value="number">number</MenuItem>
+                        <MenuItem value="boolean">boolean</MenuItem>
+                        <MenuItem value="object">object</MenuItem>
+                      </TextField>
+                    </>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
+                      {key}
+                    </Typography>
+                  )}
                   {!isCollapsed && (
                     <Box flex={1} minWidth={160}>
                       <EditorNode
@@ -150,55 +150,55 @@ export const ObjectEditor = ({
                     sx={{ border: '1px solid', borderColor: 'divider' }}
                   >
                     <Box minWidth={140} pt={0.5} pl={1}>
-                    {allowAddFields ? (
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <TextField
-                          size="small"
-                          value={isRenaming ? renameValue : key}
-                          onFocus={() => {
-                            setRenamingKey(key);
-                            setRenameValue(key);
-                          }}
-                          onChange={(event) => setRenameValue(event.target.value)}
-                          onBlur={commitRename}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter') {
-                              commitRename();
-                            }
-                          }}
-                          sx={{
-                            minWidth: 120,
-                            maxWidth: 200,
-                            '& .MuiInputBase-input': { py: 0.5, px: 1 },
-                          }}
-                        />
-                        <TextField
-                          select
-                          size="small"
-                          value={getFieldType(value)}
-                          onChange={(event) => {
-                            const nextType = event.target.value;
-                            onChange([...path, key], typeDefaults[nextType]);
-                          }}
-                          sx={{
-                            width: 90,
-                            '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
-                            '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
-                          }}
-                        >
-                          <MenuItem value="string">string</MenuItem>
-                          <MenuItem value="number">number</MenuItem>
-                          <MenuItem value="boolean">boolean</MenuItem>
-                          <MenuItem value="object">object</MenuItem>
-                        </TextField>
-                      </Stack>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        {key}
-                      </Typography>
-                    )}
+                      {allowAddFields ? (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <TextField
+                            size="small"
+                            value={isRenaming ? renameValue : key}
+                            onFocus={() => {
+                              setRenamingKey(key);
+                              setRenameValue(key);
+                            }}
+                            onChange={(event) => setRenameValue(event.target.value)}
+                            onBlur={commitRename}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter') {
+                                commitRename();
+                              }
+                            }}
+                            sx={{
+                              minWidth: 120,
+                              maxWidth: 200,
+                              '& .MuiInputBase-input': { py: 0.5, px: 1 },
+                            }}
+                          />
+                          <TextField
+                            select
+                            size="small"
+                            value={getFieldType(value)}
+                            onChange={(event) => {
+                              const nextType = event.target.value;
+                              onChange([...path, key], typeDefaults[nextType]);
+                            }}
+                            sx={{
+                              width: 90,
+                              '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
+                              '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
+                            }}
+                          >
+                            <MenuItem value="string">string</MenuItem>
+                            <MenuItem value="number">number</MenuItem>
+                            <MenuItem value="boolean">boolean</MenuItem>
+                            <MenuItem value="object">object</MenuItem>
+                          </TextField>
+                        </Stack>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          {key}
+                        </Typography>
+                      )}
                     </Box>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Stack direction="row" spacing={0.5} mr={1} alignItems="center">
                       <IconButton
                         size="small"
                         onClick={() =>
@@ -208,20 +208,22 @@ export const ObjectEditor = ({
                       >
                         {isCollapsed ? <ExpandMore fontSize="small" /> : <ExpandLess fontSize="small" />}
                       </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          if (!window.confirm(`Delete "${key}"? This cannot be undone.`)) {
-                            return;
-                          }
-                          const { [key]: removed, ...rest } = objectValue;
-                          onChange(path, rest);
-                        }}
-                        aria-label="delete"
-                        sx={{ p: 0.25 }}
-                      >
-                        <Close fontSize="inherit" sx={{ fontSize: 14 }} />
-                      </IconButton>
+                      {allowAddFields && (
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            if (!window.confirm(`Delete "${key}"? This cannot be undone.`)) {
+                              return;
+                            }
+                            const { [key]: removed, ...rest } = objectValue;
+                            onChange(path, rest);
+                          }}
+                          aria-label="delete"
+                          sx={{ p: 0 }}
+                        >
+                          <Close fontSize="inherit" sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      )}
                     </Stack>
                   </Box>
                   {!isCollapsed && (

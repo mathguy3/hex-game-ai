@@ -42,6 +42,8 @@ export const GameDefinitionEditorPage = () => {
   const { id } = useParams();
   const [definition, setDefinition] = useState<GameDefinitionRecord | null>(null);
   const [loading, setLoading] = useState(false);
+  const skipNextAutoSaveRef = useRef(true);
+  const saveTimeoutRef = useRef<number | null>(null);
   const [editorWidthPct, setEditorWidthPct] = useState(() => {
     const stored = window.localStorage.getItem('editorSplitPct');
     const parsed = stored ? Number(stored) : NaN;
@@ -81,6 +83,10 @@ export const GameDefinitionEditorPage = () => {
   }, [client, id]);
 
   useEffect(() => {
+    skipNextAutoSaveRef.current = true;
+  }, [id]);
+
+  useEffect(() => {
     window.localStorage.setItem('editorSplitPct', String(editorWidthPct));
   }, [editorWidthPct]);
 
@@ -116,6 +122,32 @@ export const GameDefinitionEditorPage = () => {
       localControl: { activeOptions: [] },
     } as any;
   }, [definition]);
+
+  useEffect(() => {
+    if (!definition) {
+      return;
+    }
+    if (skipNextAutoSaveRef.current) {
+      skipNextAutoSaveRef.current = false;
+      return;
+    }
+    if (saveTimeoutRef.current) {
+      window.clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = window.setTimeout(() => {
+      setLoading(true);
+      client
+        .updateGameDefinition({ id: definition.id, definition: definition.definition })
+        .finally(() => {
+          setLoading(false);
+        });
+    }, 1000);
+    return () => {
+      if (saveTimeoutRef.current) {
+        window.clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [client, definition]);
 
   if (!definition) {
     return (
