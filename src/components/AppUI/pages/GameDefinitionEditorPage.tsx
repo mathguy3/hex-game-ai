@@ -172,9 +172,8 @@ export const GameDefinitionEditorPage = () => {
         <Box
           sx={{
             width: `${editorWidthPct}%`,
-            minWidth: 300,
-            pr: 2,
-            overflow: 'hidden',
+            height: '100%',
+            minHeight: 0,
           }}
         >
           <EditorRoot value={definition.definition} onChange={handleChange} registry={registry} />
@@ -223,7 +222,6 @@ export const GameDefinitionEditorPage = () => {
         <Box
           sx={{
             width: `${100 - editorWidthPct}%`,
-            minWidth: 320,
             pl: 2,
             border: '1px solid',
             borderColor: 'divider',
