@@ -10,16 +10,25 @@ import { GameHistory } from './HexMap/GameHistory';
 type UIFrameProps = React.PropsWithChildren<{
   width?: number | string;
   height?: number | string;
+  defaultScale?: number;
   disablePan?: boolean;
   disableZoom?: boolean;
 }>;
 
-export const UIFrame = ({ width = 1, height = 1, disablePan, disableZoom, children }: UIFrameProps) => {
+export const UIFrame = ({
+  width = 1,
+  height = 1,
+  defaultScale,
+  disablePan,
+  disableZoom,
+  children,
+}: UIFrameProps) => {
   const normalizedWidth = typeof width === 'number' ? width : Number(width) || 1;
   const normalizedHeight = typeof height === 'number' ? height : Number(height) || 1;
   const maxWidth = 550;
   const maxHeight = 400;
-  const scale = Math.min(maxWidth / normalizedWidth, maxHeight / normalizedHeight);
+  const fittedScale = Math.min(maxWidth / normalizedWidth, maxHeight / normalizedHeight);
+  const scale = defaultScale ?? fittedScale;
 
   return (
     <MapInteractionCSS

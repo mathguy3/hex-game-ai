@@ -248,6 +248,7 @@ export const GameDefinitionEditorPage = () => {
                       <UIFrame
                         width={sharedModel?.zone?.styles?.width ?? 1}
                         height={sharedModel?.zone?.styles?.height ?? 1}
+                        defaultScale={0.5}
                       >
                         <UI {...sharedModel} />
                       </UIFrame>
