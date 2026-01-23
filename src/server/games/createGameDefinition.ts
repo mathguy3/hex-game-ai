@@ -27,8 +27,8 @@ const defaultGameDefinition: GameDefinitionV2 = {
     other: {},
   },
   ui: {
-    shared: { zone: { id: 'shared', type: 'zone' } },
-    player: { zone: { id: 'player', type: 'zone' } },
+    shared: {} as any,
+    player: {} as any,
   },
 };
 
