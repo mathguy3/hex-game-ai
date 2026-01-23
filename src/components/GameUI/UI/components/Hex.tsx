@@ -87,7 +87,7 @@ export const Hex = React.memo(
         console.log('transitionOffset', transitionOffset);
       }
     }
-    const slotKeys = Object.keys(slots);
+    const slotKeys = slots ? Object.keys(slots) : [];
     //console.log('slots', slots, slotKeys);
     if (data) {
       //console.log('hex', id, data, hex, isSelected, isTargeted, preview);

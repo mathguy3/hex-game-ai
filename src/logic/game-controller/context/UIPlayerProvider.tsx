@@ -14,7 +14,7 @@ export const UIPlayerProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const { gameSession } = useGameSession();
 
   const playerSeat = Object.values(gameSession?.gameState.seats ?? {}).find((seat: any) => seat.userId === user.userId);
-  const playerState = gameSession?.gameState.data[playerSeat.id];
+  const playerState = playerSeat ? gameSession?.gameState.data[playerSeat.id] : null;
 
   return <UIPlayerContext.Provider value={{ playerState }}>{children}</UIPlayerContext.Provider>;
 };

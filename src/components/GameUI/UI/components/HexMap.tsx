@@ -5,19 +5,93 @@ import { Hex } from './Hex';
 import { mapStyles } from '../utils/mapStyles';
 import { useIf } from '../../../../logic/if/if-engine-3/useIf';
 import { useMapSelection } from '../../../../logic/game-controller/context/MapSelectionProvider';
-import { useCallback } from 'react';
 import { useUpdatingRef } from '../../../../utils/useUpdatingRef';
 
 const transitionTypes = ['move'];
 
+const fallbackGameSession = {
+  gameState: {
+    data: {},
+    activeId: '',
+    hasStarted: false,
+    seats: {},
+  },
+  gameDefinition: {
+    definitions: {
+      functions: {},
+      references: {},
+    },
+  },
+  localControl: {},
+} as any;
+
+const useSafeGameSession = () => {
+  const ctx = useGameSession();
+  if (!ctx?.gameSession) {
+    return { gameSession: fallbackGameSession, transitions: {} };
+  }
+  return ctx;
+};
+
+const useSafeMapSelection = () => {
+  const ctx = useMapSelection();
+  const fallbackSelectHex = useUpdatingRef(() => {});
+  return (
+    ctx ?? {
+      selectedHex: null,
+      previewState: {},
+      targetState: {},
+      selectHex: fallbackSelectHex,
+    }
+  );
+};
+
+type HexMapRenderProps = {
+  hex: HexMapUIModel['hex'];
+  mappedStyles: Record<string, any>;
+  content: Record<string, any>;
+  transitions: Record<string, any>;
+  selectedHex: any;
+  previewState: Record<string, any>;
+  targetState: Record<string, any>;
+  selectHex: ReturnType<typeof useUpdatingRef>;
+};
+
+export const HexMapRender = ({
+  hex,
+  mappedStyles,
+  content,
+  transitions,
+  selectedHex,
+  previewState,
+  targetState,
+  selectHex,
+}: HexMapRenderProps) => {
+  return (
+    <Box sx={mappedStyles}>
+      {Object.entries(content).map(([key, item]) => (
+        <UI
+          key={key}
+          hex={hex}
+          data={item}
+          isSelected={selectedHex?.id === key}
+          isTargeted={targetState[key]}
+          preview={previewState[key]}
+          transition={transitions[key]}
+          selectHex={selectHex}
+        />
+      ))}
+    </Box>
+  );
+};
+
 export const HexMap = ({ id, styles, hex }: HexMapUIModel) => {
-  const { gameSession, transitions: localTransitions } = useGameSession();
-  const { selectedHex, previewState, targetState, selectHex } = useMapSelection();
+  const { gameSession, transitions: localTransitions } = useSafeGameSession();
+  const { selectedHex, previewState, targetState, selectHex } = useSafeMapSelection();
   const { gameState } = gameSession;
   const { doEval } = useIf(gameSession);
-  const content = gameState.data[id] as Record<string, any>;
-
-  const stores = gameState.data;
+  const stores = gameState.data ?? {};
+  const content = (stores[id] ?? {}) as Record<string, any>;
 
   const mappedStyles = styles ? mapStyles(styles, doEval) : {};
   const transitions = localTransitions
@@ -39,19 +113,15 @@ export const HexMap = ({ id, styles, hex }: HexMapUIModel) => {
   console.log('previewState', selectedHex, previewState);
 
   return (
-    <Box sx={mappedStyles}>
-      {Object.entries(content).map(([key, item]) => (
-        <UI
-          key={key}
-          hex={hex}
-          data={item}
-          isSelected={selectedHex?.id === key}
-          isTargeted={targetState[key]}
-          preview={previewState[key]}
-          transition={transitions[key]}
-          selectHex={selectHex}
-        />
-      ))}
-    </Box>
+    <HexMapRender
+      hex={hex}
+      mappedStyles={mappedStyles}
+      content={content}
+      transitions={transitions}
+      selectedHex={selectedHex}
+      previewState={previewState}
+      targetState={targetState}
+      selectHex={selectHex}
+    />
   );
 };

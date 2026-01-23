@@ -9,7 +9,7 @@ type GameSessionCtx = {
   transitions: Record<string, any>;
 };
 
-const GameSessionContext = createContext<GameSessionCtx>(null);
+export const GameSessionContext = createContext<GameSessionCtx>(null);
 
 export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChildren<{ roomCode: string }>) => {
   const navigate = useNavigate();
@@ -100,3 +100,11 @@ export const GameSessionProvider = ({ roomCode, children }: React.PropsWithChild
 };
 
 export const useGameSession = () => useContext(GameSessionContext);
+
+export const PreviewGameSessionProvider = ({
+  gameSession,
+  transitions = {},
+  children,
+}: React.PropsWithChildren<{ gameSession: GameSession; transitions?: Record<string, any> }>) => {
+  return <GameSessionContext.Provider value={{ gameSession, transitions }}>{children}</GameSessionContext.Provider>;
+};

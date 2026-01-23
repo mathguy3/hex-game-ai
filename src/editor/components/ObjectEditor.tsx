@@ -1,4 +1,4 @@
-import { Add } from '@mui/icons-material';
+import { Add, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Box, IconButton, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 import { EditorNode } from './EditorNode';
@@ -24,6 +24,7 @@ export const ObjectEditor = ({
   allowedKeys,
 }: ObjectEditorProps) => {
   const [newKey, setNewKey] = useState('');
+  const [collapsedKeys, setCollapsedKeys] = useState<Record<string, boolean>>({});
 
   const keys = Object.keys(objectValue);
 
@@ -37,36 +38,49 @@ export const ObjectEditor = ({
           {label}
         </Typography>
       )}
-      {keys.map((key) => (
+      {keys.map((key) => {
+        const isCollapsed = collapsedKeys[key];
+        return (
         <Stack key={`${path.join('.')}-${key}`} direction="row" spacing={1} alignItems="flex-start">
           <Stack>
-            <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between" sx={{ border: '1px solid', borderColor: 'divider' }}>
+            <Box
+              display="flex"
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ border: '1px solid', borderColor: 'divider' }}
+            >
               <Box minWidth={140} pt={0.5} pl={1}>
                 <Typography variant="body2" color="text.secondary">
                   {key}
                 </Typography>
               </Box>
-              {/*<IconButton
+              <IconButton
                 size="small"
-                onClick={() => onChange([], removeAtPath(rootValue, [...path, key]))}
-                aria-label="remove"
+                onClick={() =>
+                  setCollapsedKeys((prev) => ({ ...prev, [key]: !prev[key] }))
+                }
+                aria-label={isCollapsed ? 'expand' : 'collapse'}
               >
-                <Delete fontSize="small" />
-              </IconButton>*/}
+                {isCollapsed ? <ExpandMore fontSize="small" /> : <ExpandLess fontSize="small" />}
+              </IconButton>
             </Box>
-            <Box flex={1}>
-              <EditorNode
-                node={objectValue[key]}
-                path={[...path, key]}
-                onChange={onChange}
-                registry={registry}
-                rootValue={rootValue}
-                parentKey={key}
-              />
-            </Box>
+            {!isCollapsed && (
+              <Box flex={1}>
+                <EditorNode
+                  node={objectValue[key]}
+                  path={[...path, key]}
+                  onChange={onChange}
+                  registry={registry}
+                  rootValue={rootValue}
+                  parentKey={key}
+                />
+              </Box>
+            )}
           </Stack>
         </Stack>
-      ))}
+      );
+      })}
       {allowAddFields && (
         <Stack direction="row" spacing={1} alignItems="center">
           <TextField
