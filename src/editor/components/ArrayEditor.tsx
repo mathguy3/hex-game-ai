@@ -23,6 +23,7 @@ export const ArrayEditor = ({
   label,
   parentKey,
   allowedArrayKeys,
+  allowAddFields,
 }: ArrayEditorProps) => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const isCommandList = parentKey ? commandListKeys.has(parentKey) : false;
@@ -46,6 +47,7 @@ export const ArrayEditor = ({
               rootValue={rootValue}
               parentKey={parentKey}
               allowCommand={allowCommand}
+              allowAddFields={allowAddFields}
             />
           </Box>
           <IconButton

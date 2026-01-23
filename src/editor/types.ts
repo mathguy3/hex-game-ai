@@ -13,6 +13,7 @@ export type EditorComponentProps = {
   rootValue: any;
   parentKey?: string;
   allowCommand?: boolean;
+  allowAddFields?: boolean;
 };
 
 export type EditorRegistration = {

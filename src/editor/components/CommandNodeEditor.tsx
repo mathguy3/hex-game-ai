@@ -18,6 +18,7 @@ export const CommandNodeEditor = ({
   rootValue,
   label,
   parentKey,
+  allowAddFields,
 }: CommandNodeEditorProps) => {
   const registration = registry.get(commandKey);
   const parentRegistration = parentKey ? registry.get(parentKey) : undefined;
@@ -58,6 +59,7 @@ export const CommandNodeEditor = ({
           registry={registry}
           rootValue={rootValue}
           parentKey={commandKey}
+          allowAddFields={allowAddFields}
         />
       ) : (
         <ObjectEditor

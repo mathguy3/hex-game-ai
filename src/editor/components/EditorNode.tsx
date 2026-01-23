@@ -16,6 +16,7 @@ export const EditorNode = ({
   rootValue,
   parentKey,
   allowCommand,
+  allowAddFields,
 }: EditorComponentProps) => {
   const [newCommandKey, setNewCommandKey] = useState('');
 
@@ -44,6 +45,7 @@ export const EditorNode = ({
         rootValue={rootValue}
         parentKey={parentKey}
         allowedArrayKeys={registration?.allowedArrayKeys}
+        allowAddFields={allowAddFields}
       />
     );
   }
@@ -60,6 +62,7 @@ export const EditorNode = ({
           registry={registry}
           rootValue={rootValue}
           parentKey={parentKey}
+          allowAddFields={allowAddFields}
         />
       );
     }
@@ -83,6 +86,7 @@ export const EditorNode = ({
           rootValue={rootValue}
           label={label}
           parentKey={parentKey}
+          allowAddFields={allowAddFields}
         />
       );
     }
@@ -117,7 +121,7 @@ export const EditorNode = ({
     }
 
     const registration = parentKey ? registry.get(parentKey) : undefined;
-    const allowAddFields = parentKey ? recordContainerKeys.has(parentKey) : false;
+    const cascadedAllowAddFields = allowAddFields || (parentKey ? recordContainerKeys.has(parentKey) : false);
 
     return (
       <ObjectEditor
@@ -129,7 +133,7 @@ export const EditorNode = ({
         rootValue={rootValue}
         label={parentKey}
         compact={parentKey !== undefined}
-        allowAddFields={allowAddFields}
+        allowAddFields={cascadedAllowAddFields}
         allowedKeys={registration?.allowedKeys}
       />
     );
