@@ -31,13 +31,7 @@ export const ObjectEditor = ({
   const [renameValue, setRenameValue] = useState('');
   const [collapsedKeys, setCollapsedKeys] = useState<Record<string, boolean>>(() => {
     if (path.length === 0) {
-      return { data: true, seats: true };
-    }
-    if (parentKey === 'data' && lockedKeys) {
-      return Object.keys(lockedKeys).reduce<Record<string, boolean>>((acc, key) => {
-        acc[key] = true;
-        return acc;
-      }, {});
+      return { seats: true };
     }
     if (boundDataItem) {
       return Object.keys(objectValue).reduce<Record<string, boolean>>((acc, key) => {
@@ -47,21 +41,6 @@ export const ObjectEditor = ({
     }
     return {};
   });
-
-  useEffect(() => {
-    if (parentKey !== 'data' || !lockedKeys) {
-      return;
-    }
-    setCollapsedKeys((prev) => {
-      const next = { ...prev };
-      Object.keys(lockedKeys).forEach((key) => {
-        if (next[key] === undefined) {
-          next[key] = true;
-        }
-      });
-      return next;
-    });
-  }, [lockedKeys, parentKey]);
 
   useEffect(() => {
     if (!boundDataItem) {
@@ -203,6 +182,7 @@ export const ObjectEditor = ({
                   ) : (
                     <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
                       {key}
+                      {lockConfig ? ' *' : ''}
                     </Typography>
                   )}
                   {!isCollapsed && (
@@ -277,6 +257,7 @@ export const ObjectEditor = ({
                       ) : (
                         <Typography variant="body2" color="text.secondary">
                           {key}
+                          {lockConfig ? ' *' : ''}
                         </Typography>
                       )}
                     </Box>

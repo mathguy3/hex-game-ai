@@ -228,6 +228,7 @@ export const EditorNode = ({
         rootValue={rootValue}
         node={node}
         preventEmpty={isBoundUiIdField}
+        debounceMs={isBoundUiIdField ? 400 : undefined}
       />
     </Box>
   );
