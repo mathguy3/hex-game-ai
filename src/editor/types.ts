@@ -5,6 +5,12 @@ export type EditorPath = Array<string | number>;
 
 export type EditorChange = (path: EditorPath, value: any) => void;
 
+export type TypeRuleContext = {
+  path: EditorPath;
+  node: any;
+  rootValue: any;
+};
+
 export type LockedKeyConfig = {
   lockRename?: boolean;
   lockType?: boolean;
@@ -22,6 +28,7 @@ export type EditorComponentProps = {
   allowAddFields?: boolean;
   lockedKeys?: Record<string, LockedKeyConfig>;
   boundDataItem?: boolean;
+  nodeType?: string;
 };
 
 export type EditorRegistration = {

@@ -54,6 +54,60 @@ export const GameDefinitionEditorPage = () => {
   const registry = useMemo(() => {
     const next = new EditorRegistry();
     const uiKeys = ['zone', 'button', 'cardStack', 'tokenStack', 'hexMap', 'hex', 'text', 'token'];
+    const collectBoundUiIds = (node: any, result: Set<string>) => {
+      if (!node) {
+        return;
+      }
+      if (Array.isArray(node)) {
+        node.forEach((child) => collectBoundUiIds(child, result));
+        return;
+      }
+      if (typeof node !== 'object') {
+        return;
+      }
+      const keys = Object.keys(node);
+      if (keys.length === 1) {
+        const key = keys[0];
+        if (key === 'hexMap' || key === 'tokenStack' || key === 'cardStack') {
+          const id = node[key]?.id;
+          if (typeof id === 'string' && id.trim().length > 0) {
+            result.add(id);
+          }
+        }
+      }
+      Object.values(node).forEach((child) => collectBoundUiIds(child, result));
+    };
+
+    const collectHexMapIds = (node: any, result: Set<string>) => {
+      if (!node) {
+        return;
+      }
+      if (Array.isArray(node)) {
+        node.forEach((child) => collectHexMapIds(child, result));
+        return;
+      }
+      if (typeof node !== 'object') {
+        return;
+      }
+      const keys = Object.keys(node);
+      if (keys.length === 1 && keys[0] === 'hexMap') {
+        const id = node.hexMap?.id;
+        if (typeof id === 'string' && id.trim().length > 0) {
+          result.add(id);
+        }
+      }
+      Object.values(node).forEach((child) => collectHexMapIds(child, result));
+    };
+
+    next.registerTypeRule('hex', ({ path, rootValue }) => {
+      if (!rootValue || path.length !== 3 || path[0] !== 'data') {
+        return false;
+      }
+      const hexMapIds = new Set<string>();
+      collectHexMapIds(rootValue.ui, hexMapIds);
+      return hexMapIds.has(String(path[1]));
+    });
+    next.registerTypeSuggestions('hex', ['terrain', 'occupant', 'owner', 'visibility', 'tags']);
     next.register('shared', { allowedKeys: uiKeys });
     next.register('player', { allowedKeys: uiKeys });
     next.register('zone', { defaultValue: { children: [] } });

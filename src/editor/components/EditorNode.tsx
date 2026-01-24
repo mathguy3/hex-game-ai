@@ -52,6 +52,7 @@ export const EditorNode = ({
   boundDataItem,
 }: EditorComponentProps) => {
   const [newCommandKey, setNewCommandKey] = useState('');
+  const nodeType = registry.resolveType({ path, node, rootValue });
   const isObjectNode = typeof node === 'object' && node !== null && !Array.isArray(node);
   const objectKeys = isObjectNode ? Object.keys(node) : [];
   const boundCommandKey = objectKeys.length === 1 && boundUiTypes.has(objectKeys[0]) ? objectKeys[0] : null;
@@ -218,6 +219,7 @@ export const EditorNode = ({
         allowedKeys={registration?.allowedKeys}
         lockedKeys={lockedKeysForNode}
         boundDataItem={boundDataItem}
+        nodeType={nodeType}
       />
     );
   }

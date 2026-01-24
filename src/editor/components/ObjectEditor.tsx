@@ -25,6 +25,7 @@ export const ObjectEditor = ({
   lockedKeys,
   parentKey,
   boundDataItem,
+  nodeType,
 }: ObjectEditorProps) => {
   const [newKey, setNewKey] = useState('');
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
@@ -59,8 +60,10 @@ export const ObjectEditor = ({
     });
   }, [boundDataItem, objectValue]);
 
-  const suggestions = parentKey ? registry.get(parentKey)?.suggestions : undefined;
-  const availableSuggestions = suggestions?.filter((suggestion) => objectValue[suggestion] === undefined) ?? [];
+  const keySuggestions = parentKey ? registry.get(parentKey)?.suggestions : [];
+  const typeSuggestions = nodeType ? registry.getTypeSuggestions(nodeType) : [];
+  const mergedSuggestions = Array.from(new Set([...(keySuggestions ?? []), ...(typeSuggestions ?? [])]));
+  const availableSuggestions = mergedSuggestions.filter((suggestion) => objectValue[suggestion] === undefined);
   const hasSuggestions = !!(allowAddFields && availableSuggestions.length > 0);
 
   useEffect(() => {
@@ -138,9 +141,10 @@ export const ObjectEditor = ({
         const value = objectValue[key];
         const isInlineValue = value === null || value === undefined || typeof value !== 'object';
         const isRenaming = renamingKey === key;
+        const fieldNodeType = registry.resolveType({ path: [...path, key], node: value, rootValue });
         const lockConfig = lockedKeys?.[key];
         const allowRename = allowAddFields && !lockConfig?.lockRename;
-        const allowTypeChange = allowAddFields && !lockConfig?.lockType;
+        const allowTypeChange = allowAddFields && !lockConfig?.lockType && !fieldNodeType;
         const allowDelete = allowAddFields && !lockConfig?.lockDelete;
         const commitRename = () => {
           const trimmed = renameValue.trim();
@@ -182,12 +186,13 @@ export const ObjectEditor = ({
                           }
                         }}
                         sx={{
-                          minWidth: 80,
+                          width: 50,
+                          minWidth: 50,
                           maxWidth: 160,
                           '& .MuiInputBase-input': { py: 0.5, px: 1 },
                         }}
                       />
-                      {allowTypeChange && (
+                      {allowTypeChange ? (
                         <TextField
                           select
                           size="small"
@@ -207,6 +212,10 @@ export const ObjectEditor = ({
                           <MenuItem value="boolean">boolean</MenuItem>
                           <MenuItem value="object">object</MenuItem>
                         </TextField>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
+                          {fieldNodeType}
+                        </Typography>
                       )}
                     </>
                   ) : (
@@ -216,7 +225,7 @@ export const ObjectEditor = ({
                     </Typography>
                   )}
                   {!isCollapsed && (
-                    <Box flex={1} minWidth={160}>
+                    <Box flex={1} minWidth={75}>
                       <EditorNode
                         node={value}
                         path={[...path, key]}
@@ -239,7 +248,7 @@ export const ObjectEditor = ({
                     justifyContent="space-between"
                     sx={{ border: '1px solid', borderColor: 'divider' }}
                   >
-                    <Box minWidth={140} pt={0.5} pl={1}>
+                    <Box minWidth={75} pt={0.5} pl={1}>
                       {allowRename ? (
                         <Stack direction="row" spacing={1} alignItems="center">
                           <TextField
@@ -257,12 +266,13 @@ export const ObjectEditor = ({
                               }
                             }}
                             sx={{
-                              minWidth: 120,
+                              flexBasis: 'auto',
+                              minWidth: 75,
                               maxWidth: 200,
                               '& .MuiInputBase-input': { py: 0.5, px: 1 },
                             }}
                           />
-                          {allowTypeChange && (
+                          {allowTypeChange ? (
                             <TextField
                               select
                               size="small"
@@ -282,6 +292,12 @@ export const ObjectEditor = ({
                               <MenuItem value="boolean">boolean</MenuItem>
                               <MenuItem value="object">object</MenuItem>
                             </TextField>
+                          ) : (
+                            <Box flexGrow={1}>
+                              <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
+                                {fieldNodeType}
+                              </Typography>
+                            </Box>
                           )}
                         </Stack>
                       ) : (
@@ -448,7 +464,7 @@ export const ObjectEditor = ({
                       pt: 1,
                     }}
                   >
-                {availableSuggestions.map((suggestion) => (
+                    {availableSuggestions.map((suggestion) => (
                       <Box
                         key={suggestion}
                         role="button"
