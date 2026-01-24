@@ -16,15 +16,8 @@ const buildRadiusMap = (radius: number) => {
       const key = getKey(coordinates);
       map[key] = {
         id: key,
-        key,
         type: 'hex',
-        kind: 'hex',
-        properties: {},
         coordinates,
-        isSelected: false,
-        contains: {},
-        preview: {},
-        source: 'editor',
       };
     }
   }
