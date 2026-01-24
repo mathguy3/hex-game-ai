@@ -14,33 +14,36 @@ export const CoordinatesEditor = ({ node, path, onChange }: EditorComponentProps
 
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      <Typography variant="caption" color="text.secondary">
+    <Stack direction="row" spacing={0.75} alignItems="center" pl={2} pt={0.5}>
+      <Typography variant="body2" color="text.secondary">
         q
       </Typography>
       <TextField
         size="small"
         value={coordinates.q ?? 0}
         onChange={(event) => onChange([...path, 'q'], parseNumber(event.target.value))}
-        inputProps={{ style: { width: 50 } }}
+        inputProps={{ style: { width: 36 } }}
+        sx={{ '& .MuiInputBase-input': { py: 0.5, px: 1 } }}
       />
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
         r
       </Typography>
       <TextField
         size="small"
         value={coordinates.r ?? 0}
         onChange={(event) => onChange([...path, 'r'], parseNumber(event.target.value))}
-        inputProps={{ style: { width: 50 } }}
+        inputProps={{ style: { width: 36 } }}
+        sx={{ '& .MuiInputBase-input': { py: 0.5, px: 1 } }}
       />
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="body2" color="text.secondary">
         s
       </Typography>
       <TextField
         size="small"
         value={coordinates.s ?? 0}
         onChange={(event) => onChange([...path, 's'], parseNumber(event.target.value))}
-        inputProps={{ style: { width: 50 } }}
+        inputProps={{ style: { width: 36 } }}
+        sx={{ '& .MuiInputBase-input': { py: 0.5, px: 1 } }}
       />
     </Stack>
   );

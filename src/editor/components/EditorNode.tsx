@@ -192,6 +192,16 @@ export const EditorNode = ({
         });
       }
     }
+    let lockedKeysForNode = lockedKeys;
+    if (typeof node === 'object' && node !== null && !Array.isArray(node) && 'coordinates' in node) {
+      lockedKeysForNode = {
+        ...(lockedKeysForNode ?? {}),
+        coordinates: {
+          ...(lockedKeysForNode?.coordinates ?? {}),
+          lockType: true,
+        },
+      };
+    }
 
     return (
       <ObjectEditor
@@ -206,7 +216,7 @@ export const EditorNode = ({
         compact={parentKey !== undefined}
         allowAddFields={cascadedAllowAddFields}
         allowedKeys={registration?.allowedKeys}
-        lockedKeys={lockedKeys}
+        lockedKeys={lockedKeysForNode}
         boundDataItem={boundDataItem}
       />
     );
