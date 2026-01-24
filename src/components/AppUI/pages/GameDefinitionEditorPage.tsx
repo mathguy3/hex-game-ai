@@ -66,6 +66,18 @@ export const GameDefinitionEditorPage = () => {
     next.register('text', { defaultValue: { content: '' } });
     next.register('token', { defaultValue: { image: '' } });
     next.register('coordinates', { component: CoordinatesEditor });
+    next.registerSuggestions('data', [
+      'hand',
+      'deck',
+      'discard',
+      'board',
+      'graveyard',
+      'stash',
+      'market',
+      'draft',
+      'queue',
+      'pool',
+    ]);
     return next;
   }, []);
 

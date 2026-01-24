@@ -12,6 +12,15 @@ export class EditorRegistry {
     return this;
   }
 
+  registerSuggestions(key: string, suggestions: string[]) {
+    const existing = this.registrations[key] ?? {};
+    this.registrations[key] = {
+      ...existing,
+      suggestions,
+    };
+    return this;
+  }
+
   get(key: string) {
     return this.registrations[key];
   }

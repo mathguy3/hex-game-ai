@@ -30,4 +30,5 @@ export type EditorRegistration = {
   defaultValue?: any;
   allowedKeys?: string[];
   allowedArrayKeys?: string[];
+  suggestions?: string[];
 };

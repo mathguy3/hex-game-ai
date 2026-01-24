@@ -1,6 +1,6 @@
 import { Add, Close, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Box, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
 
@@ -27,8 +27,10 @@ export const ObjectEditor = ({
   boundDataItem,
 }: ObjectEditorProps) => {
   const [newKey, setNewKey] = useState('');
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [renamingKey, setRenamingKey] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const suggestionsRef = useRef<HTMLDivElement | null>(null);
   const [collapsedKeys, setCollapsedKeys] = useState<Record<string, boolean>>(() => {
     if (path.length === 0) {
       return { seats: true };
@@ -56,6 +58,34 @@ export const ObjectEditor = ({
       return next;
     });
   }, [boundDataItem, objectValue]);
+
+  const suggestions = parentKey ? registry.get(parentKey)?.suggestions : undefined;
+  const availableSuggestions = suggestions?.filter((suggestion) => objectValue[suggestion] === undefined) ?? [];
+  const hasSuggestions = !!(allowAddFields && availableSuggestions.length > 0);
+
+  useEffect(() => {
+    if (!hasSuggestions) {
+      setSuggestionsOpen(false);
+    }
+  }, [hasSuggestions]);
+
+  useEffect(() => {
+    if (!suggestionsOpen) {
+      return;
+    }
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!suggestionsRef.current) {
+        return;
+      }
+      if (!suggestionsRef.current.contains(event.target as Node)) {
+        setSuggestionsOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [suggestionsOpen]);
 
   const keys = Object.keys(objectValue);
   const orderedKeys = path.length === 0
@@ -314,71 +344,166 @@ export const ObjectEditor = ({
       {allowAddFields && (
         <Stack direction="row" alignItems="center">
           <Box
-            role="button"
-            aria-label="add"
-            onClick={() => {
-              const baseKey = 'fieldname';
-              let nextKey = baseKey;
-              let counter = 2;
-              while (objectValue[nextKey] !== undefined) {
-                nextKey = `${baseKey}-${counter}`;
-                counter += 1;
-              }
-              onChange(path, { ...objectValue, [nextKey]: {} });
-              setRenamingKey(nextKey);
-              setRenameValue(nextKey);
-            }}
+            ref={suggestionsRef}
             sx={{
               position: 'relative',
-              height: 11,
               width: '100%',
               marginBottom: '10px',
-              bgcolor: 'background.paper',
-              border: '1px solid',
-              borderColor: 'divider',
-              borderRadius: '0 0 12px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: '100%',
-                left: '25%',
-                transform: 'translateX(-50%)',
-                width: 34,
-                height: 12,
-                border: '1px solid',
-                borderColor: 'divider',
-                borderTop: 'none',
-                borderRadius: '0 0 10px 10px',
-                bgcolor: 'background.paper',
-              },
             }}
           >
-            <Add fontSize="small" sx={{ position: 'relative', top: 6, left: '-25%' }} />
+            <Box
+              role="button"
+              aria-label="add"
+              onClick={() => {
+                if (suggestionsOpen) {
+                  return;
+                }
+                const baseKey = 'fieldname';
+                let nextKey = baseKey;
+                let counter = 2;
+                while (objectValue[nextKey] !== undefined) {
+                  nextKey = `${baseKey}-${counter}`;
+                  counter += 1;
+                }
+                onChange(path, { ...objectValue, [nextKey]: {} });
+                setRenamingKey(nextKey);
+                setRenameValue(nextKey);
+              }}
+              sx={{
+                position: 'relative',
+                height: suggestionsOpen ? 40 : 11,
+                transition: 'height 160ms ease, opacity 160ms ease',
+                width: '100%',
+                bgcolor: 'background.paper',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: '0 0 12px 12px',
+                cursor: 'pointer',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: '100%',
+                  left: '25%',
+                  transform: 'translateX(-50%)',
+                  width: 34,
+                  height: 12,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderTop: 'none',
+                  borderRadius: '0 0 10px 10px',
+                  bgcolor: 'background.paper',
+                },
+              }}
+            >
+              <Add fontSize="small" sx={{
+                position: 'absolute', bottom: -10, left: '25%', transform: 'translateX(-50%)',
+              }} />
+              {hasSuggestions && (
+                <Box
+                  role="button"
+                  aria-label="suggestions"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setSuggestionsOpen(!suggestionsOpen);
+                  }}
+                  sx={{
+                    position: 'absolute',
+                    bottom: -13,
+                    right: 8,
+                    height: '12px',
+                    minWidth: 24,
+                    px: 0.75,
+                    border: '1px solid',
+                    borderTop: 'none',
+                    borderColor: 'divider',
+                    borderRadius: '0 0 8px 8px',
+                    bgcolor: 'background.paper',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: 'text.secondary',
+                    zIndex: 2,
+                  }}
+                >
+                  <Box fontSize={24} sx={{ position: 'relative', top: -11, }}>
+                    ...
+                  </Box>
+                </Box>
+              )}
+              {hasSuggestions && (
+                <Box
+                  sx={{
+                    height: '100%',
+                    opacity: suggestionsOpen ? 1 : 0,
+                    pointerEvents: suggestionsOpen ? 'auto' : 'none',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.5,
+                      px: 1,
+                      pt: 1,
+                    }}
+                  >
+                {availableSuggestions.map((suggestion) => (
+                      <Box
+                        key={suggestion}
+                        role="button"
+                        onClick={() => {
+                          const defaultValue = registry.get(suggestion)?.defaultValue ?? {};
+                          onChange(path, {
+                            ...objectValue,
+                            [suggestion]: structuredClone(defaultValue),
+                          });
+                          setSuggestionsOpen(false);
+                        }}
+                        sx={{
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          borderRadius: 999,
+                          px: 1,
+                          py: 0.25,
+                          fontSize: 11,
+                          color: 'text.secondary',
+                          cursor: 'pointer',
+                          bgcolor: 'background.paper',
+                        }}
+                      >
+                        {suggestion}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+
           </Box>
         </Stack>
-      )}
-      {!allowAddFields && allowedKeys && keys.length === 0 && (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Autocomplete
-            size="small"
-            options={allowedKeys}
-            value={null}
-            onChange={(_, nextValue) => {
-              if (!nextValue || objectValue[nextValue] !== undefined) {
-                return;
-              }
-              const defaultValue = registry.get(nextValue)?.defaultValue ?? {};
-              onChange(path, { ...objectValue, [nextValue]: structuredClone(defaultValue) });
-            }}
-            renderInput={(params) => <TextField {...params} placeholder="add item" />}
-            sx={{ minWidth: 200 }}
-          />
-        </Stack>
-      )}
-    </Stack>
+      )
+      }
+      {
+        !allowAddFields && allowedKeys && keys.length === 0 && (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Autocomplete
+              size="small"
+              options={allowedKeys}
+              value={null}
+              onChange={(_, nextValue) => {
+                if (!nextValue || objectValue[nextValue] !== undefined) {
+                  return;
+                }
+                const defaultValue = registry.get(nextValue)?.defaultValue ?? {};
+                onChange(path, { ...objectValue, [nextValue]: structuredClone(defaultValue) });
+              }}
+              renderInput={(params) => <TextField {...params} placeholder="add item" />}
+              sx={{ minWidth: 200 }}
+            />
+          </Stack>
+        )
+      }
+    </Stack >
   );
 };
