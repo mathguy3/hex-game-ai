@@ -1,6 +1,6 @@
 import { Add, Close, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Box, IconButton, MenuItem, Stack, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
 
@@ -22,6 +22,9 @@ export const ObjectEditor = ({
   compact,
   allowAddFields,
   allowedKeys,
+  lockedKeys,
+  parentKey,
+  boundDataItem,
 }: ObjectEditorProps) => {
   const [newKey, setNewKey] = useState('');
   const [renamingKey, setRenamingKey] = useState<string | null>(null);
@@ -30,23 +33,65 @@ export const ObjectEditor = ({
     if (path.length === 0) {
       return { data: true, seats: true };
     }
+    if (parentKey === 'data' && lockedKeys) {
+      return Object.keys(lockedKeys).reduce<Record<string, boolean>>((acc, key) => {
+        acc[key] = true;
+        return acc;
+      }, {});
+    }
+    if (boundDataItem) {
+      return Object.keys(objectValue).reduce<Record<string, boolean>>((acc, key) => {
+        acc[key] = true;
+        return acc;
+      }, {});
+    }
     return {};
   });
+
+  useEffect(() => {
+    if (parentKey !== 'data' || !lockedKeys) {
+      return;
+    }
+    setCollapsedKeys((prev) => {
+      const next = { ...prev };
+      Object.keys(lockedKeys).forEach((key) => {
+        if (next[key] === undefined) {
+          next[key] = true;
+        }
+      });
+      return next;
+    });
+  }, [lockedKeys, parentKey]);
+
+  useEffect(() => {
+    if (!boundDataItem) {
+      return;
+    }
+    setCollapsedKeys((prev) => {
+      const next = { ...prev };
+      Object.keys(objectValue).forEach((key) => {
+        if (next[key] === undefined) {
+          next[key] = true;
+        }
+      });
+      return next;
+    });
+  }, [boundDataItem, objectValue]);
 
   const keys = Object.keys(objectValue);
   const orderedKeys = path.length === 0
     ? [
-        ...keys.filter((key) => key === 'config'),
-        ...keys.filter((key) => key === 'seats'),
-        ...keys.filter((key) => key === 'definitions'),
-        ...keys.filter((key) => key === 'sequence'),
-        ...keys.filter((key) => key === 'ui'),
-        ...keys.filter((key) => key === 'data'),
-        ...keys.filter(
-          (key) =>
-            !['config', 'seats', 'definitions', 'sequence', 'ui', 'data'].includes(key)
-        ),
-      ]
+      ...keys.filter((key) => key === 'config'),
+      ...keys.filter((key) => key === 'seats'),
+      ...keys.filter((key) => key === 'definitions'),
+      ...keys.filter((key) => key === 'sequence'),
+      ...keys.filter((key) => key === 'ui'),
+      ...keys.filter((key) => key === 'data'),
+      ...keys.filter(
+        (key) =>
+          !['config', 'seats', 'definitions', 'sequence', 'ui', 'data'].includes(key)
+      ),
+    ]
     : keys;
   const getFieldType = (value: any) => {
     if (typeof value === 'number') return 'number';
@@ -84,6 +129,10 @@ export const ObjectEditor = ({
         const value = objectValue[key];
         const isInlineValue = value === null || value === undefined || typeof value !== 'object';
         const isRenaming = renamingKey === key;
+        const lockConfig = lockedKeys?.[key];
+        const allowRename = allowAddFields && !lockConfig?.lockRename;
+        const allowTypeChange = allowAddFields && !lockConfig?.lockType;
+        const allowDelete = allowAddFields && !lockConfig?.lockDelete;
         const commitRename = () => {
           const trimmed = renameValue.trim();
           if (!trimmed || trimmed === key || objectValue[trimmed] !== undefined) {
@@ -107,7 +156,7 @@ export const ObjectEditor = ({
                   gap={1}
                   sx={{ border: '1px solid', borderColor: 'divider', p: 1 }}
                 >
-                  {allowAddFields ? (
+                  {allowRename ? (
                     <>
                       <TextField
                         size="small"
@@ -129,25 +178,27 @@ export const ObjectEditor = ({
                           '& .MuiInputBase-input': { py: 0.5, px: 1 },
                         }}
                       />
-                      <TextField
-                        select
-                        size="small"
-                        value={getFieldType(value)}
-                        onChange={(event) => {
-                          const nextType = event.target.value;
-                          onChange([...path, key], typeDefaults[nextType]);
-                        }}
-                        sx={{
-                          width: 90,
-                          '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
-                          '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
-                        }}
-                      >
-                        <MenuItem value="string">string</MenuItem>
-                        <MenuItem value="number">number</MenuItem>
-                        <MenuItem value="boolean">boolean</MenuItem>
-                        <MenuItem value="object">object</MenuItem>
-                      </TextField>
+                      {allowTypeChange && (
+                        <TextField
+                          select
+                          size="small"
+                          value={getFieldType(value)}
+                          onChange={(event) => {
+                            const nextType = event.target.value;
+                            onChange([...path, key], typeDefaults[nextType]);
+                          }}
+                          sx={{
+                            width: 90,
+                            '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
+                            '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
+                          }}
+                        >
+                          <MenuItem value="string">string</MenuItem>
+                          <MenuItem value="number">number</MenuItem>
+                          <MenuItem value="boolean">boolean</MenuItem>
+                          <MenuItem value="object">object</MenuItem>
+                        </TextField>
+                      )}
                     </>
                   ) : (
                     <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
@@ -164,6 +215,7 @@ export const ObjectEditor = ({
                         rootValue={rootValue}
                         parentKey={key}
                         allowAddFields={allowAddFields}
+                        boundDataItem={parentKey === 'data' && !!lockedKeys?.[key]}
                       />
                     </Box>
                   )}
@@ -178,7 +230,7 @@ export const ObjectEditor = ({
                     sx={{ border: '1px solid', borderColor: 'divider' }}
                   >
                     <Box minWidth={140} pt={0.5} pl={1}>
-                      {allowAddFields ? (
+                      {allowRename ? (
                         <Stack direction="row" spacing={1} alignItems="center">
                           <TextField
                             size="small"
@@ -200,25 +252,27 @@ export const ObjectEditor = ({
                               '& .MuiInputBase-input': { py: 0.5, px: 1 },
                             }}
                           />
-                          <TextField
-                            select
-                            size="small"
-                            value={getFieldType(value)}
-                            onChange={(event) => {
-                              const nextType = event.target.value;
-                              onChange([...path, key], typeDefaults[nextType]);
-                            }}
-                            sx={{
-                              width: 90,
-                              '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
-                              '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
-                            }}
-                          >
-                            <MenuItem value="string">string</MenuItem>
-                            <MenuItem value="number">number</MenuItem>
-                            <MenuItem value="boolean">boolean</MenuItem>
-                            <MenuItem value="object">object</MenuItem>
-                          </TextField>
+                          {allowTypeChange && (
+                            <TextField
+                              select
+                              size="small"
+                              value={getFieldType(value)}
+                              onChange={(event) => {
+                                const nextType = event.target.value;
+                                onChange([...path, key], typeDefaults[nextType]);
+                              }}
+                              sx={{
+                                width: 90,
+                                '& .MuiInputBase-input': { py: 0.5, px: 1, textOverflow: 'unset' },
+                                '& .MuiSelect-select': { py: 0.5, px: 1, textOverflow: 'unset', whiteSpace: 'nowrap' },
+                              }}
+                            >
+                              <MenuItem value="string">string</MenuItem>
+                              <MenuItem value="number">number</MenuItem>
+                              <MenuItem value="boolean">boolean</MenuItem>
+                              <MenuItem value="object">object</MenuItem>
+                            </TextField>
+                          )}
                         </Stack>
                       ) : (
                         <Typography variant="body2" color="text.secondary">
@@ -236,7 +290,7 @@ export const ObjectEditor = ({
                       >
                         {isCollapsed ? <ExpandMore fontSize="small" /> : <ExpandLess fontSize="small" />}
                       </IconButton>
-                      {allowAddFields && (
+                      {allowDelete && (
                         <IconButton
                           size="small"
                           onClick={() => {
@@ -266,6 +320,7 @@ export const ObjectEditor = ({
                         rootValue={rootValue}
                         parentKey={key}
                         allowAddFields={allowAddFields}
+                        boundDataItem={parentKey === 'data' && !!lockedKeys?.[key]}
                       />
                     </Box>
                   )}
