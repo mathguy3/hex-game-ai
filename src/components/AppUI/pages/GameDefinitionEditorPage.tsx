@@ -107,6 +107,21 @@ export const GameDefinitionEditorPage = () => {
       collectHexMapIds(rootValue.ui, hexMapIds);
       return hexMapIds.has(String(path[1]));
     });
+    next.registerTypeRule('cardDefinition', ({ path }) => (
+      path.length === 3 && path[0] === 'definitions' && path[1] === 'cards'
+    ));
+    next.registerTypeRule('tokenDefinition', ({ path }) => (
+      path.length === 3 && path[0] === 'definitions' && path[1] === 'tokens'
+    ));
+    next.registerTypeRule('hexDefinition', ({ path }) => (
+      path.length === 3 && path[0] === 'definitions' && path[1] === 'hexes'
+    ));
+    next.registerTypeRule('actions', ({ path }) => (
+      path.length === 4 &&
+      path[0] === 'definitions' &&
+      ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
+      path[3] === 'actions'
+    ));
     next.registerTypeSuggestions('hex', ['terrain', 'occupant', 'owner', 'visibility', 'tags']);
     next.register('shared', { allowedKeys: uiKeys });
     next.register('player', { allowedKeys: uiKeys });
