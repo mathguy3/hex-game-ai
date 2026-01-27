@@ -48,6 +48,16 @@ export class EditorRegistry {
     return suggestions;
   }
 
+  getTypeColor(type: string) {
+    let color: string | undefined;
+    this.registrations.forEach((entry) => {
+      if (entry.registration.type === type && entry.registration.color) {
+        color = entry.registration.color;
+      }
+    });
+    return color;
+  }
+
   resolveRegistration(context: TypeRuleContext) {
     let resolved: EditorRegistration | undefined;
     for (const entry of this.registrations) {

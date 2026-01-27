@@ -8,6 +8,8 @@ type ObjectEditorProps = EditorComponentProps & {
   objectValue: Record<string, any>;
   allowAddFields?: boolean;
   allowedKeys?: string[];
+  borderColor?: string;
+  floatingAddButton?: boolean;
 };
 
 export const ObjectEditor = ({
@@ -18,6 +20,8 @@ export const ObjectEditor = ({
   rootValue,
   allowAddFields,
   allowedKeys,
+  borderColor,
+  floatingAddButton,
   lockedKeys,
   parentKey,
   nodeType,
@@ -56,7 +60,7 @@ export const ObjectEditor = ({
     : keys;
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} sx={{ position: 'relative' }}>
       {orderedKeys.map((key) => {
         const value = objectValue[key];
         return (
@@ -80,6 +84,8 @@ export const ObjectEditor = ({
           <AddFieldButton
             hasSuggestions={hasSuggestions}
             suggestions={availableSuggestions}
+            borderColor={borderColor}
+            floating={floatingAddButton}
             onAddField={(baseKey) => {
               let nextKey = baseKey;
               let counter = 2;

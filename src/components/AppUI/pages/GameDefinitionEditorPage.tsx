@@ -107,14 +107,22 @@ export const GameDefinitionEditorPage = () => {
         collectHexMapIds(rootValue.ui, hexMapIds);
         return hexMapIds.has(String(path[1]));
       },
-      { type: 'hex', suggestions: [] }
+      { type: 'hex', suggestions: [], color: '#2563eb' }
     );
-    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('cards'), { type: 'cardDefinition' });
-    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('tokens'), {
-      type: 'tokenDefinition',
-    });
-    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('hexes'), { type: 'hexDefinition' });
+    next.register(
+      ({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('cards'),
+      { type: 'cardDefinition', color: '#c026d3' }
+    );
+    next.register(
+      ({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('tokens'),
+      { type: 'tokenDefinition', color: '#ea580c' }
+    );
+    next.register(
+      ({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('hexes'),
+      { type: 'hexDefinition', color: '#0d9488' }
+    );
     const sequenceKeys = ['round', 'turn'];
+    const sequenceColor = '#7c3aed';
     next.register(
       ({ path, fieldname, isChildOf }) =>
         (path.length === 1 && fieldname === 'sequence') ||
@@ -122,33 +130,38 @@ export const GameDefinitionEditorPage = () => {
           path[0] === 'definitions' &&
           ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
           isChildOf('actions')),
-      { type: 'sequence', suggestions: sequenceKeys }
+      { type: 'sequence', suggestions: sequenceKeys, color: sequenceColor }
     );
-    next.register(({ fieldname }) => fieldname === 'shared', { allowedKeys: uiKeys });
-    next.register(({ fieldname }) => fieldname === 'player', { allowedKeys: uiKeys });
-    next.register(({ fieldname }) => fieldname === 'zone', { defaultValue: { children: [] } });
-    next.register(({ fieldname }) => fieldname === 'children', { allowedArrayKeys: uiKeys });
+    const uiColor = '#0ea5e9';
+    next.register(({ fieldname }) => fieldname === 'shared', { allowedKeys: uiKeys, color: uiColor });
+    next.register(({ fieldname }) => fieldname === 'player', { allowedKeys: uiKeys, color: uiColor });
+    next.register(({ fieldname }) => fieldname === 'zone', { defaultValue: { children: [] }, color: uiColor });
+    next.register(({ fieldname }) => fieldname === 'children', { allowedArrayKeys: uiKeys, color: uiColor });
     next.register(({ fieldname }) => fieldname === 'button', {
       defaultValue: { content: '', action: '' },
+      color: uiColor,
     });
-    next.register(({ fieldname }) => fieldname === 'cardStack', { defaultValue: { content: '' } });
-    next.register(({ fieldname }) => fieldname === 'tokenStack', { defaultValue: { content: '' } });
+    next.register(({ fieldname }) => fieldname === 'cardStack', { defaultValue: { content: '' }, color: uiColor });
+    next.register(({ fieldname }) => fieldname === 'tokenStack', { defaultValue: { content: '' }, color: uiColor });
     next.register(({ fieldname }) => fieldname === 'hexMap', {
       defaultValue: { id: 'board', hex: {} },
       component: HexMapEditor,
+      color: uiColor,
     });
-    next.register(({ fieldname }) => fieldname === 'hex', { defaultValue: {} });
-    next.register(({ fieldname }) => fieldname === 'text', { defaultValue: { content: '' } });
-    next.register(({ fieldname }) => fieldname === 'token', { defaultValue: { image: '' } });
+    next.register(({ fieldname }) => fieldname === 'hex', { defaultValue: {}, color: uiColor });
+    next.register(({ fieldname }) => fieldname === 'text', { defaultValue: { content: '' }, color: uiColor });
+    next.register(({ fieldname }) => fieldname === 'token', { defaultValue: { image: '' }, color: uiColor });
     next.register(({ fieldname }) => fieldname === 'coordinates', {
       component: CoordinatesEditor,
       display: 'inline',
       type: 'coordinates',
+      color: '#0284c7',
     });
     next.register(({ fieldname }) => fieldname === 'round', {
       defaultValue: { repeat: true, phases: [] },
+      color: sequenceColor,
     });
-    next.register(({ fieldname }) => fieldname === 'phases', { allowedArrayKeys: sequenceKeys });
+    next.register(({ fieldname }) => fieldname === 'phases', { allowedArrayKeys: sequenceKeys, color: sequenceColor });
     return next;
   }, []);
 

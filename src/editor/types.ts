@@ -46,6 +46,7 @@ export type EditorRegistration = {
   suggestions?: string[];
   display?: 'inline' | 'block';
   type?: string;
+  color?: string;
   fieldnameEditable?: boolean;
   allowDelete?: boolean;
 };

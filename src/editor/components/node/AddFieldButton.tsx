@@ -7,6 +7,8 @@ type AddFieldButtonProps = {
   suggestions: string[];
   onAddField: (nextKey: string) => void;
   onAddSuggestion: (suggestion: string) => void;
+  borderColor?: string;
+  floating?: boolean;
 };
 
 export const AddFieldButton = ({
@@ -14,6 +16,8 @@ export const AddFieldButton = ({
   suggestions,
   onAddField,
   onAddSuggestion,
+  borderColor,
+  floating,
 }: AddFieldButtonProps) => {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement | null>(null);
@@ -43,7 +47,24 @@ export const AddFieldButton = ({
   }, [suggestionsOpen]);
 
   return (
-    <Box ref={suggestionsRef} sx={{ position: 'relative', width: '100%', marginBottom: '10px' }}>
+    <Box
+      ref={suggestionsRef}
+      sx={
+        floating
+          ? {
+              position: 'absolute',
+              top: 'calc(100% + 2px)',
+              left: 0,
+              width: 'calc(100% + 8px)',
+              marginLeft: -1,
+            }
+          : {
+              position: 'relative',
+              width: '100%',
+              marginBottom: '10px',
+            }
+      }
+    >
       <Box
         role="button"
         aria-label="add"
@@ -61,8 +82,11 @@ export const AddFieldButton = ({
           bgcolor: 'background.paper',
           border: '1px solid',
           borderColor: 'divider',
+          borderTopColor: borderColor ?? 'divider',
+          borderTopWidth: '2px',
           borderRadius: '0 0 12px 12px',
           cursor: 'pointer',
+          zIndex: 2,
           '&::before': {
             content: '""',
             position: 'absolute',

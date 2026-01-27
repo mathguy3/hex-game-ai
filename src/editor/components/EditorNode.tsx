@@ -78,6 +78,11 @@ export const EditorNode = ({
   const [newCommandKey, setNewCommandKey] = useState('');
   const nodeType = registry.resolveType({ path, node, rootValue });
   const registration = registry.resolveRegistration({ path, node, rootValue });
+  const typeColor = nodeType ? registry.getTypeColor(nodeType) : undefined;
+  const basicTypeColor = typeof node === 'string'
+    ? '#228B22'
+    : (node && typeof node === 'object' && !Array.isArray(node) ? '#4b5563' : undefined);
+  const borderColor = registration?.color ?? typeColor ?? basicTypeColor;
   const boundIndexRef = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
@@ -221,7 +226,7 @@ export const EditorNode = ({
       />
     );
   };
-  const wrapBlock = (content: JSX.Element) => {
+  const wrapBlock = (content: JSX.Element, footerSpacing?: number) => {
     if (!isFieldNode) {
       return content;
     }
@@ -233,9 +238,12 @@ export const EditorNode = ({
             typeLabel={nodeType}
             collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
             deleteButton={deleteButton}
+            borderColor={borderColor}
           />
         )}
         collapsed={collapsed}
+        borderColor={borderColor}
+        footerSpacing={footerSpacing}
       >
         {content}
       </BlockNodeRow>
@@ -327,12 +335,14 @@ export const EditorNode = ({
         parentKey={parentKey}
         allowAddFields={cascadedAllowAddFields}
         allowedKeys={registration?.allowedKeys}
+        borderColor={borderColor}
+        floatingAddButton={cascadedAllowAddFields}
         lockedKeys={lockedKeys}
         boundDataItem={boundDataItem}
         nodeType={nodeType}
       />
     );
-    return isInline ? wrapInline(editor) : wrapBlock(editor);
+    return isInline ? wrapInline(editor) : wrapBlock(editor, cascadedAllowAddFields ? 18 : undefined);
   }
 
   const isBoundUiIdField =

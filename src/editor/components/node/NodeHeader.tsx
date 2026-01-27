@@ -6,16 +6,26 @@ type NodeHeaderProps = {
   typeLabel?: ReactNode;
   collapseButton?: ReactNode;
   deleteButton?: ReactNode;
+  borderColor?: string;
 };
 
-export const NodeHeader = ({ title, typeLabel, collapseButton, deleteButton }: NodeHeaderProps) => {
+export const NodeHeader = ({ title, typeLabel, collapseButton, deleteButton, borderColor }: NodeHeaderProps) => {
   return (
     <Box
       display="flex"
       flexDirection="row"
       alignItems="center"
       justifyContent="space-between"
-      sx={{ border: '1px solid', borderColor: 'divider', px: 1, py: 0.5 }}
+      sx={{
+        border: '1px solid',
+        borderColor: 'divider',
+        borderLeftColor: borderColor ?? 'divider',
+        borderTopColor: borderColor ?? 'divider',
+        borderLeftWidth: '2px',
+        borderTopWidth: '2px',
+        px: 1,
+        py: 0.5,
+      }}
     >
       <Stack direction="row" spacing={1} alignItems="center" flex={1} minWidth={75}>
         {title}
