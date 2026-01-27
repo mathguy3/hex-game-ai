@@ -107,10 +107,12 @@ export const GameDefinitionEditorPage = () => {
         collectHexMapIds(rootValue.ui, hexMapIds);
         return hexMapIds.has(String(path[1]));
       },
-      { type: 'hex', suggestions: ['terrain', 'occupant', 'owner', 'visibility', 'tags'] }
+      { type: 'hex', suggestions: [] }
     );
     next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('cards'), { type: 'cardDefinition' });
-    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('tokens'), { type: 'tokenDefinition' });
+    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('tokens'), {
+      type: 'tokenDefinition',
+    });
     next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('hexes'), { type: 'hexDefinition' });
     const sequenceKeys = ['round', 'turn'];
     next.register(
@@ -226,6 +228,7 @@ export const GameDefinitionEditorPage = () => {
       }
     };
   }, [client, definition]);
+  console.log(definition);
 
   if (!definition) {
     return (

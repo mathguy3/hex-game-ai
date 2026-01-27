@@ -125,12 +125,15 @@ export const EditorNode = ({
       : 'block');
   const isInline = displayMode === 'inline';
   const parentPath = path.slice(0, -1);
-  const titleLabel = typeof parentKey === 'string' ? parentKey : undefined;
+  const isFieldNode = typeof path[path.length - 1] === 'string';
+  const titleLabel = isFieldNode && typeof parentKey === 'string' ? parentKey : undefined;
   const allowRename = !!allowAddFields
+    && isFieldNode
     && typeof parentKey === 'string'
     && !lockConfig?.lockRename
     && (registration?.fieldnameEditable ?? true);
   const allowDelete = !!allowAddFields
+    && isFieldNode
     && typeof parentKey === 'string'
     && !lockConfig?.lockDelete
     && (registration?.allowDelete ?? true);
@@ -205,6 +208,39 @@ export const EditorNode = ({
       <Close fontSize="inherit" sx={{ fontSize: 14 }} />
     </IconButton>
   ) : undefined;
+  const wrapInline = (content: JSX.Element) => {
+    if (!isFieldNode) {
+      return content;
+    }
+    return (
+      <InlineNodeRow
+        title={title}
+        typeLabel={typeLabel}
+        content={content}
+        deleteButton={deleteButton}
+      />
+    );
+  };
+  const wrapBlock = (content: JSX.Element) => {
+    if (!isFieldNode) {
+      return content;
+    }
+    return (
+      <BlockNodeRow
+        header={(
+          <NodeHeader
+            title={title}
+            typeLabel={nodeType}
+            collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
+            deleteButton={deleteButton}
+          />
+        )}
+        collapsed={collapsed}
+      >
+        {content}
+      </BlockNodeRow>
+    );
+  };
 
   if (Array.isArray(node)) {
     const editor = (
@@ -220,31 +256,7 @@ export const EditorNode = ({
         allowAddFields={allowAddFields}
       />
     );
-    if (isInline) {
-      return (
-        <InlineNodeRow
-          title={title}
-          typeLabel={typeLabel}
-          content={editor}
-          deleteButton={deleteButton}
-        />
-      );
-    }
-    return (
-      <BlockNodeRow
-        header={(
-          <NodeHeader
-            title={title}
-            typeLabel={nodeType}
-            collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
-            deleteButton={deleteButton}
-          />
-        )}
-        collapsed={collapsed}
-      >
-        {editor}
-      </BlockNodeRow>
-    );
+    return isInline ? wrapInline(editor) : wrapBlock(editor);
   }
 
   if (typeof node === 'object') {
@@ -263,31 +275,7 @@ export const EditorNode = ({
           nodeType={nodeType}
         />
       );
-      if (isInline) {
-        return (
-          <InlineNodeRow
-            title={title}
-            typeLabel={typeLabel}
-            content={editor}
-            deleteButton={deleteButton}
-          />
-        );
-      }
-      return (
-        <BlockNodeRow
-          header={(
-            <NodeHeader
-              title={title}
-              typeLabel={nodeType}
-              collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
-              deleteButton={deleteButton}
-            />
-          )}
-          collapsed={collapsed}
-        >
-          {editor}
-        </BlockNodeRow>
-      );
+      return isInline ? wrapInline(editor) : wrapBlock(editor);
     }
     const keys = Object.keys(node);
     const showCommandBuilder = allowCommand && keys.length === 0;
@@ -344,31 +332,7 @@ export const EditorNode = ({
         nodeType={nodeType}
       />
     );
-    if (isInline) {
-      return (
-        <InlineNodeRow
-          title={title}
-          typeLabel={typeLabel}
-          content={editor}
-          deleteButton={deleteButton}
-        />
-      );
-    }
-    return (
-      <BlockNodeRow
-        header={(
-          <NodeHeader
-            title={title}
-            typeLabel={nodeType}
-            collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
-            deleteButton={deleteButton}
-          />
-        )}
-        collapsed={collapsed}
-      >
-        {editor}
-      </BlockNodeRow>
-    );
+    return isInline ? wrapInline(editor) : wrapBlock(editor);
   }
 
   const isBoundUiIdField =
@@ -400,29 +364,5 @@ export const EditorNode = ({
   );
 
   const primitiveContent = <Box>{primitiveEditor}</Box>;
-  if (isInline) {
-    return (
-      <InlineNodeRow
-        title={title}
-        typeLabel={typeLabel}
-        content={primitiveContent}
-        deleteButton={deleteButton}
-      />
-    );
-  }
-  return (
-    <BlockNodeRow
-      header={(
-        <NodeHeader
-          title={title}
-          typeLabel={nodeType}
-          collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
-          deleteButton={deleteButton}
-        />
-      )}
-      collapsed={collapsed}
-    >
-      {primitiveContent}
-    </BlockNodeRow>
-  );
+  return isInline ? wrapInline(primitiveContent) : wrapBlock(primitiveContent);
 };

@@ -42,13 +42,6 @@ export const ArrayEditor = ({
               allowAddFields={allowAddFields}
             />
           </Box>
-          <IconButton
-            size="small"
-            onClick={() => onChange([], removeAtPath(rootValue, [...path, index]))}
-            aria-label="remove"
-          >
-            <Delete fontSize="small" />
-          </IconButton>
         </Stack>
       ))}
       <Stack direction="row" spacing={1} alignItems="center">
@@ -69,11 +62,12 @@ export const ArrayEditor = ({
               if (!selectedKey) {
                 return;
               }
-              const defaultValue = registry.resolveRegistration({
-                path: [...path, items.length, selectedKey],
-                node: undefined,
-                rootValue,
-              })?.defaultValue ?? {};
+              const defaultValue =
+                registry.resolveRegistration({
+                  path: [...path, items.length, selectedKey],
+                  node: undefined,
+                  rootValue,
+                })?.defaultValue ?? {};
               onChange(path, [...items, { [selectedKey]: structuredClone(defaultValue) }]);
               setSelectedKey(null);
               return;
