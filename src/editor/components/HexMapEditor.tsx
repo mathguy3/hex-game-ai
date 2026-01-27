@@ -43,7 +43,7 @@ export const HexMapEditor = withEditorToolbar('Hex Map', (props) => {
     onChange={props.onChange}
     registry={props.registry}
     rootValue={props.rootValue}
-    compact
     allowAddFields={false}
+    nodeType={props.nodeType}
   />
 ));

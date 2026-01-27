@@ -11,7 +11,10 @@ import { PreviewGameSessionProvider } from '../../../logic/game-controller/conte
 import { MapSelectionProvider } from '../../../logic/game-controller/context/MapSelectionProvider';
 import { UIPlayerProvider } from '../../../logic/game-controller/context/UIPlayerProvider';
 
-class PreviewErrorBoundary extends React.Component<{ resetKey: unknown; children: React.ReactNode }, { error: Error | null }> {
+class PreviewErrorBoundary extends React.Component<
+  { resetKey: unknown; children: React.ReactNode },
+  { error: Error | null }
+> {
   state = { error: null };
 
   static getDerivedStateFromError(error: Error) {
@@ -26,11 +29,7 @@ class PreviewErrorBoundary extends React.Component<{ resetKey: unknown; children
 
   render() {
     if (this.state.error) {
-      return (
-        <Typography color="error">
-          Preview error: {this.state.error.message}
-        </Typography>
-      );
+      return <Typography color="error">Preview error: {this.state.error.message}</Typography>;
     }
     return this.props.children;
   }
@@ -99,48 +98,55 @@ export const GameDefinitionEditorPage = () => {
       Object.values(node).forEach((child) => collectHexMapIds(child, result));
     };
 
-    next.registerTypeRule('hex', ({ path, rootValue }) => {
-      if (!rootValue || path.length !== 3 || path[0] !== 'data') {
-        return false;
-      }
-      const hexMapIds = new Set<string>();
-      collectHexMapIds(rootValue.ui, hexMapIds);
-      return hexMapIds.has(String(path[1]));
-    });
-    next.registerTypeRule('cardDefinition', ({ path }) => (
-      path.length === 3 && path[0] === 'definitions' && path[1] === 'cards'
-    ));
-    next.registerTypeRule('tokenDefinition', ({ path }) => (
-      path.length === 3 && path[0] === 'definitions' && path[1] === 'tokens'
-    ));
-    next.registerTypeRule('hexDefinition', ({ path }) => (
-      path.length === 3 && path[0] === 'definitions' && path[1] === 'hexes'
-    ));
-    next.registerTypeRule('sequence', ({ path }) => (
-      (path.length === 1 && path[0] === 'sequence') ||
-      (path.length === 4 &&
-        path[0] === 'definitions' &&
-        ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
-        path[3] === 'actions')
-    ));
+    next.register(
+      ({ path, rootValue }) => {
+        if (!rootValue || path.length !== 3 || path[0] !== 'data') {
+          return false;
+        }
+        const hexMapIds = new Set<string>();
+        collectHexMapIds(rootValue.ui, hexMapIds);
+        return hexMapIds.has(String(path[1]));
+      },
+      { type: 'hex', suggestions: ['terrain', 'occupant', 'owner', 'visibility', 'tags'] }
+    );
+    next.register(({ path }) => path[0] === 'definitions' && path[1] === 'cards', { type: 'cardDefinition' });
+    next.register(({ path }) => path[0] === 'definitions' && path[1] === 'tokens', { type: 'tokenDefinition' });
+    next.register(({ path }) => path[0] === 'definitions' && path[1] === 'hexes', { type: 'hexDefinition' });
     const sequenceKeys = ['round', 'turn'];
-    next.registerTypeSuggestions('hex', ['terrain', 'occupant', 'owner', 'visibility', 'tags']);
-    next.registerTypeSuggestions('sequence', sequenceKeys);
-    next.register('shared', { allowedKeys: uiKeys });
-    next.register('player', { allowedKeys: uiKeys });
-    next.register('zone', { defaultValue: { children: [] } });
-    next.register('children', { allowedArrayKeys: uiKeys });
-    next.register('button', { defaultValue: { content: '', action: '' } });
-    next.register('cardStack', { defaultValue: { content: '' } });
-    next.register('tokenStack', { defaultValue: { content: '' } });
-    next.register('hexMap', { defaultValue: { id: 'board', hex: {} }, component: HexMapEditor });
-    next.register('hex', { defaultValue: {} });
-    next.register('text', { defaultValue: { content: '' } });
-    next.register('token', { defaultValue: { image: '' } });
-    next.register('coordinates', { component: CoordinatesEditor });
-    next.register('round', { defaultValue: { repeat: true, phases: [] } });
-    next.register('phases', { allowedArrayKeys: sequenceKeys });
-    next.registerSuggestions('data', []);
+    next.register(
+      ({ path }) =>
+        (path.length === 1 && path[0] === 'sequence') ||
+        (path.length === 4 &&
+          path[0] === 'definitions' &&
+          ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
+          path[3] === 'actions'),
+      { type: 'sequence', suggestions: sequenceKeys }
+    );
+    next.register(({ path }) => String(path[path.length - 1]) === 'shared', { allowedKeys: uiKeys });
+    next.register(({ path }) => String(path[path.length - 1]) === 'player', { allowedKeys: uiKeys });
+    next.register(({ path }) => String(path[path.length - 1]) === 'zone', { defaultValue: { children: [] } });
+    next.register(({ path }) => String(path[path.length - 1]) === 'children', { allowedArrayKeys: uiKeys });
+    next.register(({ path }) => String(path[path.length - 1]) === 'button', {
+      defaultValue: { content: '', action: '' },
+    });
+    next.register(({ path }) => String(path[path.length - 1]) === 'cardStack', { defaultValue: { content: '' } });
+    next.register(({ path }) => String(path[path.length - 1]) === 'tokenStack', { defaultValue: { content: '' } });
+    next.register(({ path }) => String(path[path.length - 1]) === 'hexMap', {
+      defaultValue: { id: 'board', hex: {} },
+      component: HexMapEditor,
+    });
+    next.register(({ path }) => String(path[path.length - 1]) === 'hex', { defaultValue: {} });
+    next.register(({ path }) => String(path[path.length - 1]) === 'text', { defaultValue: { content: '' } });
+    next.register(({ path }) => String(path[path.length - 1]) === 'token', { defaultValue: { image: '' } });
+    next.register(({ path }) => String(path[path.length - 1]) === 'coordinates', {
+      component: CoordinatesEditor,
+      display: 'inline',
+      type: 'coordinates',
+    });
+    next.register(({ path }) => String(path[path.length - 1]) === 'round', {
+      defaultValue: { repeat: true, phases: [] },
+    });
+    next.register(({ path }) => String(path[path.length - 1]) === 'phases', { allowedArrayKeys: sequenceKeys });
     return next;
   }, []);
 
@@ -164,7 +170,6 @@ export const GameDefinitionEditorPage = () => {
   useEffect(() => {
     window.localStorage.setItem('editorSplitPct', String(editorWidthPct));
   }, [editorWidthPct]);
-
 
   const previewGameSession = useMemo(() => {
     if (!definition) {
@@ -211,11 +216,9 @@ export const GameDefinitionEditorPage = () => {
     }
     saveTimeoutRef.current = window.setTimeout(() => {
       setLoading(true);
-      client
-        .updateGameDefinition({ id: definition.id, definition: definition.definition })
-        .finally(() => {
-          setLoading(false);
-        });
+      client.updateGameDefinition({ id: definition.id, definition: definition.definition }).finally(() => {
+        setLoading(false);
+      });
     }, 1000);
     return () => {
       if (saveTimeoutRef.current) {
@@ -336,7 +339,7 @@ export const GameDefinitionEditorPage = () => {
             borderRadius: 2,
             p: 2,
             height: '75vh',
-            position: 'relative'
+            position: 'relative',
           }}
         >
           <Typography variant="h6" gutterBottom>

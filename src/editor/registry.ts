@@ -1,56 +1,51 @@
 import type { EditorRegistration, TypeRuleContext } from './types';
 
 export class EditorRegistry {
-  private registrations: Record<string, EditorRegistration>;
-  private typeRules: Array<{ name: string; matcher: (context: TypeRuleContext) => boolean }> = [];
-  private typeSuggestions: Record<string, string[]> = {};
+  private registrations: Array<{ matcher: (context: TypeRuleContext) => boolean; registration: EditorRegistration }> = [];
 
   constructor(initial?: Record<string, EditorRegistration>) {
-    this.registrations = { ...(initial ?? {}) };
+    if (initial) {
+      Object.entries(initial).forEach(([key, registration]) => {
+        this.register(({ path }) => String(path[path.length - 1]) === key, registration);
+      });
+    }
   }
 
-  register(key: string, registration: EditorRegistration) {
-    this.registrations[key] = registration;
-    return this;
-  }
-
-  registerSuggestions(key: string, suggestions: string[]) {
-    const existing = this.registrations[key] ?? {};
-    this.registrations[key] = {
-      ...existing,
-      suggestions,
-    };
-    return this;
-  }
-
-  registerTypeRule(name: string, matcher: (context: TypeRuleContext) => boolean) {
-    this.typeRules.push({ name, matcher });
-    return this;
-  }
-
-  registerTypeSuggestions(type: string, suggestions: string[]) {
-    this.typeSuggestions[type] = suggestions;
+  register(matcher: (context: TypeRuleContext) => boolean, registration: EditorRegistration) {
+    this.registrations.push({ matcher, registration });
     return this;
   }
 
   resolveType(context: TypeRuleContext) {
-    for (const rule of this.typeRules) {
-      if (rule.matcher(context)) {
-        return rule.name;
+    let resolved: string | undefined;
+    for (const entry of this.registrations) {
+      if (entry.matcher(context) && entry.registration.type) {
+        resolved = entry.registration.type;
       }
     }
-    return undefined;
+    return resolved;
   }
 
   getTypeSuggestions(type: string) {
-    return this.typeSuggestions[type];
+    const suggestions: string[] = [];
+    this.registrations.forEach((entry) => {
+      if (entry.registration.type === type && entry.registration.suggestions) {
+        suggestions.push(...entry.registration.suggestions);
+      }
+    });
+    return suggestions;
   }
 
-  get(key: string) {
-    return this.registrations[key];
-  }
-
-  keys() {
-    return Object.keys(this.registrations).sort();
+  resolveRegistration(context: TypeRuleContext) {
+    let resolved: EditorRegistration | undefined;
+    for (const entry of this.registrations) {
+      if (entry.matcher(context)) {
+        resolved = {
+          ...(resolved ?? {}),
+          ...entry.registration,
+        };
+      }
+    }
+    return resolved;
   }
 }

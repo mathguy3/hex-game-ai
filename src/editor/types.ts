@@ -27,6 +27,7 @@ export type EditorComponentProps = {
   allowCommand?: boolean;
   allowAddFields?: boolean;
   lockedKeys?: Record<string, LockedKeyConfig>;
+  lockConfig?: LockedKeyConfig;
   boundDataItem?: boolean;
   nodeType?: string;
 };
@@ -38,4 +39,8 @@ export type EditorRegistration = {
   allowedKeys?: string[];
   allowedArrayKeys?: string[];
   suggestions?: string[];
+  display?: 'inline' | 'block';
+  type?: string;
+  fieldnameEditable?: boolean;
+  allowDelete?: boolean;
 };

@@ -1,5 +1,5 @@
 import { Add, Delete } from '@mui/icons-material';
-import { Autocomplete, Box, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, IconButton, Stack, TextField } from '@mui/material';
 import { useState } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
@@ -7,8 +7,6 @@ import { removeAtPath } from '../utils';
 
 type ArrayEditorProps = EditorComponentProps & {
   items: any[];
-  label?: string;
-  allowCommand?: boolean;
   allowedArrayKeys?: string[];
 };
 
@@ -20,7 +18,6 @@ export const ArrayEditor = ({
   onChange,
   registry,
   rootValue,
-  label,
   parentKey,
   allowedArrayKeys,
   allowAddFields,
@@ -30,12 +27,7 @@ export const ArrayEditor = ({
   const allowCommand = isCommandList || !!allowedArrayKeys?.length;
 
   return (
-    <Stack spacing={1} sx={{ borderLeft: '2px solid', borderColor: 'divider', pl: 2 }}>
-      {label && (
-        <Typography variant="subtitle2" color="text.secondary">
-          {label}
-        </Typography>
-      )}
+    <Stack spacing={1}>
       {items.map((item, index) => (
         <Stack key={`${path.join('.')}-${index}`} direction="row" spacing={1} alignItems="flex-start">
           <Box flex={1}>
@@ -77,7 +69,11 @@ export const ArrayEditor = ({
               if (!selectedKey) {
                 return;
               }
-              const defaultValue = registry.get(selectedKey)?.defaultValue ?? {};
+              const defaultValue = registry.resolveRegistration({
+                path: [...path, items.length, selectedKey],
+                node: undefined,
+                rootValue,
+              })?.defaultValue ?? {};
               onChange(path, [...items, { [selectedKey]: structuredClone(defaultValue) }]);
               setSelectedKey(null);
               return;
