@@ -1,4 +1,4 @@
-import type { EditorRegistration, TypeRuleContext } from './types';
+import type { EditorRegistration, MatcherContext, TypeRuleContext } from './types';
 
 export class EditorRegistry {
   private registrations: Array<{ matcher: (context: TypeRuleContext) => boolean; registration: EditorRegistration }> = [];
@@ -11,8 +11,20 @@ export class EditorRegistry {
     }
   }
 
-  register(matcher: (context: TypeRuleContext) => boolean, registration: EditorRegistration) {
-    this.registrations.push({ matcher, registration });
+  register(matcher: (context: MatcherContext) => boolean, registration: EditorRegistration) {
+    const wrappedMatcher = (context: TypeRuleContext) => {
+      const fieldname = typeof context.path[context.path.length - 1] === 'string'
+        ? String(context.path[context.path.length - 1])
+        : undefined;
+      const isChildOf = (parentFieldname: string) =>
+        String(context.path[context.path.length - 2]) === parentFieldname;
+      return matcher({
+        ...context,
+        fieldname,
+        isChildOf,
+      });
+    };
+    this.registrations.push({ matcher: wrappedMatcher, registration });
     return this;
   }
 

@@ -11,6 +11,11 @@ export type TypeRuleContext = {
   rootValue: any;
 };
 
+export type MatcherContext = TypeRuleContext & {
+  fieldname?: string;
+  isChildOf: (parentFieldname: string) => boolean;
+};
+
 export type LockedKeyConfig = {
   lockRename?: boolean;
   lockType?: boolean;

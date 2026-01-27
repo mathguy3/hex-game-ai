@@ -109,44 +109,44 @@ export const GameDefinitionEditorPage = () => {
       },
       { type: 'hex', suggestions: ['terrain', 'occupant', 'owner', 'visibility', 'tags'] }
     );
-    next.register(({ path }) => path[0] === 'definitions' && path[1] === 'cards', { type: 'cardDefinition' });
-    next.register(({ path }) => path[0] === 'definitions' && path[1] === 'tokens', { type: 'tokenDefinition' });
-    next.register(({ path }) => path[0] === 'definitions' && path[1] === 'hexes', { type: 'hexDefinition' });
+    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('cards'), { type: 'cardDefinition' });
+    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('tokens'), { type: 'tokenDefinition' });
+    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('hexes'), { type: 'hexDefinition' });
     const sequenceKeys = ['round', 'turn'];
     next.register(
-      ({ path }) =>
-        (path.length === 1 && path[0] === 'sequence') ||
+      ({ path, fieldname, isChildOf }) =>
+        (path.length === 1 && fieldname === 'sequence') ||
         (path.length === 4 &&
           path[0] === 'definitions' &&
           ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
-          path[3] === 'actions'),
+          isChildOf('actions')),
       { type: 'sequence', suggestions: sequenceKeys }
     );
-    next.register(({ path }) => String(path[path.length - 1]) === 'shared', { allowedKeys: uiKeys });
-    next.register(({ path }) => String(path[path.length - 1]) === 'player', { allowedKeys: uiKeys });
-    next.register(({ path }) => String(path[path.length - 1]) === 'zone', { defaultValue: { children: [] } });
-    next.register(({ path }) => String(path[path.length - 1]) === 'children', { allowedArrayKeys: uiKeys });
-    next.register(({ path }) => String(path[path.length - 1]) === 'button', {
+    next.register(({ fieldname }) => fieldname === 'shared', { allowedKeys: uiKeys });
+    next.register(({ fieldname }) => fieldname === 'player', { allowedKeys: uiKeys });
+    next.register(({ fieldname }) => fieldname === 'zone', { defaultValue: { children: [] } });
+    next.register(({ fieldname }) => fieldname === 'children', { allowedArrayKeys: uiKeys });
+    next.register(({ fieldname }) => fieldname === 'button', {
       defaultValue: { content: '', action: '' },
     });
-    next.register(({ path }) => String(path[path.length - 1]) === 'cardStack', { defaultValue: { content: '' } });
-    next.register(({ path }) => String(path[path.length - 1]) === 'tokenStack', { defaultValue: { content: '' } });
-    next.register(({ path }) => String(path[path.length - 1]) === 'hexMap', {
+    next.register(({ fieldname }) => fieldname === 'cardStack', { defaultValue: { content: '' } });
+    next.register(({ fieldname }) => fieldname === 'tokenStack', { defaultValue: { content: '' } });
+    next.register(({ fieldname }) => fieldname === 'hexMap', {
       defaultValue: { id: 'board', hex: {} },
       component: HexMapEditor,
     });
-    next.register(({ path }) => String(path[path.length - 1]) === 'hex', { defaultValue: {} });
-    next.register(({ path }) => String(path[path.length - 1]) === 'text', { defaultValue: { content: '' } });
-    next.register(({ path }) => String(path[path.length - 1]) === 'token', { defaultValue: { image: '' } });
-    next.register(({ path }) => String(path[path.length - 1]) === 'coordinates', {
+    next.register(({ fieldname }) => fieldname === 'hex', { defaultValue: {} });
+    next.register(({ fieldname }) => fieldname === 'text', { defaultValue: { content: '' } });
+    next.register(({ fieldname }) => fieldname === 'token', { defaultValue: { image: '' } });
+    next.register(({ fieldname }) => fieldname === 'coordinates', {
       component: CoordinatesEditor,
       display: 'inline',
       type: 'coordinates',
     });
-    next.register(({ path }) => String(path[path.length - 1]) === 'round', {
+    next.register(({ fieldname }) => fieldname === 'round', {
       defaultValue: { repeat: true, phases: [] },
     });
-    next.register(({ path }) => String(path[path.length - 1]) === 'phases', { allowedArrayKeys: sequenceKeys });
+    next.register(({ fieldname }) => fieldname === 'phases', { allowedArrayKeys: sequenceKeys });
     return next;
   }, []);
 
