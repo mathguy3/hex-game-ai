@@ -116,13 +116,16 @@ export const GameDefinitionEditorPage = () => {
     next.registerTypeRule('hexDefinition', ({ path }) => (
       path.length === 3 && path[0] === 'definitions' && path[1] === 'hexes'
     ));
-    next.registerTypeRule('actions', ({ path }) => (
-      path.length === 4 &&
-      path[0] === 'definitions' &&
-      ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
-      path[3] === 'actions'
+    next.registerTypeRule('sequence', ({ path }) => (
+      (path.length === 1 && path[0] === 'sequence') ||
+      (path.length === 4 &&
+        path[0] === 'definitions' &&
+        ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
+        path[3] === 'actions')
     ));
+    const sequenceKeys = ['round', 'turn'];
     next.registerTypeSuggestions('hex', ['terrain', 'occupant', 'owner', 'visibility', 'tags']);
+    next.registerTypeSuggestions('sequence', sequenceKeys);
     next.register('shared', { allowedKeys: uiKeys });
     next.register('player', { allowedKeys: uiKeys });
     next.register('zone', { defaultValue: { children: [] } });
@@ -135,18 +138,9 @@ export const GameDefinitionEditorPage = () => {
     next.register('text', { defaultValue: { content: '' } });
     next.register('token', { defaultValue: { image: '' } });
     next.register('coordinates', { component: CoordinatesEditor });
-    next.registerSuggestions('data', [
-      'hand',
-      'deck',
-      'discard',
-      'board',
-      'graveyard',
-      'stash',
-      'market',
-      'draft',
-      'queue',
-      'pool',
-    ]);
+    next.register('round', { defaultValue: { repeat: true, phases: [] } });
+    next.register('phases', { allowedArrayKeys: sequenceKeys });
+    next.registerSuggestions('data', []);
     return next;
   }, []);
 

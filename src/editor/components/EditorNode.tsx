@@ -134,7 +134,7 @@ export const EditorNode = ({
 
     if (isCommandNode) {
       const commandKey = keys[0];
-      const label = parentRegistration?.allowedKeys ? undefined : parentKey;
+      const label = parentRegistration?.allowedKeys || nodeType ? undefined : parentKey;
       return (
         <CommandNodeEditor
           node={node}
