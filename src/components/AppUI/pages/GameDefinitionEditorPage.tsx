@@ -126,8 +126,7 @@ export const GameDefinitionEditorPage = () => {
     next.register(
       ({ path, fieldname, isChildOf }) =>
         (path.length === 1 && fieldname === 'sequence') ||
-        (path.length === 4 &&
-          path[0] === 'definitions' &&
+        (path[0] === 'definitions' &&
           ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
           isChildOf('actions')),
       { type: 'sequence', suggestions: sequenceKeys, color: sequenceColor }
@@ -159,6 +158,10 @@ export const GameDefinitionEditorPage = () => {
     });
     next.register(({ fieldname }) => fieldname === 'round', {
       defaultValue: { repeat: true, phases: [] },
+      color: sequenceColor,
+    });
+    next.register(({ fieldname }) => fieldname === 'turn', {
+      defaultValue: {},
       color: sequenceColor,
     });
     next.register(({ fieldname }) => fieldname === 'phases', { allowedArrayKeys: sequenceKeys, color: sequenceColor });
