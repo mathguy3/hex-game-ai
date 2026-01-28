@@ -22,7 +22,11 @@ export const BlockNodeRow = ({
   return (
     <Stack spacing={0} sx={footerSpacing ? { mb: `${footerSpacing}px` } : undefined}>
       {header}
-      {!collapsed && <NodeContent borderColor={borderColor}>{children}</NodeContent>}
+      {!collapsed && (
+        <NodeContent borderColor={borderColor} showFooter={!!footer}>
+          {children}
+        </NodeContent>
+      )}
       {!collapsed && footer}
     </Stack>
   );

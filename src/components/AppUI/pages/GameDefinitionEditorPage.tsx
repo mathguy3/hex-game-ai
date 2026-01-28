@@ -191,6 +191,9 @@ export const GameDefinitionEditorPage = () => {
       color: '#ef4444',
       singleKeyOnly: true,
     });
+    next.register(({ isDecendantOf }) => isDecendantOf('where'), {
+      singleKeyOnly: true,
+    });
     return next;
   }, []);
 
