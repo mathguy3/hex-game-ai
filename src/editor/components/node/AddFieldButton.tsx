@@ -8,7 +8,6 @@ type AddFieldButtonProps = {
   onAddField: (nextKey: string) => void;
   onAddSuggestion: (suggestion: string) => void;
   borderColor?: string;
-  floating?: boolean;
 };
 
 export const AddFieldButton = ({
@@ -17,7 +16,6 @@ export const AddFieldButton = ({
   onAddField,
   onAddSuggestion,
   borderColor,
-  floating,
 }: AddFieldButtonProps) => {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement | null>(null);
@@ -49,21 +47,10 @@ export const AddFieldButton = ({
   return (
     <Box
       ref={suggestionsRef}
-      sx={
-        floating
-          ? {
-              position: 'absolute',
-              top: 'calc(100% + 2px)',
-              left: 0,
-              width: 'calc(100% + 8px)',
-              marginLeft: -1,
-            }
-          : {
-              position: 'relative',
-              width: '100%',
-              marginBottom: '10px',
-            }
-      }
+      sx={{
+        position: 'relative',
+        width: '100%',
+      }}
     >
       <Box
         role="button"

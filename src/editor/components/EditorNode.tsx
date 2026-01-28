@@ -5,6 +5,7 @@ import type { EditorComponentProps, LockedKeyConfig } from '../types';
 import { ArrayEditor } from './ArrayEditor';
 import { ObjectEditor } from './ObjectEditor';
 import { PrimitiveEditor } from './PrimitiveEditor';
+import { ObjectAddFieldFooter } from './ObjectAddFieldFooter';
 import { BlockNodeRow, ExpandButton, InlineNodeRow, NodeHeader, NodeTitle } from './node';
 import { getAtPath } from '../utils';
 
@@ -226,7 +227,7 @@ export const EditorNode = ({
       />
     );
   };
-  const wrapBlock = (content: JSX.Element, footerSpacing?: number) => {
+  const wrapBlock = (content: JSX.Element, footer?: JSX.Element, footerSpacing?: number) => {
     if (!isFieldNode) {
       return content;
     }
@@ -244,6 +245,7 @@ export const EditorNode = ({
         collapsed={collapsed}
         borderColor={borderColor}
         footerSpacing={footerSpacing}
+        footer={footer}
       >
         {content}
       </BlockNodeRow>
@@ -288,6 +290,7 @@ export const EditorNode = ({
     const keys = Object.keys(node);
     const showCommandBuilder = allowCommand && keys.length === 0;
     const cascadedAllowAddFields = allowAddFields || (parentKey ? recordContainerKeys.has(parentKey) : false);
+    const allowAddFieldsForNode = registration?.allowAddFields ?? cascadedAllowAddFields;
     let lockedKeys: Record<string, LockedKeyConfig> | undefined;
     if (parentKey === 'data') {
       const boundIds = new Set<string>();
@@ -299,6 +302,17 @@ export const EditorNode = ({
         });
       }
     }
+    const footer = allowAddFieldsForNode ? (
+      <ObjectAddFieldFooter
+        objectValue={node}
+        path={path}
+        onChange={onChange}
+        registry={registry}
+        rootValue={rootValue}
+        nodeType={nodeType}
+        borderColor={borderColor}
+      />
+    ) : undefined;
     const editor = showCommandBuilder ? (
       <Stack spacing={1} sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 2, p: 1 }}>
         <Typography variant="body2" color="text.secondary">
@@ -335,14 +349,11 @@ export const EditorNode = ({
         parentKey={parentKey}
         allowAddFields={cascadedAllowAddFields}
         allowedKeys={registration?.allowedKeys}
-        borderColor={borderColor}
-        floatingAddButton={cascadedAllowAddFields}
         lockedKeys={lockedKeys}
         boundDataItem={boundDataItem}
-        nodeType={nodeType}
       />
     );
-    return isInline ? wrapInline(editor) : wrapBlock(editor, cascadedAllowAddFields ? 18 : undefined);
+    return isInline ? wrapInline(editor) : wrapBlock(editor, footer, allowAddFieldsForNode ? 18 : undefined);
   }
 
   const isBoundUiIdField =

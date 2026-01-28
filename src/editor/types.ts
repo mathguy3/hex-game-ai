@@ -14,6 +14,7 @@ export type TypeRuleContext = {
 export type MatcherContext = TypeRuleContext & {
   fieldname?: string;
   isChildOf: (parentFieldname: string) => boolean;
+  isDecendantOf: (ancestorFieldname: string) => boolean;
 };
 
 export type LockedKeyConfig = {
@@ -49,4 +50,5 @@ export type EditorRegistration = {
   color?: string;
   fieldnameEditable?: boolean;
   allowDelete?: boolean;
+  allowAddFields?: boolean;
 };

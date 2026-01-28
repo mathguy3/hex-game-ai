@@ -109,26 +109,24 @@ export const GameDefinitionEditorPage = () => {
       },
       { type: 'hex', suggestions: [], color: '#2563eb' }
     );
-    next.register(
-      ({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('cards'),
-      { type: 'cardDefinition', color: '#c026d3' }
-    );
-    next.register(
-      ({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('tokens'),
-      { type: 'tokenDefinition', color: '#ea580c' }
-    );
-    next.register(
-      ({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('hexes'),
-      { type: 'hexDefinition', color: '#0d9488' }
-    );
+    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('cards'), {
+      type: 'cardDefinition',
+      color: '#c026d3',
+    });
+    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('tokens'), {
+      type: 'tokenDefinition',
+      color: '#ea580c',
+    });
+    next.register(({ path, isChildOf }) => path[0] === 'definitions' && isChildOf('hexes'), {
+      type: 'hexDefinition',
+      color: '#0d9488',
+    });
     const sequenceKeys = ['round', 'turn'];
     const sequenceColor = '#7c3aed';
     next.register(
       ({ path, fieldname, isChildOf }) =>
         (path.length === 1 && fieldname === 'sequence') ||
-        (path[0] === 'definitions' &&
-          ['cards', 'tokens', 'hexes'].includes(String(path[1])) &&
-          isChildOf('actions')),
+        (path[0] === 'definitions' && ['cards', 'tokens', 'hexes'].includes(String(path[1])) && isChildOf('actions')),
       { type: 'sequence', suggestions: sequenceKeys, color: sequenceColor }
     );
     const uiColor = '#0ea5e9';
@@ -147,9 +145,18 @@ export const GameDefinitionEditorPage = () => {
       component: HexMapEditor,
       color: uiColor,
     });
-    next.register(({ fieldname }) => fieldname === 'hex', { defaultValue: {}, color: uiColor });
-    next.register(({ fieldname }) => fieldname === 'text', { defaultValue: { content: '' }, color: uiColor });
-    next.register(({ fieldname }) => fieldname === 'token', { defaultValue: { image: '' }, color: uiColor });
+    next.register(({ fieldname, isDecendantOf }) => isDecendantOf('ui') && fieldname === 'hex', {
+      defaultValue: {},
+      color: uiColor,
+    });
+    next.register(({ fieldname, isDecendantOf }) => isDecendantOf('ui') && fieldname === 'text', {
+      defaultValue: { content: '' },
+      color: uiColor,
+    });
+    next.register(({ fieldname, isDecendantOf }) => isDecendantOf('ui') && fieldname === 'token', {
+      defaultValue: { image: '' },
+      color: uiColor,
+    });
     next.register(({ fieldname }) => fieldname === 'coordinates', {
       component: CoordinatesEditor,
       display: 'inline',
@@ -161,10 +168,19 @@ export const GameDefinitionEditorPage = () => {
       color: sequenceColor,
     });
     next.register(({ fieldname }) => fieldname === 'turn', {
-      defaultValue: {},
+      defaultValue: {
+        actions: [],
+      },
       color: sequenceColor,
     });
     next.register(({ fieldname }) => fieldname === 'phases', { allowedArrayKeys: sequenceKeys, color: sequenceColor });
+    next.register(({ fieldname }) => fieldname === 'actions', {
+      allowedArrayKeys: ['move', 'draw', 'play', 'discard', 'endTurn'],
+    });
+    next.register(({ fieldname }) => fieldname === 'play', {
+      suggestions: ['hex', 'card', 'token'],
+      allowAddFields: false,
+    });
     return next;
   }, []);
 

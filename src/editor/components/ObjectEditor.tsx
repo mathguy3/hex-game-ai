@@ -2,14 +2,11 @@ import { Autocomplete, Box, Stack, TextField } from '@mui/material';
 import { useMemo } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
-import { AddFieldButton } from './node';
 
 type ObjectEditorProps = EditorComponentProps & {
   objectValue: Record<string, any>;
   allowAddFields?: boolean;
   allowedKeys?: string[];
-  borderColor?: string;
-  floatingAddButton?: boolean;
 };
 
 export const ObjectEditor = ({
@@ -20,20 +17,13 @@ export const ObjectEditor = ({
   rootValue,
   allowAddFields,
   allowedKeys,
-  borderColor,
-  floatingAddButton,
   lockedKeys,
   parentKey,
-  nodeType,
 }: ObjectEditorProps) => {
   const registration = useMemo(
     () => registry.resolveRegistration({ path, node: objectValue, rootValue }),
     [path, objectValue, rootValue, registry]
   );
-  const typeSuggestions = nodeType ? registry.getTypeSuggestions(nodeType) : [];
-  const mergedSuggestions = Array.from(new Set([...(registration?.suggestions ?? []), ...(typeSuggestions ?? [])]));
-  const availableSuggestions = mergedSuggestions.filter((suggestion) => objectValue[suggestion] === undefined);
-  const hasSuggestions = !!(allowAddFields && availableSuggestions.length > 0);
   const effectiveAllowedKeys = allowedKeys ?? registration?.allowedKeys;
 
   const resolveDefaultValue = (key: string) =>
@@ -79,53 +69,24 @@ export const ObjectEditor = ({
           </Box>
         );
       })}
-      {allowAddFields && (
-        <Stack direction="row" alignItems="center">
-          <AddFieldButton
-            hasSuggestions={hasSuggestions}
-            suggestions={availableSuggestions}
-            borderColor={borderColor}
-            floating={floatingAddButton}
-            onAddField={(baseKey) => {
-              let nextKey = baseKey;
-              let counter = 2;
-              while (objectValue[nextKey] !== undefined) {
-                nextKey = `${baseKey}-${counter}`;
-                counter += 1;
+      {!allowAddFields && effectiveAllowedKeys && keys.length === 0 && (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Autocomplete
+            size="small"
+            options={effectiveAllowedKeys}
+            value={null}
+            onChange={(_, nextValue) => {
+              if (!nextValue || objectValue[nextValue] !== undefined) {
+                return;
               }
-              onChange(path, { ...objectValue, [nextKey]: {} });
+              const defaultValue = resolveDefaultValue(nextValue);
+              onChange(path, { ...objectValue, [nextValue]: structuredClone(defaultValue) });
             }}
-            onAddSuggestion={(suggestion) => {
-              const defaultValue = resolveDefaultValue(suggestion);
-              onChange(path, {
-                ...objectValue,
-                [suggestion]: structuredClone(defaultValue),
-              });
-            }}
+            renderInput={(params) => <TextField {...params} placeholder="add item" />}
+            sx={{ minWidth: 200 }}
           />
         </Stack>
-      )
-      }
-      {
-        !allowAddFields && effectiveAllowedKeys && keys.length === 0 && (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Autocomplete
-              size="small"
-              options={effectiveAllowedKeys}
-              value={null}
-              onChange={(_, nextValue) => {
-                if (!nextValue || objectValue[nextValue] !== undefined) {
-                  return;
-                }
-                const defaultValue = resolveDefaultValue(nextValue);
-                onChange(path, { ...objectValue, [nextValue]: structuredClone(defaultValue) });
-              }}
-              renderInput={(params) => <TextField {...params} placeholder="add item" />}
-              sx={{ minWidth: 200 }}
-            />
-          </Stack>
-        )
-      }
+      )}
     </Stack >
   );
 };

@@ -8,13 +8,22 @@ type BlockNodeRowProps = {
   children: ReactNode;
   borderColor?: string;
   footerSpacing?: number;
+  footer?: ReactNode;
 };
 
-export const BlockNodeRow = ({ header, collapsed, children, borderColor, footerSpacing }: BlockNodeRowProps) => {
+export const BlockNodeRow = ({
+  header,
+  collapsed,
+  children,
+  borderColor,
+  footerSpacing,
+  footer,
+}: BlockNodeRowProps) => {
   return (
     <Stack spacing={0} sx={footerSpacing ? { mb: `${footerSpacing}px` } : undefined}>
       {header}
       {!collapsed && <NodeContent borderColor={borderColor}>{children}</NodeContent>}
+      {!collapsed && footer}
     </Stack>
   );
 };

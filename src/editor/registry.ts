@@ -18,10 +18,19 @@ export class EditorRegistry {
         : undefined;
       const isChildOf = (parentFieldname: string) =>
         String(context.path[context.path.length - 2]) === parentFieldname;
+      const isDecendantOf = (ancestorFieldname: string) => {
+        for (let index = context.path.length - 2; index >= 0; index -= 1) {
+          if (String(context.path[index]) === ancestorFieldname) {
+            return true;
+          }
+        }
+        return false;
+      };
       return matcher({
         ...context,
         fieldname,
         isChildOf,
+        isDecendantOf,
       });
     };
     this.registrations.push({ matcher: wrappedMatcher, registration });
