@@ -8,6 +8,7 @@ type AddFieldButtonProps = {
   onAddField: (nextKey: string) => void;
   onAddSuggestion: (suggestion: string) => void;
   borderColor?: string;
+  showAddIcon?: boolean;
 };
 
 export const AddFieldButton = ({
@@ -16,6 +17,7 @@ export const AddFieldButton = ({
   onAddField,
   onAddSuggestion,
   borderColor,
+  showAddIcon = true,
 }: AddFieldButtonProps) => {
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement | null>(null);
@@ -74,31 +76,37 @@ export const AddFieldButton = ({
           borderRadius: '0 0 12px 12px',
           cursor: 'pointer',
           zIndex: 2,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: '100%',
-            left: '25%',
-            transform: 'translateX(-50%)',
-            width: 34,
-            height: 12,
-            border: '1px solid',
-            borderColor: 'divider',
-            borderTop: 'none',
-            borderRadius: '0 0 10px 10px',
-            bgcolor: 'background.paper',
-          },
+          ...(showAddIcon
+            ? {
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: '100%',
+                  left: '25%',
+                  transform: 'translateX(-50%)',
+                  width: 34,
+                  height: 12,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderTop: 'none',
+                  borderRadius: '0 0 10px 10px',
+                  bgcolor: 'background.paper',
+                },
+              }
+            : {}),
         }}
       >
-        <Add
-          fontSize="small"
-          sx={{
-            position: 'absolute',
-            bottom: -10,
-            left: '25%',
-            transform: 'translateX(-50%)',
-          }}
-        />
+        {showAddIcon && (
+          <Add
+            fontSize="small"
+            sx={{
+              position: 'absolute',
+              bottom: -10,
+              left: '25%',
+              transform: 'translateX(-50%)',
+            }}
+          />
+        )}
         {hasSuggestions && (
           <Box
             role="button"

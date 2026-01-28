@@ -290,7 +290,8 @@ export const EditorNode = ({
     const keys = Object.keys(node);
     const showCommandBuilder = allowCommand && keys.length === 0;
     const cascadedAllowAddFields = allowAddFields || (parentKey ? recordContainerKeys.has(parentKey) : false);
-    const allowAddFieldsForNode = registration?.allowAddFields ?? cascadedAllowAddFields;
+    const allowAddFieldsForNode = (registration?.allowAddFields ?? cascadedAllowAddFields)
+      && !(registration?.singleKeyOnly && keys.length > 0);
     let lockedKeys: Record<string, LockedKeyConfig> | undefined;
     if (parentKey === 'data') {
       const boundIds = new Set<string>();
@@ -311,6 +312,7 @@ export const EditorNode = ({
         rootValue={rootValue}
         nodeType={nodeType}
         borderColor={borderColor}
+        suggestionsOnly={registration?.suggestionsOnly}
       />
     ) : undefined;
     const editor = showCommandBuilder ? (

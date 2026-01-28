@@ -179,7 +179,17 @@ export const GameDefinitionEditorPage = () => {
     });
     next.register(({ fieldname }) => fieldname === 'play', {
       suggestions: ['hex', 'card', 'token'],
-      allowAddFields: false,
+      singleKeyOnly: true,
+      suggestionsOnly: true,
+    });
+    next.register(({ fieldname, isChildOf }) => isChildOf('play') && fieldname === 'token', {
+      suggestions: ['where', 'tokenAction', 'action'],
+      suggestionsOnly: true,
+    });
+    next.register(({ fieldname }) => fieldname === 'where', {
+      type: 'selector',
+      color: '#ef4444',
+      singleKeyOnly: true,
     });
     return next;
   }, []);

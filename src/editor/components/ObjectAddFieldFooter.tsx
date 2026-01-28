@@ -9,6 +9,7 @@ type ObjectAddFieldFooterProps = Pick<
 > & {
   objectValue: Record<string, any>;
   borderColor?: string;
+  suggestionsOnly?: boolean;
 };
 
 export const ObjectAddFieldFooter = ({
@@ -19,6 +20,7 @@ export const ObjectAddFieldFooter = ({
   rootValue,
   nodeType,
   borderColor,
+  suggestionsOnly,
 }: ObjectAddFieldFooterProps) => {
   const registration = useMemo(
     () => registry.resolveRegistration({ path, node: objectValue, rootValue }),
@@ -42,6 +44,7 @@ export const ObjectAddFieldFooter = ({
         hasSuggestions={hasSuggestions}
         suggestions={availableSuggestions}
         borderColor={borderColor}
+        showAddIcon={!suggestionsOnly}
         onAddField={(baseKey) => {
           let nextKey = baseKey;
           let counter = 2;
