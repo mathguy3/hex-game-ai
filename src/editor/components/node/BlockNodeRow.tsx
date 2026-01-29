@@ -9,6 +9,7 @@ type BlockNodeRowProps = {
   borderColor?: string;
   footerSpacing?: number;
   footer?: ReactNode;
+  highlightColor?: string;
 };
 
 export const BlockNodeRow = ({
@@ -18,12 +19,13 @@ export const BlockNodeRow = ({
   borderColor,
   footerSpacing,
   footer,
+  highlightColor,
 }: BlockNodeRowProps) => {
   return (
     <Stack spacing={0} sx={footerSpacing ? { mb: `${footerSpacing}px` } : undefined}>
       {header}
       {!collapsed && (
-        <NodeContent borderColor={borderColor} showFooter={!!footer}>
+        <NodeContent borderColor={borderColor} showFooter={!!footer} highlightColor={highlightColor}>
           {children}
         </NodeContent>
       )}

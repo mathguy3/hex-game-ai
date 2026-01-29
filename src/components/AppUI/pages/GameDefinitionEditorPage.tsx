@@ -148,6 +148,22 @@ export const GameDefinitionEditorPage = () => {
     next.register(({ fieldname, isDecendantOf }) => isDecendantOf('ui') && fieldname === 'hex', {
       defaultValue: {},
       color: uiColor,
+      suggestions: ['contains'],
+    });
+    next.register(({ fieldname }) => fieldname === 'contains', {
+      suggestions: ['token', 'card'],
+      singleKeyOnly: true,
+      suggestionsOnly: true,
+    });
+    next.register(({ fieldname, isDecendantOf }) => isDecendantOf('contains') && fieldname === 'token', {});
+    next.register(({ fieldname, isDecendantOf }) => isDecendantOf('data') && fieldname === 'token', {
+      prototypeGroups: ['token'],
+    });
+    next.register(({ fieldname, isDecendantOf }) => isDecendantOf('data') && fieldname === 'card', {
+      prototypeGroups: ['card'],
+    });
+    next.register(({ fieldname, isDecendantOf }) => isDecendantOf('data') && fieldname === 'hex', {
+      prototypeGroups: ['hex'],
     });
     next.register(({ fieldname, isDecendantOf }) => isDecendantOf('ui') && fieldname === 'text', {
       defaultValue: { content: '' },

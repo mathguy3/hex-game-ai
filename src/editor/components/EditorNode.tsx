@@ -1,13 +1,14 @@
 import { Close } from '@mui/icons-material';
-import { Box, Button, IconButton, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, IconButton, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import type { EditorComponentProps, LockedKeyConfig } from '../types';
+import type { EditorComponentProps, LockedKeyConfig, PrototypeSelection } from '../types';
 import { ArrayEditor } from './ArrayEditor';
 import { ObjectEditor } from './ObjectEditor';
 import { PrimitiveEditor } from './PrimitiveEditor';
 import { ObjectAddFieldFooter } from './ObjectAddFieldFooter';
 import { BlockNodeRow, ExpandButton, InlineNodeRow, NodeHeader, NodeTitle } from './node';
-import { getAtPath } from '../utils';
+import { deepEqual, getAtPath } from '../utils';
+import type { EditorRegistry } from '../registry';
 
 const boundUiTypes = new Set(['hexMap', 'tokenStack', 'cardStack']);
 const recordContainerKeys = new Set([
@@ -21,6 +22,25 @@ const recordContainerKeys = new Set([
   'other',
   'sequence',
 ]);
+
+const prototypeGroupToDefinitionsKey: Record<string, string> = {
+  token: 'tokens',
+  card: 'cards',
+  hex: 'hexes',
+  other: 'other',
+};
+
+const prototypeSnapshotsByRegistry = new WeakMap<EditorRegistry, Map<string, any>>();
+
+const getPrototypeSnapshotMap = (registry: EditorRegistry) => {
+  const existing = prototypeSnapshotsByRegistry.get(registry);
+  if (existing) {
+    return existing;
+  }
+  const next = new Map<string, any>();
+  prototypeSnapshotsByRegistry.set(registry, next);
+  return next;
+};
 
 const collectBoundUiIds = (node: any, result: Set<string>) => {
   if (!node) {
@@ -75,6 +95,7 @@ export const EditorNode = ({
   allowAddFields,
   boundDataItem,
   lockConfig,
+  isModified,
 }: EditorComponentProps) => {
   const [newCommandKey, setNewCommandKey] = useState('');
   const nodeType = registry.resolveType({ path, node, rootValue });
@@ -146,12 +167,104 @@ export const EditorNode = ({
   const [collapsed, setCollapsed] = useState(
     boundDataItem || (path.length === 1 && path[0] === 'seats')
   );
+  const highlightColor = isModified ? 'warning.main' : undefined;
+
+  const prototypeGroups = registration?.prototypeGroups;
+  const pathKey = JSON.stringify(path);
+  const prototypeLinks = rootValue?.meta?.prototypeLinks as Record<string, PrototypeSelection> | undefined;
+  const prototypeSelection = prototypeLinks?.[pathKey];
+  const nodeTypeGroup = nodeType?.includes('token')
+    ? 'token'
+    : nodeType?.includes('card')
+      ? 'card'
+      : nodeType?.includes('hex')
+        ? 'hex'
+        : nodeType?.includes('other')
+          ? 'other'
+          : undefined;
+  const resolvedPrototypeGroup = prototypeGroups?.length
+    ? (prototypeSelection?.group && prototypeGroups.includes(prototypeSelection.group)
+      ? prototypeSelection.group
+      : nodeTypeGroup && prototypeGroups.includes(nodeTypeGroup)
+        ? nodeTypeGroup
+        : prototypeGroups[0])
+    : undefined;
+  const definitionGroupKey = resolvedPrototypeGroup ? prototypeGroupToDefinitionsKey[resolvedPrototypeGroup] : undefined;
+  const definitionGroup = definitionGroupKey ? rootValue?.definitions?.[definitionGroupKey] : undefined;
+  const definitionOptions = definitionGroup ? Object.keys(definitionGroup) : [];
+  const selectedDefinitionKey = prototypeSelection?.group === resolvedPrototypeGroup
+    ? prototypeSelection?.key ?? ''
+    : '';
+  const definitionValue =
+    resolvedPrototypeGroup && selectedDefinitionKey && definitionGroup
+      ? definitionGroup[selectedDefinitionKey]
+      : undefined;
 
   useEffect(() => {
     if (boundDataItem) {
       setCollapsed(true);
     }
   }, [boundDataItem]);
+
+  useEffect(() => {
+    if (!prototypeGroups || !resolvedPrototypeGroup || !definitionValue) {
+      if (prototypeGroups) {
+        const snapshotMap = getPrototypeSnapshotMap(registry);
+        snapshotMap.delete(pathKey);
+      }
+      return;
+    }
+    if (
+      !node
+      || typeof node !== 'object'
+      || Array.isArray(node)
+      || typeof definitionValue !== 'object'
+      || Array.isArray(definitionValue)
+    ) {
+      return;
+    }
+    const snapshotMap = getPrototypeSnapshotMap(registry);
+    const hasSnapshot = snapshotMap.has(pathKey);
+    const previousSnapshot = hasSnapshot ? snapshotMap.get(pathKey) : undefined;
+    let nextValue = node;
+    let didChange = false;
+    if (previousSnapshot) {
+      Object.keys(previousSnapshot).forEach((key) => {
+        if (definitionValue[key] === undefined && nextValue[key] !== undefined) {
+          if (nextValue === node) {
+            nextValue = { ...node };
+          }
+          delete nextValue[key];
+          didChange = true;
+        }
+      });
+    }
+    Object.entries(definitionValue).forEach(([key, value]) => {
+      const shouldApply = !hasSnapshot
+        ? !deepEqual(nextValue[key], value)
+        : deepEqual(nextValue[key], previousSnapshot?.[key]) && !deepEqual(nextValue[key], value);
+      if (shouldApply) {
+        if (nextValue === node) {
+          nextValue = { ...node };
+        }
+        nextValue[key] = structuredClone(value);
+        didChange = true;
+      }
+    });
+    snapshotMap.set(pathKey, structuredClone(definitionValue));
+    if (didChange) {
+      onChange(path, nextValue);
+    }
+  }, [
+    definitionValue,
+    node,
+    onChange,
+    path,
+    pathKey,
+    prototypeGroups,
+    registry,
+    resolvedPrototypeGroup,
+  ]);
 
   const commitRename = (nextValue: string) => {
     if (!allowRename || typeof parentKey !== 'string') {
@@ -208,7 +321,46 @@ export const EditorNode = ({
       onCommit={commitRename}
     />
   ) : undefined;
-  const typeLabel = nodeType;
+  const handlePrototypeChange = (nextKey: string) => {
+    if (!prototypeGroups || !resolvedPrototypeGroup) {
+      return;
+    }
+    const nextMeta = { ...(rootValue?.meta ?? {}) } as Record<string, any>;
+    const nextLinks = { ...(nextMeta.prototypeLinks ?? {}) } as Record<string, PrototypeSelection>;
+    if (!nextKey) {
+      delete nextLinks[pathKey];
+    } else {
+      nextLinks[pathKey] = { group: resolvedPrototypeGroup, key: nextKey };
+    }
+    nextMeta.prototypeLinks = nextLinks;
+    onChange(['meta'], nextMeta);
+  };
+  const prototypeSelector = prototypeGroups && resolvedPrototypeGroup ? (
+    <Select
+      size="small"
+      value={selectedDefinitionKey}
+      displayEmpty
+      onChange={(event) => handlePrototypeChange(String(event.target.value))}
+      sx={{ minWidth: 140 }}
+    >
+      <MenuItem value="">select definition</MenuItem>
+      {definitionOptions.map((option) => (
+        <MenuItem key={option} value={option}>
+          {option}
+        </MenuItem>
+      ))}
+    </Select>
+  ) : undefined;
+  const typeLabel = prototypeSelector ? (
+    <Stack direction="row" spacing={1} alignItems="center">
+      {nodeType && (
+        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
+          {nodeType}
+        </Typography>
+      )}
+      {prototypeSelector}
+    </Stack>
+  ) : nodeType;
   const deleteButton = allowDelete ? (
     <IconButton size="small" onClick={handleDelete} aria-label="delete" sx={{ p: 0 }}>
       <Close fontSize="inherit" sx={{ fontSize: 14 }} />
@@ -221,9 +373,10 @@ export const EditorNode = ({
     return (
       <InlineNodeRow
         title={title}
-        typeLabel={typeLabel}
+        typeLabel={typeof typeLabel === 'string' ? typeLabel : undefined}
         content={content}
         deleteButton={deleteButton}
+        highlightColor={highlightColor}
       />
     );
   };
@@ -236,16 +389,18 @@ export const EditorNode = ({
         header={(
           <NodeHeader
             title={title}
-            typeLabel={nodeType}
+            typeLabel={typeLabel}
             collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
             deleteButton={deleteButton}
             borderColor={borderColor}
+            highlightColor={highlightColor}
           />
         )}
         collapsed={collapsed}
         borderColor={borderColor}
         footerSpacing={footerSpacing}
         footer={footer}
+        highlightColor={highlightColor}
       >
         {content}
       </BlockNodeRow>
@@ -292,6 +447,14 @@ export const EditorNode = ({
     const cascadedAllowAddFields = allowAddFields || (parentKey ? recordContainerKeys.has(parentKey) : false);
     const allowAddFieldsForNode = (registration?.allowAddFields ?? cascadedAllowAddFields)
       && !(registration?.singleKeyOnly && keys.length > 0);
+    const modifiedKeys = definitionValue && node && typeof node === 'object' && !Array.isArray(node)
+      && typeof definitionValue === 'object' && !Array.isArray(definitionValue)
+      ? new Set(
+        Object.entries(definitionValue)
+          .filter(([key, value]) => !deepEqual((node as Record<string, any>)[key], value))
+          .map(([key]) => key)
+      )
+      : undefined;
     let lockedKeys: Record<string, LockedKeyConfig> | undefined;
     if (parentKey === 'data') {
       const boundIds = new Set<string>();
@@ -353,6 +516,7 @@ export const EditorNode = ({
         allowedKeys={registration?.allowedKeys}
         lockedKeys={lockedKeys}
         boundDataItem={boundDataItem}
+        modifiedKeys={modifiedKeys}
       />
     );
     return isInline ? wrapInline(editor) : wrapBlock(editor, footer, allowAddFieldsForNode ? 18 : undefined);

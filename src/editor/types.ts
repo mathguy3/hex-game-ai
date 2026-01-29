@@ -36,6 +36,7 @@ export type EditorComponentProps = {
   lockConfig?: LockedKeyConfig;
   boundDataItem?: boolean;
   nodeType?: string;
+  isModified?: boolean;
 };
 
 export type EditorRegistration = {
@@ -53,4 +54,10 @@ export type EditorRegistration = {
   allowAddFields?: boolean;
   singleKeyOnly?: boolean;
   suggestionsOnly?: boolean;
+  prototypeGroups?: Array<'token' | 'card' | 'hex' | 'other'>;
+};
+
+export type PrototypeSelection = {
+  group: 'token' | 'card' | 'hex' | 'other';
+  key: string;
 };

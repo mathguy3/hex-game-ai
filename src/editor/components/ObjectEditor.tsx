@@ -7,6 +7,7 @@ type ObjectEditorProps = EditorComponentProps & {
   objectValue: Record<string, any>;
   allowAddFields?: boolean;
   allowedKeys?: string[];
+  modifiedKeys?: Set<string>;
 };
 
 export const ObjectEditor = ({
@@ -19,6 +20,7 @@ export const ObjectEditor = ({
   allowedKeys,
   lockedKeys,
   parentKey,
+  modifiedKeys,
 }: ObjectEditorProps) => {
   const registration = useMemo(
     () => registry.resolveRegistration({ path, node: objectValue, rootValue }),
@@ -44,10 +46,10 @@ export const ObjectEditor = ({
       ...keys.filter((key) => key === 'data'),
       ...keys.filter(
         (key) =>
-          !['config', 'seats', 'definitions', 'sequence', 'ui', 'data'].includes(key)
+          !['config', 'seats', 'definitions', 'sequence', 'ui', 'data', 'meta'].includes(key)
       ),
     ]
-    : keys;
+    : keys.filter((key) => key !== 'meta');
 
   return (
     <Stack spacing={1} sx={{ position: 'relative' }}>
@@ -65,6 +67,7 @@ export const ObjectEditor = ({
               allowAddFields={allowAddFields}
               lockConfig={lockedKeys?.[key]}
               boundDataItem={parentKey === 'data' && !!lockedKeys?.[key]}
+              isModified={modifiedKeys?.has(key)}
             />
           </Box>
         );

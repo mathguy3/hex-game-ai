@@ -5,9 +5,10 @@ type NodeContentProps = {
   children: ReactNode;
   borderColor?: string;
   showFooter?: boolean;
+  highlightColor?: string;
 };
 
-export const NodeContent = ({ children, borderColor, showFooter }: NodeContentProps) => {
+export const NodeContent = ({ children, borderColor, showFooter, highlightColor }: NodeContentProps) => {
   return (
     <Box
       sx={{
@@ -18,7 +19,9 @@ export const NodeContent = ({ children, borderColor, showFooter }: NodeContentPr
         pt: 1,
         overflow: 'visible',
         borderBottom: showFooter ? 'none' : '1px solid',
-        borderBottomColor: showFooter ? undefined : borderColor ?? 'divider',
+        borderBottomColor: showFooter ? undefined : highlightColor ?? borderColor ?? 'divider',
+        borderRight: highlightColor ? '1px solid' : undefined,
+        borderRightColor: highlightColor,
       }}
     >
       {children}

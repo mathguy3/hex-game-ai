@@ -46,3 +46,30 @@ export const getAtPath = (root: any, path: EditorPath) => {
   }
   return cursor;
 };
+
+export const deepEqual = (left: any, right: any): boolean => {
+  if (left === right) {
+    return true;
+  }
+  if (typeof left !== typeof right) {
+    return false;
+  }
+  if (!left || !right) {
+    return false;
+  }
+  if (Array.isArray(left)) {
+    if (!Array.isArray(right) || left.length !== right.length) {
+      return false;
+    }
+    return left.every((item, index) => deepEqual(item, right[index]));
+  }
+  if (typeof left === 'object') {
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+    if (leftKeys.length !== rightKeys.length) {
+      return false;
+    }
+    return leftKeys.every((key) => deepEqual(left[key], right[key]));
+  }
+  return false;
+};

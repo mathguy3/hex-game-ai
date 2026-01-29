@@ -6,16 +6,17 @@ type InlineNodeRowProps = {
   typeLabel?: string;
   content: ReactNode;
   deleteButton?: ReactNode;
+  highlightColor?: string;
 };
 
-export const InlineNodeRow = ({ title, typeLabel, content, deleteButton }: InlineNodeRowProps) => {
+export const InlineNodeRow = ({ title, typeLabel, content, deleteButton, highlightColor }: InlineNodeRowProps) => {
   return (
     <Box
       display="flex"
       alignItems="center"
       flexWrap="wrap"
       gap={1}
-      sx={{ border: '1px solid', borderColor: 'divider', p: 1 }}
+      sx={{ border: '1px solid', borderColor: highlightColor ?? 'divider', p: 1 }}
     >
       {title}
       {typeLabel && (
