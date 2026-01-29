@@ -390,7 +390,7 @@ export const EditorNode = ({
         value={selectedDefinitionKey}
         displayEmpty
         onChange={(event) => handlePrototypeChange(String(event.target.value))}
-        sx={{ minWidth: 140 }}
+        sx={{ minWidth: 140, height: '31px' }}
       >
         <MenuItem value="">select definition</MenuItem>
         {definitionOptions.map((option) => (
