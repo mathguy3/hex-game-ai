@@ -165,6 +165,9 @@ export const GameDefinitionEditorPage = () => {
     next.register(({ fieldname, isDecendantOf }) => isDecendantOf('data') && fieldname === 'hex', {
       prototypeGroups: ['hex'],
     });
+    next.register(({ node, isDecendantOf }) => isDecendantOf('data') && node?.type === 'hex', {
+      prototypeGroups: ['hex'],
+    });
     next.register(({ fieldname, isDecendantOf }) => isDecendantOf('ui') && fieldname === 'text', {
       defaultValue: { content: '' },
       color: uiColor,

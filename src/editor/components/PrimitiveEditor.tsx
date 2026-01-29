@@ -29,7 +29,12 @@ export const PrimitiveEditor = ({ value, path, onChange, preventEmpty, debounceM
     return (
       <FormControlLabel
         control={
-          <Checkbox sx={{ pt: 0, pb: '1px' }} checked={value} onChange={(event) => onChange(path, event.target.checked)} size="small" />
+          <Checkbox
+            sx={{ pt: 0, pb: '1px' }}
+            checked={value}
+            onChange={(event) => onChange(path, event.target.checked)}
+            size="small"
+          />
         }
         label=""
       />

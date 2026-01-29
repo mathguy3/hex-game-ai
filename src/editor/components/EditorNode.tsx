@@ -101,9 +101,12 @@ export const EditorNode = ({
   const nodeType = registry.resolveType({ path, node, rootValue });
   const registration = registry.resolveRegistration({ path, node, rootValue });
   const typeColor = nodeType ? registry.getTypeColor(nodeType) : undefined;
-  const basicTypeColor = typeof node === 'string'
-    ? '#228B22'
-    : (node && typeof node === 'object' && !Array.isArray(node) ? '#4b5563' : undefined);
+  const basicTypeColor =
+    typeof node === 'string'
+      ? '#228B22'
+      : node && typeof node === 'object' && !Array.isArray(node)
+      ? '#4b5563'
+      : undefined;
   const borderColor = registration?.color ?? typeColor ?? basicTypeColor;
   const boundIndexRef = useRef<Map<string, string>>(new Map());
 
@@ -146,27 +149,32 @@ export const EditorNode = ({
   }, [onChange, path.length, rootValue]);
 
   const isNullish = node === null || node === undefined;
-  const displayMode = registration?.display
-    ?? (isNullish || nodeType === 'coordinates' || typeof node === 'string' || typeof node === 'number' || typeof node === 'boolean'
+  const displayMode =
+    registration?.display ??
+    (isNullish ||
+    nodeType === 'coordinates' ||
+    typeof node === 'string' ||
+    typeof node === 'number' ||
+    typeof node === 'boolean'
       ? 'inline'
       : 'block');
   const isInline = displayMode === 'inline';
   const parentPath = path.slice(0, -1);
   const isFieldNode = typeof path[path.length - 1] === 'string';
   const titleLabel = isFieldNode && typeof parentKey === 'string' ? parentKey : undefined;
-  const allowRename = !!allowAddFields
-    && isFieldNode
-    && typeof parentKey === 'string'
-    && !lockConfig?.lockRename
-    && (registration?.fieldnameEditable ?? true);
-  const allowDelete = !!allowAddFields
-    && isFieldNode
-    && typeof parentKey === 'string'
-    && !lockConfig?.lockDelete
-    && (registration?.allowDelete ?? true);
-  const [collapsed, setCollapsed] = useState(
-    boundDataItem || (path.length === 1 && path[0] === 'seats')
-  );
+  const allowRename =
+    !!allowAddFields &&
+    isFieldNode &&
+    typeof parentKey === 'string' &&
+    !lockConfig?.lockRename &&
+    (registration?.fieldnameEditable ?? true);
+  const allowDelete =
+    !!allowAddFields &&
+    isFieldNode &&
+    typeof parentKey === 'string' &&
+    !lockConfig?.lockDelete &&
+    (registration?.allowDelete ?? true);
+  const [collapsed, setCollapsed] = useState(boundDataItem || (path.length === 1 && path[0] === 'seats'));
   const highlightColor = isModified ? 'warning.main' : undefined;
 
   const prototypeGroups = registration?.prototypeGroups;
@@ -176,25 +184,26 @@ export const EditorNode = ({
   const nodeTypeGroup = nodeType?.includes('token')
     ? 'token'
     : nodeType?.includes('card')
-      ? 'card'
-      : nodeType?.includes('hex')
-        ? 'hex'
-        : nodeType?.includes('other')
-          ? 'other'
-          : undefined;
+    ? 'card'
+    : nodeType?.includes('hex')
+    ? 'hex'
+    : nodeType?.includes('other')
+    ? 'other'
+    : undefined;
   const resolvedPrototypeGroup = prototypeGroups?.length
-    ? (prototypeSelection?.group && prototypeGroups.includes(prototypeSelection.group)
+    ? prototypeSelection?.group && prototypeGroups.includes(prototypeSelection.group)
       ? prototypeSelection.group
       : nodeTypeGroup && prototypeGroups.includes(nodeTypeGroup)
-        ? nodeTypeGroup
-        : prototypeGroups[0])
+      ? nodeTypeGroup
+      : prototypeGroups[0]
     : undefined;
-  const definitionGroupKey = resolvedPrototypeGroup ? prototypeGroupToDefinitionsKey[resolvedPrototypeGroup] : undefined;
+  const definitionGroupKey = resolvedPrototypeGroup
+    ? prototypeGroupToDefinitionsKey[resolvedPrototypeGroup]
+    : undefined;
   const definitionGroup = definitionGroupKey ? rootValue?.definitions?.[definitionGroupKey] : undefined;
   const definitionOptions = definitionGroup ? Object.keys(definitionGroup) : [];
-  const selectedDefinitionKey = prototypeSelection?.group === resolvedPrototypeGroup
-    ? prototypeSelection?.key ?? ''
-    : '';
+  const selectedDefinitionKey =
+    prototypeSelection?.group === resolvedPrototypeGroup ? prototypeSelection?.key ?? '' : '';
   const definitionValue =
     resolvedPrototypeGroup && selectedDefinitionKey && definitionGroup
       ? definitionGroup[selectedDefinitionKey]
@@ -215,11 +224,11 @@ export const EditorNode = ({
       return;
     }
     if (
-      !node
-      || typeof node !== 'object'
-      || Array.isArray(node)
-      || typeof definitionValue !== 'object'
-      || Array.isArray(definitionValue)
+      !node ||
+      typeof node !== 'object' ||
+      Array.isArray(node) ||
+      typeof definitionValue !== 'object' ||
+      Array.isArray(definitionValue)
     ) {
       return;
     }
@@ -255,16 +264,7 @@ export const EditorNode = ({
     if (didChange) {
       onChange(path, nextValue);
     }
-  }, [
-    definitionValue,
-    node,
-    onChange,
-    path,
-    pathKey,
-    prototypeGroups,
-    registry,
-    resolvedPrototypeGroup,
-  ]);
+  }, [definitionValue, node, onChange, path, pathKey, prototypeGroups, registry, resolvedPrototypeGroup]);
 
   const commitRename = (nextValue: string) => {
     if (!allowRename || typeof parentKey !== 'string') {
@@ -335,32 +335,87 @@ export const EditorNode = ({
     nextMeta.prototypeLinks = nextLinks;
     onChange(['meta'], nextMeta);
   };
-  const prototypeSelector = prototypeGroups && resolvedPrototypeGroup ? (
+  const dataTypeValue =
+    !nodeType && node !== null && node !== undefined
+      ? typeof node === 'string'
+        ? 'String'
+        : typeof node === 'number'
+        ? 'Number'
+        : typeof node === 'boolean'
+        ? 'Boolean'
+        : typeof node === 'object' && !Array.isArray(node)
+        ? 'Object'
+        : undefined
+      : undefined;
+  const showDataTypeSelector = !!dataTypeValue;
+  const handleDataTypeChange = (nextType: string) => {
+    if (!showDataTypeSelector) {
+      return;
+    }
+    if (nextType === 'Object') {
+      if (!node || typeof node !== 'object' || Array.isArray(node)) {
+        onChange(path, {});
+      }
+      return;
+    }
+    if (nextType === 'String') {
+      onChange(path, '');
+      return;
+    }
+    if (nextType === 'Number') {
+      onChange(path, 0);
+      return;
+    }
+    if (nextType === 'Boolean') {
+      onChange(path, false);
+    }
+  };
+  const dataTypeSelector = showDataTypeSelector ? (
     <Select
       size="small"
-      value={selectedDefinitionKey}
-      displayEmpty
-      onChange={(event) => handlePrototypeChange(String(event.target.value))}
-      sx={{ minWidth: 140 }}
+      value={dataTypeValue}
+      onChange={(event) => handleDataTypeChange(String(event.target.value))}
+      sx={{ minWidth: 90, height: '31px' }}
     >
-      <MenuItem value="">select definition</MenuItem>
-      {definitionOptions.map((option) => (
-        <MenuItem key={option} value={option}>
-          {option}
-        </MenuItem>
-      ))}
+      <MenuItem value="Object">Object</MenuItem>
+      <MenuItem value="String">String</MenuItem>
+      <MenuItem value="Number">Number</MenuItem>
+      <MenuItem value="Boolean">Boolean</MenuItem>
     </Select>
   ) : undefined;
-  const typeLabel = prototypeSelector ? (
-    <Stack direction="row" spacing={1} alignItems="center">
-      {nodeType && (
-        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
-          {nodeType}
-        </Typography>
-      )}
-      {prototypeSelector}
-    </Stack>
-  ) : nodeType;
+  const prototypeSelector =
+    prototypeGroups && resolvedPrototypeGroup ? (
+      <Select
+        size="small"
+        value={selectedDefinitionKey}
+        displayEmpty
+        onChange={(event) => handlePrototypeChange(String(event.target.value))}
+        sx={{ minWidth: 140 }}
+      >
+        <MenuItem value="">select definition</MenuItem>
+        {definitionOptions.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </Select>
+    ) : undefined;
+  const headerTypeLabel =
+    prototypeSelector || dataTypeSelector ? (
+      <Stack direction="row" spacing={1} alignItems="center">
+        {nodeType && (
+          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
+            {nodeType}
+          </Typography>
+        )}
+        {prototypeSelector}
+        {dataTypeSelector}
+      </Stack>
+    ) : (
+      nodeType
+    );
+  const inlineTypeLabel = typeof headerTypeLabel === 'string' ? headerTypeLabel : undefined;
+  const inlineTypeControl = isInline ? dataTypeSelector : undefined;
   const deleteButton = allowDelete ? (
     <IconButton size="small" onClick={handleDelete} aria-label="delete" sx={{ p: 0 }}>
       <Close fontSize="inherit" sx={{ fontSize: 14 }} />
@@ -373,7 +428,8 @@ export const EditorNode = ({
     return (
       <InlineNodeRow
         title={title}
-        typeLabel={typeof typeLabel === 'string' ? typeLabel : undefined}
+        typeLabel={inlineTypeLabel}
+        typeControl={inlineTypeControl}
         content={content}
         deleteButton={deleteButton}
         highlightColor={highlightColor}
@@ -386,16 +442,16 @@ export const EditorNode = ({
     }
     return (
       <BlockNodeRow
-        header={(
+        header={
           <NodeHeader
             title={title}
-            typeLabel={typeLabel}
+            typeLabel={headerTypeLabel}
             collapseButton={<ExpandButton expanded={!collapsed} onToggle={() => setCollapsed((prev) => !prev)} />}
             deleteButton={deleteButton}
             borderColor={borderColor}
             highlightColor={highlightColor}
           />
-        )}
+        }
         collapsed={collapsed}
         borderColor={borderColor}
         footerSpacing={footerSpacing}
@@ -445,16 +501,21 @@ export const EditorNode = ({
     const keys = Object.keys(node);
     const showCommandBuilder = allowCommand && keys.length === 0;
     const cascadedAllowAddFields = allowAddFields || (parentKey ? recordContainerKeys.has(parentKey) : false);
-    const allowAddFieldsForNode = (registration?.allowAddFields ?? cascadedAllowAddFields)
-      && !(registration?.singleKeyOnly && keys.length > 0);
-    const modifiedKeys = definitionValue && node && typeof node === 'object' && !Array.isArray(node)
-      && typeof definitionValue === 'object' && !Array.isArray(definitionValue)
-      ? new Set(
-        Object.entries(definitionValue)
-          .filter(([key, value]) => !deepEqual((node as Record<string, any>)[key], value))
-          .map(([key]) => key)
-      )
-      : undefined;
+    const allowAddFieldsForNode =
+      (registration?.allowAddFields ?? cascadedAllowAddFields) && !(registration?.singleKeyOnly && keys.length > 0);
+    const modifiedKeys =
+      definitionValue &&
+      node &&
+      typeof node === 'object' &&
+      !Array.isArray(node) &&
+      typeof definitionValue === 'object' &&
+      !Array.isArray(definitionValue)
+        ? new Set(
+            Object.entries(definitionValue)
+              .filter(([key, value]) => !deepEqual((node as Record<string, any>)[key], value))
+              .map(([key]) => key)
+          )
+        : undefined;
     let lockedKeys: Record<string, LockedKeyConfig> | undefined;
     if (parentKey === 'data') {
       const boundIds = new Set<string>();
@@ -523,32 +584,30 @@ export const EditorNode = ({
   }
 
   const isBoundUiIdField =
-    parentKey === 'id' &&
-    path.length >= 2 &&
-    boundUiTypes.has(String(path[path.length - 2])) &&
-    path.includes('ui');
+    parentKey === 'id' && path.length >= 2 && boundUiTypes.has(String(path[path.length - 2])) && path.includes('ui');
 
-  const primitiveEditor = node === null || node === undefined ? (
-    <Button
-      size="small"
-      variant="outlined"
-      onClick={() => onChange(path, structuredClone(registration?.defaultValue ?? {}))}
-      sx={{ textTransform: 'none' }}
-    >
-      Set value
-    </Button>
-  ) : (
-    <PrimitiveEditor
-      value={node}
-      path={path}
-      onChange={onChange}
-      registry={registry}
-      rootValue={rootValue}
-      node={node}
-      preventEmpty={isBoundUiIdField}
-      debounceMs={isBoundUiIdField ? 400 : undefined}
-    />
-  );
+  const primitiveEditor =
+    node === null || node === undefined ? (
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() => onChange(path, structuredClone(registration?.defaultValue ?? {}))}
+        sx={{ textTransform: 'none' }}
+      >
+        Set value
+      </Button>
+    ) : (
+      <PrimitiveEditor
+        value={node}
+        path={path}
+        onChange={onChange}
+        registry={registry}
+        rootValue={rootValue}
+        node={node}
+        preventEmpty={isBoundUiIdField}
+        debounceMs={isBoundUiIdField ? 400 : undefined}
+      />
+    );
 
   const primitiveContent = <Box>{primitiveEditor}</Box>;
   return isInline ? wrapInline(primitiveContent) : wrapBlock(primitiveContent);

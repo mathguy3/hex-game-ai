@@ -12,9 +12,7 @@ type NodeTitleProps = {
 export const NodeTitle = ({ label, editable, locked, mode = 'block', onCommit }: NodeTitleProps) => {
   const [localValue, setLocalValue] = useState(label);
   const [isEditing, setIsEditing] = useState(false);
-  const sizeSx = mode === 'inline'
-    ? { width: 50, minWidth: 50, maxWidth: 160 }
-    : { minWidth: 75, maxWidth: 200 };
+  const sizeSx = mode === 'inline' ? { width: 100, minWidth: 100, maxWidth: 160 } : { minWidth: 100, maxWidth: 200 };
 
   useEffect(() => {
     if (!isEditing) {

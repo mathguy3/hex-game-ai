@@ -4,12 +4,20 @@ import type { ReactNode } from 'react';
 type InlineNodeRowProps = {
   title?: ReactNode;
   typeLabel?: string;
+  typeControl?: ReactNode;
   content: ReactNode;
   deleteButton?: ReactNode;
   highlightColor?: string;
 };
 
-export const InlineNodeRow = ({ title, typeLabel, content, deleteButton, highlightColor }: InlineNodeRowProps) => {
+export const InlineNodeRow = ({
+  title,
+  typeLabel,
+  typeControl,
+  content,
+  deleteButton,
+  highlightColor,
+}: InlineNodeRowProps) => {
   return (
     <Box
       display="flex"
@@ -19,6 +27,7 @@ export const InlineNodeRow = ({ title, typeLabel, content, deleteButton, highlig
       sx={{ border: '1px solid', borderColor: highlightColor ?? 'divider', p: 1 }}
     >
       {title}
+      {typeControl}
       {typeLabel && (
         <Typography variant="body2" color="text.secondary" sx={{ minWidth: 24 }}>
           {typeLabel}
