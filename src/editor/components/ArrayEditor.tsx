@@ -10,7 +10,7 @@ type ArrayEditorProps = EditorComponentProps & {
   allowedArrayKeys?: string[];
 };
 
-const commandListKeys = new Set(['actions', 'phases', 'turns', 'steps', 'options', 'interactions']);
+const defaultTypeKeys = ['Object', 'Array', 'String', 'Number', 'Boolean'];
 
 export const ArrayEditor = ({
   items,
@@ -22,9 +22,10 @@ export const ArrayEditor = ({
   allowedArrayKeys,
   allowAddFields,
 }: ArrayEditorProps) => {
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const isCommandList = parentKey ? commandListKeys.has(parentKey) : false;
-  const allowCommand = isCommandList || !!allowedArrayKeys?.length;
+  const [selectedKey, setSelectedKey] = useState<string | null>(() => (allowedArrayKeys ? null : 'Object'));
+  const effectiveAllowedArrayKeys = allowedArrayKeys ?? defaultTypeKeys;
+  const isTypeSelection = !allowedArrayKeys;
+  const allowCommand = !!effectiveAllowedArrayKeys.length;
 
   return (
     <Stack spacing={1}>
@@ -45,10 +46,10 @@ export const ArrayEditor = ({
         </Stack>
       ))}
       <Stack direction="row" spacing={1} alignItems="center">
-        {allowedArrayKeys && (
+        {effectiveAllowedArrayKeys.length > 0 && (
           <Autocomplete
             size="small"
-            options={allowedArrayKeys}
+            options={effectiveAllowedArrayKeys}
             value={selectedKey}
             onChange={(_, nextValue) => setSelectedKey(nextValue)}
             renderInput={(params) => <TextField {...params} placeholder="item type" />}
@@ -58,7 +59,22 @@ export const ArrayEditor = ({
         <IconButton
           size="small"
           onClick={() => {
-            if (allowedArrayKeys) {
+            if (effectiveAllowedArrayKeys.length > 0) {
+              const nextKey = selectedKey ?? 'Object';
+              if (isTypeSelection) {
+                const nextValue =
+                  nextKey === 'String'
+                    ? ''
+                    : nextKey === 'Number'
+                    ? 0
+                    : nextKey === 'Boolean'
+                    ? false
+                    : nextKey === 'Array'
+                    ? [{}]
+                    : {};
+                onChange(path, [...items, nextValue]);
+                return;
+              }
               if (!selectedKey) {
                 return;
               }

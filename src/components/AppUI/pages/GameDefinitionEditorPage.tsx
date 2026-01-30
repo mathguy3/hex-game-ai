@@ -158,6 +158,8 @@ export const GameDefinitionEditorPage = () => {
     next.register(({ fieldname, isDecendantOf }) => isDecendantOf('contains') && fieldname === 'token', {});
     next.register(({ fieldname, isDecendantOf }) => isDecendantOf('data') && fieldname === 'token', {
       prototypeGroups: ['token'],
+      color: '#86efac',
+      allowDataTypeSelection: false,
     });
     next.register(({ fieldname, isDecendantOf }) => isDecendantOf('data') && fieldname === 'card', {
       prototypeGroups: ['card'],

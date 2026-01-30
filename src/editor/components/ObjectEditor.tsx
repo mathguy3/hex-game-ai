@@ -1,5 +1,6 @@
-import { Autocomplete, Box, Stack, TextField } from '@mui/material';
-import { useMemo } from 'react';
+import { Add } from '@mui/icons-material';
+import { Autocomplete, Box, IconButton, Stack, TextField } from '@mui/material';
+import { useMemo, useState } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
 
@@ -22,6 +23,8 @@ export const ObjectEditor = ({
   parentKey,
   modifiedKeys,
 }: ObjectEditorProps) => {
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [customKey, setCustomKey] = useState('');
   const registration = useMemo(
     () => registry.resolveRegistration({ path, node: objectValue, rootValue }),
     [path, objectValue, rootValue, registry]
@@ -36,20 +39,20 @@ export const ObjectEditor = ({
     })?.defaultValue ?? {};
 
   const keys = Object.keys(objectValue);
-  const orderedKeys = path.length === 0
-    ? [
-      ...keys.filter((key) => key === 'config'),
-      ...keys.filter((key) => key === 'seats'),
-      ...keys.filter((key) => key === 'definitions'),
-      ...keys.filter((key) => key === 'sequence'),
-      ...keys.filter((key) => key === 'ui'),
-      ...keys.filter((key) => key === 'data'),
-      ...keys.filter(
-        (key) =>
-          !['config', 'seats', 'definitions', 'sequence', 'ui', 'data', 'meta'].includes(key)
-      ),
-    ]
-    : keys.filter((key) => key !== 'meta');
+  const orderedKeys =
+    path.length === 0
+      ? [
+          ...keys.filter((key) => key === 'config'),
+          ...keys.filter((key) => key === 'seats'),
+          ...keys.filter((key) => key === 'definitions'),
+          ...keys.filter((key) => key === 'sequence'),
+          ...keys.filter((key) => key === 'ui'),
+          ...keys.filter((key) => key === 'data'),
+          ...keys.filter((key) => !['config', 'seats', 'definitions', 'sequence', 'ui', 'data', 'meta'].includes(key)),
+        ]
+      : keys.filter((key) => key !== 'meta');
+  const isArrayItem = typeof path[path.length - 1] === 'number';
+  const showEmptyAdder = isArrayItem && orderedKeys.length === 0 && (allowAddFields || effectiveAllowedKeys);
 
   return (
     <Stack spacing={1} sx={{ position: 'relative' }}>
@@ -72,24 +75,47 @@ export const ObjectEditor = ({
           </Box>
         );
       })}
-      {!allowAddFields && effectiveAllowedKeys && keys.length === 0 && (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Autocomplete
-            size="small"
-            options={effectiveAllowedKeys}
-            value={null}
-            onChange={(_, nextValue) => {
-              if (!nextValue || objectValue[nextValue] !== undefined) {
-                return;
-              }
-              const defaultValue = resolveDefaultValue(nextValue);
-              onChange(path, { ...objectValue, [nextValue]: structuredClone(defaultValue) });
-            }}
-            renderInput={(params) => <TextField {...params} placeholder="add item" />}
-            sx={{ minWidth: 200 }}
-          />
-        </Stack>
+      {showEmptyAdder && (
+        <Box sx={{ border: '2px solid', borderColor: 'text.primary', borderRadius: 1, p: 1 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            {effectiveAllowedKeys ? (
+              <Autocomplete
+                size="small"
+                options={effectiveAllowedKeys}
+                value={selectedKey}
+                onChange={(_, nextValue) => setSelectedKey(nextValue)}
+                renderInput={(params) => <TextField {...params} placeholder="add item" />}
+                sx={{ minWidth: 200 }}
+              />
+            ) : (
+              <TextField
+                size="small"
+                placeholder="field name"
+                value={customKey}
+                onChange={(event) => setCustomKey(event.target.value)}
+                sx={{ minWidth: 200 }}
+              />
+            )}
+            <IconButton
+              size="small"
+              onClick={() => {
+                const nextKey = effectiveAllowedKeys ? selectedKey : customKey.trim();
+                if (!nextKey || objectValue[nextKey] !== undefined) {
+                  return;
+                }
+                const defaultValue = resolveDefaultValue(nextKey);
+                onChange(path, { ...objectValue, [nextKey]: structuredClone(defaultValue) });
+                setSelectedKey(null);
+                setCustomKey('');
+              }}
+              aria-label="add"
+              sx={{ border: '1px dashed', borderColor: 'divider', borderRadius: 1 }}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Stack>
+        </Box>
       )}
-    </Stack >
+    </Stack>
   );
 };

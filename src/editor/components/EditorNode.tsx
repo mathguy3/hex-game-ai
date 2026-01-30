@@ -343,11 +343,14 @@ export const EditorNode = ({
         ? 'Number'
         : typeof node === 'boolean'
         ? 'Boolean'
+        : Array.isArray(node)
+        ? 'Array'
         : typeof node === 'object' && !Array.isArray(node)
         ? 'Object'
         : undefined
       : undefined;
-  const showDataTypeSelector = !!dataTypeValue;
+  const allowDataTypeSelection = registration?.allowDataTypeSelection ?? true;
+  const showDataTypeSelector = !!dataTypeValue && allowDataTypeSelection;
   const handleDataTypeChange = (nextType: string) => {
     if (!showDataTypeSelector) {
       return;
@@ -355,6 +358,12 @@ export const EditorNode = ({
     if (nextType === 'Object') {
       if (!node || typeof node !== 'object' || Array.isArray(node)) {
         onChange(path, {});
+      }
+      return;
+    }
+    if (nextType === 'Array') {
+      if (!Array.isArray(node)) {
+        onChange(path, [{ item: {} }]);
       }
       return;
     }
@@ -378,6 +387,7 @@ export const EditorNode = ({
       sx={{ minWidth: 90, height: '31px' }}
     >
       <MenuItem value="Object">Object</MenuItem>
+      <MenuItem value="Array">Array</MenuItem>
       <MenuItem value="String">String</MenuItem>
       <MenuItem value="Number">Number</MenuItem>
       <MenuItem value="Boolean">Boolean</MenuItem>
@@ -499,7 +509,7 @@ export const EditorNode = ({
       return isInline ? wrapInline(editor) : wrapBlock(editor);
     }
     const keys = Object.keys(node);
-    const showCommandBuilder = allowCommand && keys.length === 0;
+    const showCommandBuilder = false;
     const cascadedAllowAddFields = allowAddFields || (parentKey ? recordContainerKeys.has(parentKey) : false);
     const allowAddFieldsForNode =
       (registration?.allowAddFields ?? cascadedAllowAddFields) && !(registration?.singleKeyOnly && keys.length > 0);

@@ -52,6 +52,7 @@ export type EditorRegistration = {
   fieldnameEditable?: boolean;
   allowDelete?: boolean;
   allowAddFields?: boolean;
+  allowDataTypeSelection?: boolean;
   singleKeyOnly?: boolean;
   suggestionsOnly?: boolean;
   prototypeGroups?: Array<'token' | 'card' | 'hex' | 'other'>;
