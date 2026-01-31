@@ -1,9 +1,8 @@
-import { Add, Delete } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import { Autocomplete, Box, IconButton, Stack, TextField } from '@mui/material';
 import { useState } from 'react';
 import { EditorNode } from './EditorNode';
 import type { EditorComponentProps } from '../types';
-import { removeAtPath } from '../utils';
 
 type ArrayEditorProps = EditorComponentProps & {
   items: any[];
@@ -28,24 +27,8 @@ export const ArrayEditor = ({
   const allowCommand = !!effectiveAllowedArrayKeys.length;
 
   return (
-    <Stack spacing={1}>
-      {items.map((item, index) => (
-        <Stack key={`${path.join('.')}-${index}`} direction="row" spacing={1} alignItems="flex-start">
-          <Box flex={1}>
-            <EditorNode
-              node={item}
-              path={[...path, index]}
-              onChange={onChange}
-              registry={registry}
-              rootValue={rootValue}
-              parentKey={parentKey}
-              allowCommand={allowCommand}
-              allowAddFields={allowAddFields}
-            />
-          </Box>
-        </Stack>
-      ))}
-      <Stack direction="row" spacing={1} alignItems="center">
+    <Stack spacing={0}>
+      <Stack direction="row" spacing={1} alignItems="center" pb={1}>
         {effectiveAllowedArrayKeys.length > 0 && (
           <Autocomplete
             size="small"
@@ -96,6 +79,25 @@ export const ArrayEditor = ({
           <Add fontSize="small" />
         </IconButton>
       </Stack>
+      {items.map((item, index) => (
+        <Stack key={`${path.join('.')}-${index}`} spacing={1}>
+          {index > 0 && <Box sx={{ borderTop: '1px dashed', borderColor: 'divider', my: 1 }} />}
+          <Stack direction="row" spacing={1} alignItems="flex-start">
+            <Box flex={1}>
+              <EditorNode
+                node={item}
+                path={[...path, index]}
+                onChange={onChange}
+                registry={registry}
+                rootValue={rootValue}
+                parentKey={parentKey}
+                allowCommand={allowCommand}
+                allowAddFields={allowAddFields}
+              />
+            </Box>
+          </Stack>
+        </Stack>
+      ))}
     </Stack>
   );
 };

@@ -446,7 +446,7 @@ export const EditorNode = ({
       />
     );
   };
-  const wrapBlock = (content: JSX.Element, footer?: JSX.Element, footerSpacing?: number) => {
+  const wrapBlock = (content: JSX.Element, footer?: JSX.Element, footerSpacing?: number, outlineBold?: boolean) => {
     if (!isFieldNode) {
       return content;
     }
@@ -467,6 +467,7 @@ export const EditorNode = ({
         footerSpacing={footerSpacing}
         footer={footer}
         highlightColor={highlightColor}
+        outlineBold={outlineBold}
       >
         {content}
       </BlockNodeRow>
@@ -487,7 +488,7 @@ export const EditorNode = ({
         allowAddFields={allowAddFields}
       />
     );
-    return isInline ? wrapInline(editor) : wrapBlock(editor);
+    return isInline ? wrapInline(editor) : wrapBlock(editor, undefined, undefined, true);
   }
 
   if (typeof node === 'object') {

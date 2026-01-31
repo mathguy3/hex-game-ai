@@ -10,6 +10,8 @@ type BlockNodeRowProps = {
   footerSpacing?: number;
   footer?: ReactNode;
   highlightColor?: string;
+  /** When true, wrap the entire block in a bold outline on all sides (e.g. for arrays) */
+  outlineBold?: boolean;
 };
 
 export const BlockNodeRow = ({
@@ -20,8 +22,9 @@ export const BlockNodeRow = ({
   footerSpacing,
   footer,
   highlightColor,
+  outlineBold,
 }: BlockNodeRowProps) => {
-  return (
+  const content = (
     <Stack spacing={0} sx={footerSpacing ? { mb: `${footerSpacing}px` } : undefined}>
       {header}
       {!collapsed && (
@@ -32,4 +35,21 @@ export const BlockNodeRow = ({
       {!collapsed && footer}
     </Stack>
   );
+
+  if (outlineBold) {
+    return (
+      <Stack
+        spacing={0}
+        sx={{
+          border: '2px solid',
+          borderColor: highlightColor ?? borderColor ?? 'text.secondary',
+          borderRadius: 1,
+          overflow: 'hidden',
+        }}
+      >
+        {content}
+      </Stack>
+    );
+  }
+  return content;
 };
