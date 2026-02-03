@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CoordinatesEditor, EditorRegistry, HexMapEditor } from '../../../editor';
+import { CoordinatesEditor, EditorRegistry, HexMapEditor, ImageUploadEditor } from '../../../editor';
 
 const collectHexMapIds = (node: any, result: Set<string>) => {
   if (!node) {
@@ -53,6 +53,13 @@ export const useGameDefinitionEditorRegistry = () => {
       type: 'hexDefinition',
       color: '#0d9488',
     });
+    next.register(
+      ({ fieldname, isDecendantOf }) =>
+        fieldname === 'image' &&
+        isDecendantOf('definitions') &&
+        (isDecendantOf('cards') || isDecendantOf('tokens')),
+      { component: ImageUploadEditor, defaultValue: '', allowDataTypeSelection: false, display: 'inline' }
+    );
     next.register(
       ({ path, fieldname, isChildOf }) =>
         (path.length === 1 && fieldname === 'sequence') ||

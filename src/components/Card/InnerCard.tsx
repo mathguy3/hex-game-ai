@@ -54,7 +54,12 @@ export const InnerCard = ({
         bgcolor="white"
         boxShadow={isSelected ? '0px 0px 10px 2px rgba(255,238,46,1);' : undefined}
       >
-        {image && <img src={require(`../../images/${image}`)} width="100%" height="100%" alt={name} />}
+        {image &&
+          (image.startsWith('data:') ? (
+            <img src={image} width="100%" height="100%" alt={name} />
+          ) : (
+            <img src={require(`../../images/${image}`)} width="100%" height="100%" alt={name} />
+          ))}
       </Box>
       {/* Centered box with name please */}
       {!card || !card.isFaceDown ? (

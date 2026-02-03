@@ -597,6 +597,23 @@ export const EditorNode = ({
   const isBoundUiIdField =
     parentKey === 'id' && path.length >= 2 && boundUiTypes.has(String(path[path.length - 2])) && path.includes('ui');
 
+  if (registration?.component && (node === null || node === undefined || typeof node !== 'object')) {
+    const Component = registration.component;
+    const editor = (
+      <Component
+        node={node}
+        path={path}
+        onChange={onChange}
+        registry={registry}
+        rootValue={rootValue}
+        parentKey={parentKey}
+        allowAddFields={allowAddFields}
+        nodeType={nodeType}
+      />
+    );
+    return isInline ? wrapInline(editor) : wrapBlock(editor);
+  }
+
   const primitiveEditor =
     node === null || node === undefined ? (
       <Button
